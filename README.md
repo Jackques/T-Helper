@@ -1,3 +1,5 @@
+#todo: update this
+
 # chrome-extension-ts-starter
 
 It is a boilerplate for a Chrome Extension built with TypeScript and Parcel.
