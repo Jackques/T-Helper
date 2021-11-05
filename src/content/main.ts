@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime'
 import { parse } from 'tldts';
-import { AuthCodes } from './interfaces/tinder_api/authCodes.interface';
+import { TinderController } from './classes/controllers/TinderController';
 import { Matches } from './interfaces/tinder_api/matches.interface'; 
 import { Person } from './classes/tinder/Person'; 
 import { UIController } from "./classes/tinder/UIController"

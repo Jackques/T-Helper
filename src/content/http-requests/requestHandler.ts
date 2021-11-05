@@ -1,4 +1,3 @@
-import { AuthCodes } from  '../interfaces/tinder_api/authCodes.interface';
 import { Matches } from  '../interfaces/tinder_api/matches.interface';
 
 export class RequestHandler {
