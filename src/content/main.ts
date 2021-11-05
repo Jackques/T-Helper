@@ -52,8 +52,17 @@ export class Main {
     }
 
     private checkDatingApp():string{
-        // datingAppType
-        return '';
+        switch(parse(window.location.hostname).domainWithoutSuffix){
+            case "tinder":
+                console.log('You are on tinder');
+                return 'tinder';
+            case "happn":
+                console.log('You are on happn');
+                return 'happn';
+            default:
+                console.log('Did not recognize app');
+                return '';
+        }
     }
 
     private initApp(appType: string){

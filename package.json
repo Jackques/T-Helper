@@ -50,6 +50,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "styled-components": "^5.1.0",
+    "tldts": "^5.7.50",
     "vue": "^2.6.11"
   }
 }
