@@ -73,6 +73,7 @@ export class Main {
 
     private getTinderCredentials(){
         console.log('getTinderCredentials');
+        //todo: check if logged in,.. by url?
     }
 
     private getTinderData() {
