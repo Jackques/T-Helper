@@ -8,12 +8,20 @@ import { UIController } from "./classes/tinder/UIController"
 export class Main {
     private tinderXAuthToken: string | null;
     private UIController: UIController = new UIController;
+
+    private datingAppType: string;
     public matches: Person[] = [];
 
     private requestHandler: RequestHandler | undefined;
 
     constructor() {
         console.log(`constructor content works`);
+
+        // TODO: 0. Only activate when we've gotten signal from popup?
+
+        // TODO: 1. Determine what datingapp we are using (tinder, happn, etc.)
+        // TODO: 2. Gather data (by api's OR (less preferably) DOM)
+        // TODO: 3. Determine if said datingapp is in 'swipe / overview potential dates' or in 'chat mode'
 
         
         this.tinderXAuthToken = localStorage.getItem('TinderWeb/APIToken');
@@ -32,6 +40,39 @@ export class Main {
         // export retrieved data to csv/json?
         
         this.UIController.addUIControls(); // WORKS I can create my own UI using Jquery AND manipulate the DOM with Jquery (and possibly also the mutationObserver)
+        chrome.runtime.onMessage.addListener( (message, sender, sendResponse) =>{
+            if(message.type === 'Activate'){
+                //todo: check amITinder? Maybe move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
+                this.datingAppType = this.checkDatingApp();
+                this.initApp(this.datingAppType);
+                //todo: if so, init getTinderAuth
+            }
+            //todo: unknown event received in content
+        });
+    }
+
+    private checkDatingApp():string{
+        // datingAppType
+        return '';
+    }
+
+    private initApp(appType: string){
+        switch(appType){
+            case "tinder":
+                console.log('you are on tinder');
+                // do tinder stuff, maybe actiavte tinder own class?
+                this.getTinderCredentials();
+                break;
+            case "happn":
+                console.log('you are on happn');
+                break;
+            default:
+                console.log('did not recognize app');
+        }
+    }
+
+    private getTinderCredentials(){
+        console.log('getTinderCredentials');
     }
 
     private getTinderData() {
