@@ -2,12 +2,10 @@ import { Matches } from  '../interfaces/tinder_api/matches.interface';
 
 export class RequestHandler {
     xhr:XMLHttpRequest = new XMLHttpRequest();
-    auth: AuthCodes;
+    private authCode: string;
 
-    constructor(codes:AuthCodes){
-        this.auth = {
-            tinder_xAuthToken: codes.tinder_xAuthToken
-        } 
+    constructor(authCode:string){
+        this.authCode = authCode;
     }
 
     public async getTinderMatches(next_page_token?:string): Promise<Matches>{
@@ -19,7 +17,7 @@ export class RequestHandler {
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Auth-Token': this.auth.tinder_xAuthToken
+                'X-Auth-Token': this.authCode
                 }
         });
         return await response.json();
