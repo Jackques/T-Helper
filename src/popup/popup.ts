@@ -1,8 +1,8 @@
 import $ from "jquery";
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('Clicked activate');
-    $('#jack').on('click', function () {
+    console.log('Popup DOM content loaded');
+    $('#activate').on('click', function () {
         console.log('Processing click');
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs:chrome.tabs.Tab[]) {
             if(tabs.length > 0 && tabs[0].id){

@@ -1,5 +1,5 @@
 import 'regenerator-runtime/runtime'
-import { RequestHandler } from './http-requests/requestHandler'
+import { parse } from 'tldts';
 import { AuthCodes } from './interfaces/tinder_api/authCodes.interface';
 import { Matches } from './interfaces/tinder_api/matches.interface'; 
 import { Person } from './classes/tinder/Person'; 
