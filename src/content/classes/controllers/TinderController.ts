@@ -1,6 +1,6 @@
-import { RequestHandler } from "src/content/http-requests/requestHandler";
 import { datingAppController } from "src/content/interfaces/controllers/datingAppController.interface";
 import { Matches } from "src/content/interfaces/tinder_api/matches.interface";
+import { RequestHandler } from "../http-requests/requestHandler";
 import { Person } from "../tinder/Person";
 import { UIController } from "../tinder/UIController";
 
@@ -31,7 +31,7 @@ export class TinderController implements datingAppController {
             this.getImportedData();
             this.getLiveData();
 
-
+            this.UIController = new UIController();
             this.UIController.addUIControls(); // WORKS I can create my own UI using Jquery AND manipulate the DOM with Jquery (and possibly also the mutationObserver)
         }
     }

@@ -1,4 +1,4 @@
-import { Matches } from  '../interfaces/tinder_api/matches.interface';
+import { Matches } from  '../../interfaces/tinder_api/matches.interface';
 
 export class RequestHandler {
     xhr:XMLHttpRequest = new XMLHttpRequest();

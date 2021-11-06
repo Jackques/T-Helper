@@ -3,15 +3,16 @@ import { parse } from 'tldts';
 import { TinderController } from './classes/controllers/TinderController';
 
 export class Main {
-    private datingAppController: TinderController | undefined | null; //todo: need work
+    private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
     private datingAppType = '';
     
     constructor() {
         console.log(`constructor content works`);
 
         chrome.runtime.onMessage.addListener( (message, sender, sendResponse) => {
+            //todo: if already active, do not activate again?
             if(message.type === 'Activate'){
-                //todo: check amITinder? Maybe move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
+                //todo: Move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
                 this.datingAppType = this.checkDatingApp();
                 if(this.datingAppType.length){
                     this.datingAppController = this.initAppController(this.datingAppType);
