@@ -3,7 +3,7 @@ export class requestInterceptor {
   public xAuthToken: string | undefined;
 
   //TODO: Refactor this so contentscript asks bg script for this info instead of other way around.
-  private isMessageSent: boolean = false;
+  private isMessageSent = false;
 
   constructor() {
     chrome.webRequest.onBeforeSendHeaders.addListener(
