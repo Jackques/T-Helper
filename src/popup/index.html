@@ -1,11 +1,21 @@
-<html>
+<!doctype html>
     <head>
         <title>Does this even appear?</title>
+        <link rel="stylesheet" type="text/css" href="popup-styles.css" media="screen" />
     </head>
     <body>
         <div>
-            <button id="activate">Activate!</button>
-            <script src="./popup.ts" charset="utf-8"></script>
+            <button id="activate" type="button" class="btn btn-primary" disabled>Activate!</button>
+            <div class="input-group mb-3">
+                <!-- <input type="file" class="form-control" id="inputGroupFile02" onchange="readURL(this);" accept=".csv"> -->
+                <!-- <input type="file" class="form-control" id="inputGroupFile02" onchange="readFileUploadURL(this);" accept=".csv"> -->
+                <input type="file" class="form-control" placeholder="profile_exampleName_07-11-2021_19:11.csv" id="inputGroupFile02">
+                <label class="input-group-text" for="inputGroupFile02" id="uploadButton">Upload</label>
+              </div>
+              <div id="warnText" class="alert alert-warning d-none" role="alert">
+                A simple warning alert—check it out!
+              </div>
         </div>
+        <script src="./popup.ts" charset="utf-8"></script>
     </body>
 </html>
