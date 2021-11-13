@@ -85,7 +85,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     output: 'json',
                     delimiter: ','
                 })
-
                 .on('header',(headers:string[])=>{
                     hasCompatibleHeaders = ifCompatibleHeaders(headers);
                 })
@@ -99,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     const test = JSON.parse(data);
                     //todo: also add; checker method to see if structure in file (headers & contents) matches MY DESIRED structure? if so, enable activate button!
                 })
-                
                 .on('error',(err:Error)=>{
                     $('#warnText').text(`Error in CSVTOJSON Module. Check console log and try again (with a different file).`);
                     $('#warnText').removeClass('d-none');
