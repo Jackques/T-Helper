@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#warnText').addClass('d-none');
         }
         const uploadedFile: File | undefined = getTargetFile(evt);
+        //todo: check if name file is what we require.. (e.g. profile_Bob_09-11-2021_THelper.csv)
         if(uploadedFile && isValidFileType(uploadedFile)){
             reader.readAsText(uploadedFile);
         }
