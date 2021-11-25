@@ -6,7 +6,7 @@ import { dataGhosted } from "./dataCheckLogic/dataGhosted";
 import { dataReactionSpeed } from "./dataCheckLogic/dataReactionSpeed";
 import { dataReminders } from "./dataCheckLogic/dataReminders";
 
-class DataRecord {
+export class DataRecord {
         /*
         Output:
 
@@ -34,29 +34,29 @@ class DataRecord {
         */
 
     
-    public usedDataFields:DataField[] = [
+    private static usedDataFields:DataField[] = [
         new DataField('No', 'The number of the person', true, false, false, true, true, true, {baseType: 'number', checkMethod: null}),
-        new DataField('Datum-liket', 'The datetime when I gave the like/sent my first message', true, false, false, false, true, true, {baseType: 'string', checkMethod: dataDate.isDate}),
-        new DataField('Naam', 'The name of the person', true, false, false, false, true, true, {baseType: 'string', checkMethod: null}),
-        new DataField('Leeftijd', 'The age of the person', false, false, false, false, true, true, {baseType: 'number', checkMethod: null}), // preferably getting this by birthdate otherwise just the age number is fine too
-        new DataField('Heeft-profieltekst', 'Wether or not this person has some text on the profile', true, false, false, false, true, true, {baseType: 'boolean', checkMethod: null}),
-        new DataField('Heeft-zinnige-profieltekst', 'Wether or not this person has some text on the profile', true, true, false, false, false, false, {baseType: 'boolean', checkMethod: null}),
-        new DataField('Geverifieerd', 'Wether or not this person has some text on the profile', true, false, false, false, true, true, {baseType: 'boolean', checkMethod: null}),
-        new DataField('Aantrekkelijkheidsscore', '', true, true, true, false, false, false, {baseType: 'number', checkMethod: dataAttractiveness.isValidEntry}), // NOTE! attractiveness rating on photo's can be 1, 2, 3, 6.5, 6, 7,5, 8 etc. but also: NAN (no photo available when there is litterally no photo?)
-        new DataField('Match', 'Wether we have a match/she responded or not', true, false, false, false, true, false, {baseType: 'boolean', checkMethod: null}),
-        new DataField('Datum-match', 'The datetime when I and the person had a match', true, false, false, false, true, false, {baseType: 'string', checkMethod: dataDate.isDate}),
-        new DataField('Ander-eerste-bericht', 'If this person sent me a first message', true, false, false, false, true, false, {baseType: 'boolean', checkMethod: null}), // not-yet (if she did not yet send me a message within a certain time-period), no (if she did not send me a first message within a certain timeperiod after being matched), yes (if she did send me a first message within a certain time-period)
-        new DataField('Ander-gereageerd', 'If this person responded to my first message', true, false, false, false, true, false, {baseType: 'boolean', checkMethod: null}),
-        new DataField('Gesprek-op-gang', 'If this person sent at least one message in between my first 3 messages', true, false, false, false, true, false, {baseType: 'boolean', checkMethod: null}),
-        new DataField('Gevoel-van-gemak-gesprek', 'The feeling of how easy & fun it is to have a conversation with this person ranging from 1 (very responsive & fun) to 6 (hardly responsive & teeth pulling)', false, true, true, false, false, false, {baseType: 'number', checkMethod: dataConversationVibe.isValidEntry}),
-        new DataField('Hoe-vaak-ghost', 'How many times this person did not respond in a certain timeframe', false, false, true, false, true, false, {baseType: 'list', checkMethod: dataGhosted.isValidEntry}),
-        new DataField('Nummer-verkregen', 'Did I get further contact details (e.g. phone number) from this person?', false, true, false, false, false, false, {baseType: 'boolean', checkMethod: null}),
-        new DataField('Reactie-snelheid', 'The moments of time between each response', false, false, true, false, true, false, {baseType: 'list', checkMethod: dataReactionSpeed.isValidEntry}), // de dagen & tijden tussen de eerste nieuwe berichten vanuit de ander
-        new DataField('Hoeveel-reminders', 'The amount of reminders I sent and if they worked', false, true, true, false, true, false, {baseType: 'list', checkMethod: dataReminders.isValidEntry}),
-        new DataField('Blocked-of-geen-contact', 'If this person blocked me/deleted our conversation or indicated they did not wish further contact', false, true, false, false, true, false, {baseType: 'boolean', checkMethod: null}), // needs a UI too!
-        new DataField('Geinteresseerd-sex', 'Wether this person has indicated to be interested in a hookup or not', false, true, false, false, false, false, {baseType: 'boolean', checkMethod: null}),
-        new DataField('Potentiele-klik', 'Wether the vibe of the conversation was good enough to say "we clicked"', false, true, false, false, false, false, {baseType: 'boolean', checkMethod: null}),
-        new DataField('Notities', 'Any interesting notes on this person', false, true, false, false, false, false, {baseType: 'string', checkMethod: null}),
+        new DataField('Date-liked', 'The datetime when I gave the like/sent my first message', true, false, false, false, true, true, {baseType: 'string', checkMethod: dataDate.isDate}),
+        new DataField('Name', 'The name of the person', true, false, false, false, true, true, {baseType: 'string', checkMethod: null}),
+        new DataField('Age', 'The age of the person', false, false, false, false, true, true, {baseType: 'number', checkMethod: null}), // preferably getting this by birthdate otherwise just the age number is fine too
+        new DataField('Has-profiletext', 'Wether or not this person has some text on the profile', true, false, false, false, true, true, {baseType: 'boolean', checkMethod: null}),
+        new DataField('Has-usefull-profiletext', 'Wether or not this person has some text on the profile', true, true, false, false, false, false, {baseType: 'boolean', checkMethod: null}),
+        new DataField('Is-verified', 'Wether or not this person has some text on the profile', true, false, false, false, true, true, {baseType: 'boolean', checkMethod: null}),
+        new DataField('Attractiveness-score', '', true, true, true, false, false, false, {baseType: 'number', checkMethod: dataAttractiveness.isValidEntry}), // NOTE! attractiveness rating on photo's can be 1, 2, 3, 6.5, 6, 7,5, 8 etc. but also: NAN (no photo available when there is litterally no photo?)
+        new DataField('Is-match', 'Wether we have a match/she responded or not', true, false, false, false, true, false, {baseType: 'boolean', checkMethod: null}),
+        new DataField('Date-match', 'The datetime when I and the person had a match', true, false, false, false, true, false, {baseType: 'string', checkMethod: dataDate.isDate}),
+        new DataField('Match-sent-first-message', 'If this person sent me a first message', true, false, false, false, true, false, {baseType: 'boolean', checkMethod: null}), // not-yet (if she did not yet send me a message within a certain time-period), no (if she did not send me a first message within a certain timeperiod after being matched), yes (if she did send me a first message within a certain time-period)
+        new DataField('Match-responded', 'If this person responded to my first message', true, false, false, false, true, false, {baseType: 'boolean', checkMethod: null}),
+        new DataField('Conversation-exists', 'If this person sent at least one message in between my first 3 messages', true, false, false, false, true, false, {baseType: 'boolean', checkMethod: null}),
+        new DataField('Vibe-conversation', 'The feeling of how easy & fun it is to have a conversation with this person ranging from 1 (very responsive & fun) to 6 (hardly responsive & teeth pulling)', false, true, true, false, false, false, {baseType: 'number', checkMethod: dataConversationVibe.isValidEntry}),
+        new DataField('How-many-ghosts', 'How many times this person did not respond in a certain timeframe', false, false, true, false, true, false, {baseType: 'list', checkMethod: dataGhosted.isValidEntry}),
+        new DataField('Acquired-number', 'Did I get further contact details (e.g. phone number) from this person?', false, true, false, false, false, false, {baseType: 'boolean', checkMethod: null}),
+        new DataField('Response-speed', 'The moments of time between each response', false, false, true, false, true, false, {baseType: 'list', checkMethod: dataReactionSpeed.isValidEntry}), // de dagen & tijden tussen de eerste nieuwe berichten vanuit de ander
+        new DataField('Reminders-amount', 'The amount of reminders I sent and if they worked', false, true, true, false, true, false, {baseType: 'list', checkMethod: dataReminders.isValidEntry}),
+        new DataField('Blocked-or-no-contact', 'If this person blocked me/deleted our conversation or indicated they did not wish further contact', false, true, false, false, true, false, {baseType: 'boolean', checkMethod: null}), // needs a UI too!
+        new DataField('Interested-in-sex', 'Wether this person has indicated to be interested in a hookup or not', false, true, false, false, false, false, {baseType: 'boolean', checkMethod: null}),
+        new DataField('Potential-click', 'Wether the vibe of the conversation was good enough to say "we clicked"', false, true, false, false, false, false, {baseType: 'boolean', checkMethod: null}),
+        new DataField('Notes', 'Any interesting notes on this person', false, true, false, false, false, false, {baseType: 'string', checkMethod: null}),
     ];
 
     /*  ZET HIER WELKE TAGS IK MOMENTEEL WEL GA ONDERSTEUNEN EN WELKE NIET! BEGIN KLEIN!
@@ -68,7 +68,14 @@ class DataRecord {
     'vibe-tags', // because I want to keep track of the characteristics // vibe i get from this person; religious, professional, posh, trashy, into-sports, outdoorsy, nerdy, dominant, submissive, sexual, etc.
         ZET HIER WELKE TAGS IK MOMENTEEL WEL GA ONDERSTEUNEN EN WELKE NIET! BEGIN KLEIN! */
 
-    // public getUsedDataFieldByName(title: string){
-    //     //todo: method which !!POPUP!! can use to get the correct DataField object from this internal list
-    // }
+
+
+
+
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    public static getDataFieldTypes(): {'label': string, 'checkDataMethod': Function}[] {
+        return this.usedDataFields.map((dataField: DataField) => {
+            return { 'label': dataField.title, 'checkDataMethod': dataField.isDataEntryValid };
+        });
+    }
 }
