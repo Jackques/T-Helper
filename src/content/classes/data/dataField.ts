@@ -29,6 +29,12 @@ export class DataField {
     }
 
     public addDataEntry(dataEntry:unknown):void {
+        if(!this.isDataEntryValid(dataEntry)){
+            //todo: create a notification system whereby me (the user) is notified through UI instead of console
+            console.error('Incompatible dataEntry type with ptovided dataEntry type');
+            return;
+
+        }
         // todo: Create dataEntry class & objects for here to add. Properties must be: an incremented no, date & time? the data itself (depends on each type of data), auto-checking correct type of data received, etc? 
 
         // here in this method i do: check if the added data..
@@ -36,9 +42,6 @@ export class DataField {
         // 2. must be unique check? if checked, check if given data is unique
         // 3. autoGather.. so idk? call something which gathers the data for this classobject?
         // 4. if one entry already exists, prevent the addition of multiple entries (e.g. i can change my attractiveness rating of a girl afterwards thus allowing multiple, but if i got a match with her or not is really only added once, thus should be prevented from adding the same data again)
-        if(!this.isDataEntryValid(dataEntry)){
-            console.error('The data is not valid');
-        }
         //todo: actually enter the data
     }
 
@@ -79,11 +82,14 @@ export class DataField {
         
         if(this.dataLogic.baseType === 'list'){
             if(this.dataLogic.checkMethod === null){
-                console.error(`${this.title} lacks a checkMethod whilst baseType is a list`);
+                console.error(`${this.title} lacks a checkMethod whilst baseType is a list. List datatype always requires a checkmethod.`);
                 return false;
             }
+            if(this.dataLogic.checkMethod(dataEntry)){
+                return true
+            }
+            return false;
             //todo: continue here!
-            console.error('lists not yet defined');
         }
         return false;
     }
