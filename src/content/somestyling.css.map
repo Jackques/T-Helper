@@ -1,0 +1,12 @@
+{
+	"version": 3,
+	"file": "somestyling.css",
+	"sources": [
+		"somestyling.scss"
+	],
+	"sourcesContent": [
+		"body{\r\n    background-color: pink !important;\r\n    // this will only set on tinder right? due to the matches in the manifest.json reference!\r\n    // this is what it used to be:\r\n    // \"matches\": [\"<all_urls>\"]\r\n}\r\n\r\n.recsPage {\r\n    background-color: indianred !important;\r\n}"
+	],
+	"names": [],
+	"mappings": "AAAA,AAAA,IAAI,CAAA;EACA,gBAAgB,EAAE,eAAe;CAIpC;;AAED,AAAA,SAAS,CAAC;EACN,gBAAgB,EAAE,oBAAoB;CACzC"
+}

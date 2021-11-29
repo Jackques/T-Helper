@@ -1,0 +1,10 @@
+body{
+    background-color: pink !important;
+    // this will only set on tinder right? due to the matches in the manifest.json reference!
+    // this is what it used to be:
+    // "matches": ["<all_urls>"]
+}
+
+.recsPage {
+    background-color: indianred !important;
+}

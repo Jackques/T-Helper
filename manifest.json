@@ -16,9 +16,14 @@
   "content_scripts": [
     {
       "js": [
-        "content/index.js"
+        "content/index.js",
+        "vendor/jquery-3.5.1.min.js",
+        "vendor/bootstrap.js"
       ],
-      "matches": ["<all_urls>"]
+      "css": [
+        "vendor/bootstrap.css",
+        ""
+      ],
       "matches": ["*://tinder.com/*"]
     }
   ],
