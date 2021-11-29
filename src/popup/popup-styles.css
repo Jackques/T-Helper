@@ -10650,4 +10650,8 @@ body {
   width: 400px;
 }
 
+#activate:disabled:hover {
+  cursor: not-allowed;
+}
+
 /*# sourceMappingURL=popup-styles.css.map */

@@ -1,21 +1,31 @@
 import $ from "jquery";
-import { Tooltip as Tooltip, Toast as Toast, Popover as Popover } from 'bootstrap';
 import csv from "csvtojson";
+import { DataRecord } from '../content/classes/data/dataRecord';
+import { PropertiesChecker } from "../content/classes/util/PropertiesChecker";
 
 document.addEventListener('DOMContentLoaded', function () {
     const reader = new FileReader();
-    const allowedFileTypes = ['.csv'];
-    const requiredHeaders = ['Name','Job Title','Address','State','City', 'someNumber', 'AddedDateTime'];
-    const requiredHeaders2 = [{'Name': 'string'}, {'Job Title': 'string'}, {'Address': 'string'}, {'State': 'string'}, {'City': 'string'}, {'someNumber': 'number'}, {'AddedDateTime': 'datetime'}, {'yesorno': 'boolean'}]
-    //todo: Use requiredHeaders2 to refactor header & value checker functions (perhaps combine into 1 function?) & create CENTRAL logic/config for requiredDataFields (e.g. yesorno string to boolean, someNumber string to number, City string to city etc.) Maybe use seperate class for this?
+    const allowedFileTypes: string[] = ['.csv'];
+    const propertiesChecker:PropertiesChecker = new PropertiesChecker();
+
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    const dataFieldTypes:{'label': string, 'checkDataMethod': Function}[] = DataRecord.getDataFieldTypes();
+    const requiredHeadersList: string[] = dataFieldTypes.map((header) => header.label);
+
+    // let inputData: Record<string, string | number | boolean | null | Record<string, string | number | boolean>> = null;
+    let inputData: any[] | null;
 
     function onFileInputChange(evt:Event){
-        if(!$('#warnText').hasClass('d-none')){
-            $('#warnText').addClass('d-none');
-        }
+        $('#warnText').hide();
+        $('#succesText').hide();
+
+        $('#activate').prop('disabled', true);
+        inputData = null;
+
         const uploadedFile: File | undefined = getTargetFile(evt);
-        //todo: check if name file is what we require.. (e.g. profile_Bob_09-11-2021_THelper.csv)
         if(uploadedFile && isValidFileType(uploadedFile)){
+            console.log('uploaded file: ');
+            console.dir(uploadedFile);
             reader.readAsText(uploadedFile);
         }
     }
@@ -37,7 +47,6 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#warnText').text(`Unrecognized or unallowed file type, try again with a different file. Allowed file types: ${allowedFileTypes.toString()}`);
         $('#warnText').removeClass('d-none');
         return false;
-        
     }
 
     function getTargetFile(evt:Event):File | undefined {
@@ -52,6 +61,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     $('#warnText').removeClass('d-none');
                     return;
                 }
+                console.log('fileUpload file: ');
+                console.dir(fileUpload.files[0]);
                 return fileUpload.files[0];
             }
 
@@ -60,12 +71,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function sendFileDataToContent(){
+        if(!inputData){
+            console.error('inputData is not set');
+            return;
+        }
         console.log('Processing click');
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs:chrome.tabs.Tab[]) {
             if(tabs.length > 0 && tabs[0].id){
                 console.log('Sending message to content');
-                chrome.tabs.sendMessage(tabs[0].id, {type:"Activate"}, function(response){
+                chrome.tabs.sendMessage(tabs[0].id, {'message': 'initApp', 'payload': inputData}, function(response){
                     console.log('Do i need a callback?');
+                    return true;
                 });
             }
             
@@ -84,20 +100,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 csv({
                     output: 'json',
-                    delimiter: ','
+                    delimiter: ',',
+                    checkType: true // required to get actual numbers/booleans instead of string representations of numbers/booleans (e.g. '8'/'false')
                 })
                 .on('header',(headers:string[])=>{
-                    hasCompatibleHeaders = ifCompatibleHeaders(headers);
-                })
-                .on('data',(data)=>{
-                    //data is a buffer object
-                    const jsonStr= data.toString('utf8');
-                    hasCompatibleValues = ifCompatibleValues();
-                    console.log('data ..something');
-                    console.dir(jsonStr);
+                    console.log('headers are: ');
+                    console.dir(headers);
 
-                    const test = JSON.parse(data);
-                    //todo: also add; checker method to see if structure in file (headers & contents) matches MY DESIRED structure? if so, enable activate button!
+                    const filteredHeaders: string[] = filterNestedHeaders(headers);
+
+                    hasCompatibleHeaders = ifCompatibleHeaders(filteredHeaders, requiredHeadersList);
+                    console.log(`has compatible headers: ${hasCompatibleHeaders}`);
+
+                    const excessHeaders = getExcessHeaders(filteredHeaders, requiredHeadersList);
+                    if(excessHeaders.length > 0){
+                        console.warn(`File has more headers than expected: ${excessHeaders}`);
+                    }
+                })
+                .on('data',(dataRecord:Uint8Array)=>{
+                    //data is a buffer object
+                    const parsedRecord:Record<string, unknown> = JSON.parse(dataRecord.toString());
+                    console.log('parsedRecord: ');
+                    console.dir(parsedRecord);
+                    hasCompatibleValues = ifCompatibleValues(parsedRecord);
+                    console.log(`has compatible label & values: ${hasCompatibleValues}`);
                 })
                 .on('error',(err:Error)=>{
                     $('#warnText').text(`Error in CSVTOJSON Module. Check console log and try again (with a different file).`);
@@ -105,28 +131,138 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.error(`CSVTOJSON error: ${err.name} - ${err.message}`)
                     console.error(err);
                 })
-
-                //TODO: TRY TO FINISH THIS ANDDDDD SHOW HTML ELEMENTS WITH BOOTSTRAP ON SCREEN WITH CONTENT. IF THIS IS SUCCESFULL, YIPPIE! CAN EASILY FINISH THE REST (LATER THIS WEEK..)
-                //TODO: DONT FORGET TOO COMMIT & PUSH & DOWNLOAD CODEBASE ON LAPTOP FOR WORKING IN TRAIN!
                 .fromString(contents)
-                .then(function(result){
-                    if(!hasCompatibleHeaders && !hasCompatibleValues){
-                        $('#warnText').text(`Headers in file do not match required headers. Required headers are: ${requiredHeaders.toString}`);
+                .then(function(result:any[]){
+                    if(hasCompatibleHeaders && hasCompatibleValues){
+                        console.log(`Result succes: `); 
+                        console.dir(result);
+                        inputData = result;
+                        $('#succesText').text('Headers, labels and values are valid.').removeClass('d-none');
+                        $('#activate').attr('disabled', null);
+                    }else{
+                        $('#warnText').text(`Headers in file do not match required headers. Required headers are: ${requiredHeadersList.toString}`);
                         $('#warnText').removeClass('d-none');
                     }
-                    console.log(result); //SUCCES! Send to content?
-                    //todo: Create loader overlay?
-                    //todo: prettify html & css
+
+                    //todo: EXTRA prettify code for setting the inputData
+                    //todo: EXTRA Create loader overlay? (progress bar of sorts)
+                    //todo: EXTRA prettify html & css
+                    //todo: check if name file is what we require.. (e.g. profile_Bob_09-11-2021_THelper.csv)
+                    //todo: EXTRA create general error message method, if has error turn activate button red (alert-red), on every new file upload turn button original color (but disabled) on succes turn button green AND enabled
+                    //todo: EXTRA add feature to generate new empty .csv file for new profile
+                    //todo: EXTRA SECURITY; titles dataField should not contain dots!
                 })
     }
-    //todo: create general error message method, if has error turn activate button red (alert-red), on every new file upload turn button original color (but disabled) on succes turn button green AND enabled
 
-    function ifCompatibleHeaders(headers:string[]):boolean{
-        return headers.every(header => requiredHeaders.find(requiredHeader => requiredHeader === header));
+    function filterNestedHeaders(headers: string[]):string[]{
+        const nestedHeaders:string[] = [];
+        let filteredHeaders:string[] = headers.filter((header:string)=>{
+            // does this header have a dot in the text?
+            const indexDotInHeader:number = header.indexOf('.');
+            if(indexDotInHeader !== -1){
+                const baseHeader = header.substr(0,indexDotInHeader);
+                // is this header already present in the array of nestedHeaders?
+                if(nestedHeaders.findIndex((header)=> header === baseHeader) === -1){
+                    // if not; add and return false (since we do not want to include this header in filtered headers just yet)
+                    nestedHeaders.push(baseHeader);
+                    return false;
+                }else{
+                    // if yes, skip this and return false
+                    return false;
+                }
+            }
+            return true;
+            //it does not? return true.. this is a filtered header
+        }, headers);
+        filteredHeaders = filteredHeaders.concat(nestedHeaders);
+        return filteredHeaders;
     }
-    function ifCompatibleValues():boolean{
-        //todo: need work, but refactor data structure logic first, check requiredHeaders2 comment.
-        return true;
+    
+    function getExcessHeaders(headers: string[], requiredHeadersList: string[]):string[]{
+        propertiesChecker.setPropertiesList(headers);
+        requiredHeadersList.forEach((requiredHeader) => {
+            propertiesChecker.checkPropertyOnce(requiredHeader);
+        });
+        const remainingProperties: string[] = propertiesChecker.getPropertiesList();
+        propertiesChecker.clearPropertiesList();
+        return remainingProperties;
+    }
+
+    function ifCompatibleHeaders(headers:string[], requiredHeadersList:string[]):boolean{
+        return requiredHeadersList.every((requiredHeader)=>{
+            if(headers.find((header)=> header === requiredHeader)){
+                return true;
+            }
+            return false;
+        });
+    }
+
+    function ifCompatibleValues(record:Record<string, unknown>):boolean{
+        let hasValidLabels = false;
+        let hasValidValues = false;
+
+        console.log(`My recordEntries are: `);
+        console.dir(record);
+
+        //check for each label if the provided value(s) are valid
+        // hasValidLabels = dataFieldTypes.every((dataFieldType)=>{
+        //     if(!Object.keys(record).includes(dataFieldType.label)){
+        //         console.error(`A record is missing one or more labels. Missing label: ${ dataFieldType.label }, record: ${ record.toString().substr(0, 25) }`);
+        //         return false;
+        //     }
+        //     return true;
+        // });
+        hasValidLabels = _hasValidLabels(record);
+
+        if(!hasValidLabels){
+            return false;
+        }
+
+        //todo: if not provide a message detailing the difference and expectation
+        // hasValidValues = dataFieldTypes.every((dataFieldType)=>{
+        //     const recordWithPropertyDescriptors = Object.getOwnPropertyDescriptors(record);
+        //     const uncheckedListKeys = Object.keys(recordWithPropertyDescriptors);
+        //     let result = false;
+
+        //     //todo: what if value is null/undefined/empty string?
+        //     result = dataFieldType.checkDataMethod(recordWithPropertyDescriptors[dataFieldType.label].value);
+        //     if(result){
+        //         uncheckedListKeys.filter((value) => value !== dataFieldType.label);
+        //     }
+            
+        //     return result;
+        // });
+        hasValidValues = _hasValidValues(record);
+        
+        //todo: provide logic to give a warning if there are extra records/headers which are not accounted for
+        console.log(`thus.. hasValidLabels is: ${hasValidLabels} and hasValidValues is: ${hasValidValues}`);
+        return hasValidLabels && hasValidValues ? true : false;
+    }
+
+    function _hasValidLabels(record:Record<string, unknown>){
+        return dataFieldTypes.every((dataFieldType)=>{
+            if(!Object.keys(record).includes(dataFieldType.label)){
+                console.error(`A record is missing one or more labels. Missing label: ${ dataFieldType.label }, record: ${ record.toString().substr(0, 25) }`);
+                console.log(record)
+                return false;
+            }
+            return true;
+        });
+    }
+
+    function _hasValidValues(record:Record<string, unknown>){
+        return dataFieldTypes.every((dataFieldType)=>{
+            const recordWithPropertyDescriptors = Object.getOwnPropertyDescriptors(record);
+            const uncheckedListKeys = Object.keys(recordWithPropertyDescriptors);
+            let result = false;
+
+            result = dataFieldType.checkDataMethod(recordWithPropertyDescriptors[dataFieldType.label].value);
+            if(result){
+                uncheckedListKeys.filter((value) => value !== dataFieldType.label);
+            }
+            
+            return result;
+        });
     }
 
     $('#activate').on('click', function () {
@@ -136,6 +272,13 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#inputGroupFile02').on('change', function(evt:Event){
         onFileInputChange(evt);
     });
+
+    // this works below; you need to always have a wrapper container (<body> probably works too) in which you can reference the DOM element for e.g. a click event;
+    // $(document).on("click", '#testing button', function (evt) {
+    //     console.log('this works! 2');
+    //     alert('this works! 2');
+    //     console.dir($('#exampleFormControlInput1').val())
+    // });
 
     reader.onload = function() {
         convertFileContentToArray();
