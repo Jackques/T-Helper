@@ -1,26 +1,60 @@
 import 'regenerator-runtime/runtime'
 import { parse } from 'tldts';
 import { TinderController } from './classes/controllers/TinderController';
+import { DataRecord } from './classes/data/dataRecord';
 
 export class Main {
     private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
     private datingAppType = '';
+
+    public dataRecords: DataRecord[] = [];
     
-    constructor() {
+    constructor(dataRecords: DataRecord[]) {
+        this.dataRecords = [];
         console.log(`constructor content works`);
 
+        chrome.runtime.onConnect.addListener(port => {
+            console.log('connected ', port);
+          
+            if (port.name === 'hi') {
+              port.onMessage.addListener(function(test){
+                  console.log(test);
+                  console.log('hey, i got something!');
+              });
+            }
+          });
+          
         chrome.runtime.onMessage.addListener( (message, sender, sendResponse) => {
             //todo: if already active, do not activate again?
-            if(message.type === 'Activate'){
+            console.log('we got a message!');
+            console.log(message);
+            if(message.message === 'initApp'){
                 //todo: Move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
                 this.datingAppType = this.checkDatingApp();
-                if(this.datingAppType.length){
+                if(this.datingAppType.length > 0){
                     this.datingAppController = this.initAppController(this.datingAppType);
                 }
                 //todo: if so, init getTinderAuth
             }
+            return true;
             //todo: unknown event received in content
         });
+
+        // chrome.tabs.executeScript(null, {file:'js/jquery-2.1.1.min.js'}, function(result){
+        //     chrome.tabs.executeScript(null, {file:'js/myscript.js'});
+        // });
+
+                // DOES NOT SEEM TO WORK? DESPITE JQUERY BEING LOADED..
+                //Load jQuery library using plain JavaScript
+                (function(){
+                    const newscript = document.createElement('script');
+                    newscript.type = 'text/javascript';
+                    newscript.async = true;
+                    //newscript.src = 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js';
+                    newscript.src = 'https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js';
+                    (document.getElementsByTagName('head')[0]||document.getElementsByTagName('body')[0]).appendChild(newscript);
+                })();
+        
     }
 
     private checkDatingApp():string{
