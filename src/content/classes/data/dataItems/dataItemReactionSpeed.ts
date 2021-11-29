@@ -1,15 +1,4 @@
-export class dataReactionSpeed {
-    public static isValidEntry(listEntry: ReactionSpeed): boolean {
-        if(listEntry instanceof ReactionSpeed){
-            return true;
-        }
-        return false;
-        //todo: test ???
-    }
-
-}
-
-export class ReactionSpeed {
+export class dataItemReactionSpeed {
     private _datetimeMyLastMessage: Date;
     private _datetimeTheirResponse: Date;
 

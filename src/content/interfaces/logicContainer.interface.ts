@@ -1,7 +1,9 @@
-/* eslint-disable @typescript-eslint/ban-types */
+import { dataCheck } from "../classes/data/dataCheckLogic/dataCheck";
+import { dataCheckSimple } from "../classes/data/dataCheckLogic/dataCheckSimple";
+
 export interface logicContainer {
     baseType: baseTypes;
-    checkMethod: Function | null; //todo: check why i should not (according to eslint) use Function here as Type and figure out what to do instead
+    customCheckClass: dataCheck | dataCheckSimple | null;
 }
 
 export type baseTypes = 'string' | 'number' | 'boolean' | 'list';

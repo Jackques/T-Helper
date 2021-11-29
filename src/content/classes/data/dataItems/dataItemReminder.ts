@@ -1,15 +1,5 @@
-export class dataReminders {
-    public static isValidEntry(listEntry: Reminder): boolean {
-        if(listEntry instanceof Reminder){
-            return true;
-        }
-        return false;
-        //todo: test ???
-    }
+export class dataItemReactionSpeed {
 
-}
-
-export class Reminder {
     private _datetimeMyLastMessage: Date;
     private _datetimeReminderSent: Date;
     private _textContentReminder: string;
@@ -21,5 +11,4 @@ export class Reminder {
         this._textContentReminder = textContentReminder;
         this._hasGottenReply = hasGottenReply;
     }
-
 }

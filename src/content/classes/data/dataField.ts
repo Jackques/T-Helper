@@ -1,4 +1,6 @@
-import { logicContainer } from "src/content/interfaces/logicContainer.interface";
+import { baseTypes, logicContainer } from "src/content/interfaces/logicContainer.interface";
+import { uniqueEntryChecker } from "../util/uniqueEntryChecker";
+import { GhostStatus } from "./dataItems/dataItemGhost";
 
 export class DataField {
     public title: string;
@@ -10,8 +12,10 @@ export class DataField {
     public autoGather: boolean;
     public onlyGatherOnce: boolean;
 
-    private dataLogic: logicContainer;
+    public dataLogic: logicContainer;
     public dataEntries: any[] = [];
+
+    private _uniqueIdentifier:uniqueEntryChecker = new uniqueEntryChecker();
 
     constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
         this.title = title;
@@ -20,12 +24,10 @@ export class DataField {
         this.requiresUI = requiresUI; //determines if the fields is visible in UI
         this.multipleDataEntry = multipleDataEntry;
         this.mustBeUnique = mustBeUnique;
-        this.autoGather = autoGather;
+        this.autoGather = autoGather; //if true, then check in the provided dataSource if e.g. a numnber already exists. if not assign a new (increment from the former) number to this person
         this.onlyGatherOnce = onlyGatherOnce;
 
         this.dataLogic = dataLogic;
-
-        //todo: e.g. autoGather; if true, then check in the provided dataSource if e.g. a numnber already exists. if not assign a new (increment from the former) number to this person
     }
 
     public addDataEntry(dataEntry:unknown):void {
@@ -45,53 +47,138 @@ export class DataField {
         //todo: actually enter the data
     }
 
-    public getTypeOfRequiredData(){
-        /* 
-        This method will be FOR CHECKING THE DATA STRUCTURE IN !!POPUP!! when checking for headers & values in order to;
-        1. check if headers equal the headers defined here
-        2. check if the data structure (e.g. date format) equals the data structure used in the data when reading the data (and provide a clear error indicating line and data when not and what the data structure SHOULD be)
-        */
-    }
-    public isDataEntryValid(dataEntry: unknown): boolean {
-        if(this.dataLogic.baseType === 'string'){
-            if(this.dataLogic.checkMethod !== null){
-                if(this.dataLogic.checkMethod(dataEntry)){
-                    return true;
-                }
-                return typeof dataEntry === 'string' || dataEntry instanceof String;
-            }
+    // public isDataEntryValid(dataEntry: unknown): boolean { //because apparantly it cannot find this otherwise
+    public isDataEntryValid = (dataEntry: unknown): boolean => {
+
+        if(!this._isBaseTypeSet(this.dataLogic.baseType) || !this._isDataEntryNotEmpty(dataEntry)){
+            return false;
         }
 
-        if(this.dataLogic.baseType === 'boolean'){
-            if(this.dataLogic.checkMethod !== null){
-                if(this.dataLogic.checkMethod(dataEntry)){
-                    return true;
-                }
-                return typeof dataEntry === 'boolean' || dataEntry instanceof Boolean;
-            }
+        if(this.mustBeUnique && !this._isDataEntryUnique('noDataEntry', dataEntry)){
+            console.error(`dataEntry: ${dataEntry} for title: ${this.title} does not have a unique numebr.`)
         }
 
-        if(this.dataLogic.baseType === 'number'){
-            if(this.dataLogic.checkMethod !== null){
-                if(this.dataLogic.checkMethod(dataEntry)){
+        const typeDataEntry:"string" | "number" | "boolean" | "object" | null = this._getTypeOfValue(dataEntry);
+        console.log(`dataEntry: ${dataEntry}, type of dataEntry: ${typeDataEntry} and the field is: ${this.title} with required baseType: ${this.dataLogic.baseType}`);
+
+        if(this.dataLogic.customCheckClass !== null){
+            if(this.dataLogic.customCheckClass.isValidEntry(dataEntry)){
+                console.log('INPUT ACCEPTED!');
+                return true;
+            }
+            console.error(`The converted data entry (${dataEntry}) does not satisfy the check method set for ${this.title}`);
+            return false;
+        }
+
+        switch (this.dataLogic.baseType) {
+            case 'string': 
+                if(typeDataEntry === 'string'){
+                    console.log('INPUT ACCEPTED!');
                     return true;
                 }
-                return typeof dataEntry === 'number' || dataEntry instanceof Number;
-            }
-        }
-        
-        if(this.dataLogic.baseType === 'list'){
-            if(this.dataLogic.checkMethod === null){
+                console.error(`The data entry (${dataEntry}) provided for ${this.title} should be of type ${this.dataLogic.baseType} but was found to be of type ${this._getTypeOfValue(dataEntry)}`);
+                return false;
+            case 'boolean': 
+                if(typeDataEntry === 'boolean'){
+                    console.log('INPUT ACCEPTED!');
+                   return true; 
+                }
+                console.error(`The data entry (${dataEntry}) provided for ${this.title} should be of type ${this.dataLogic.baseType} but was found to be of type ${this._getTypeOfValue(dataEntry)}`);
+                return false;
+            case 'number': 
+                if(typeDataEntry === 'number'){
+                    console.log('INPUT ACCEPTED!');
+                    return true;
+                }
+                console.error(`The data entry (${dataEntry}) provided for ${this.title} should be of type ${this.dataLogic.baseType} but was found to be of type ${this._getTypeOfValue(dataEntry)}`);
+                return false;
+            case 'list': 
                 console.error(`${this.title} lacks a checkMethod whilst baseType is a list. List datatype always requires a checkmethod.`);
                 return false;
-            }
-            if(this.dataLogic.checkMethod(dataEntry)){
-                return true
-            }
-            return false;
-            //todo: continue here!
-        }
-        return false;
+            default: 
+                console.error(`The basetype provided for ${this.title} has an unknown type`);
+                return false;
+         }
     }
 
+    private _isBaseTypeSet(baseType: baseTypes){
+        if(!baseType){
+            console.error(`No basetype and/or datalogic checkmethod was set for: ${this.title}`);
+            return false;
+        }
+        return true;
+    }
+
+    private _isDataEntryNotEmpty(dataEntry: unknown){
+        if(dataEntry === undefined || dataEntry === null || dataEntry === ""){
+            console.error(`The data entry for  ${this.title} cannot be empty or of a falsy value. Value: (${dataEntry}).`);
+            return false;
+        }
+        return true;
+    }
+
+    private _isDataEntryUnique(identifier: string, dataEntry: unknown):boolean {
+        return this._uniqueIdentifier.isUniqueEntry(identifier, dataEntry);
+    }
+    
+    
+
+    //todo: create conversion methods; if i ever decide to;
+    // add new data fields
+    // change labels, type of data or data content.. to what was the data previously.. 
+    // give me a prompt in which i can auto update my content to the newly desired contrent
+    // this is for V2!!!
+
+    private _getTypeOfValue(value: unknown):'string' | 'number' | 'boolean' | 'object' | null {
+        switch (typeof(value)){
+            case 'string':
+                return 'string';
+            case 'number':
+                return 'number';
+            case 'boolean':
+                return 'boolean';
+            case 'object':
+                return 'object';
+            default:
+                return null;
+        }
+    }
+
+}
+
+export class DataFieldReactionSpeedList extends DataField {
+
+    constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    }
+}
+
+export class DataFieldReminderList extends DataField {
+    
+    constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    }
+}
+
+export class DataFieldGhostsList extends DataField {
+    
+    constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    }
+
+    public updateMoment(updatedTime: string, updatedStatus: GhostStatus):void {
+        if(this.dataLogic.customCheckClass === null){
+            console.error('Could not update moment; no custom check class was set to check input.');
+            return;
+        }
+        // if(this.dataLogic.customCheckClass.isValidEntry(updatedTime)){
+
+        // }
+        // if(dataGhosted._isValidTimeEntry(updatedTime) && dataGhosted._isValidStatus(updatedStatus)){
+        //     this._timeSinceLastMessage = updatedTime;
+        //     this._status = updatedStatus;
+        // }else{
+        //     console.error('Could not update moment. Updated time or updated status invalid');
+        // }
+    }
 }
