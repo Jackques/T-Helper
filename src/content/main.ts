@@ -2,6 +2,7 @@ import 'regenerator-runtime/runtime'
 import { parse } from 'tldts';
 import { TinderController } from './classes/controllers/TinderController';
 import { DataRecord } from './classes/data/dataRecord';
+import { portMessage } from './interfaces/portMessage.interface';
 
 export class Main {
     private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
@@ -9,26 +10,14 @@ export class Main {
 
     public dataRecords: DataRecord[] = [];
     
-    constructor(dataRecords: DataRecord[]) {
-        this.dataRecords = [];
+    constructor() {
         console.log(`constructor content works`);
 
-        chrome.runtime.onConnect.addListener(port => {
-            console.log('connected ', port);
-          
-            if (port.name === 'hi') {
-              port.onMessage.addListener(function(test){
-                  console.log(test);
-                  console.log('hey, i got something!');
-              });
-            }
-          });
-          
-        chrome.runtime.onMessage.addListener( (message, sender, sendResponse) => {
-            //todo: if already active, do not activate again?
-            console.log('we got a message!');
-            console.log(message);
-            if(message.message === 'initApp'){
+        chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
+            console.assert(port.name === "knockknock");
+            port.onMessage.addListener((msg: portMessage) => {
+            if(msg.message === 'initApp'){
+                console.dir(msg.payload);
                 //todo: Move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
                 this.datingAppType = this.checkDatingApp();
                 if(this.datingAppType.length > 0){
@@ -36,13 +25,8 @@ export class Main {
                 }
                 //todo: if so, init getTinderAuth
             }
-            return true;
-            //todo: unknown event received in content
-        });
-
-        // chrome.tabs.executeScript(null, {file:'js/jquery-2.1.1.min.js'}, function(result){
-        //     chrome.tabs.executeScript(null, {file:'js/myscript.js'});
-        // });
+            });
+          });
 
                 // DOES NOT SEEM TO WORK? DESPITE JQUERY BEING LOADED..
                 //Load jQuery library using plain JavaScript

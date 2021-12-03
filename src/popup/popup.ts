@@ -2,6 +2,7 @@ import $ from "jquery";
 import csv from "csvtojson";
 import { DataRecord } from '../content/classes/data/dataRecord';
 import { PropertiesChecker } from "../content/classes/util/PropertiesChecker";
+import { portMessage } from "src/content/interfaces/portMessage.interface";
 
 document.addEventListener('DOMContentLoaded', function () {
     const reader = new FileReader();
@@ -76,16 +77,33 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         console.log('Processing click');
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs:chrome.tabs.Tab[]) {
-            if(tabs.length > 0 && tabs[0].id){
-                console.log('Sending message to content');
-                chrome.tabs.sendMessage(tabs[0].id, {'message': 'initApp', 'payload': inputData}, function(response){
-                    console.log('Do i need a callback?');
-                    return true;
+
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        function getCurrentTabId(cb: Function) {
+            const query = {active: true, currentWindow: true};
+            chrome.tabs.query(query, function (tabArray: chrome.tabs.Tab[]) {
+                console.log("Tab id is: " + tabArray[0].id);
+                cb(tabArray[0].id); 
+                //todo: temporarily solution: this should be refactored to something like a promise in the future
+                //todo: the reason I set up like this is because chrome.tabs.query returns asynchronously! https://stackoverflow.com/questions/48089389/invocation-of-form-tabs-connectundefined-object-doesnt-match-definition
+
+                //todo: also get tabid before even loading the .json/.csv
+                //todo: show error in popup html is tab is not tinder/happn/opther recognized datingapp
+                //todo: show error in popup html if port is disconnected (e.g. when navigating away from the tinder tab)
+            });
+        }
+        
+        function connectToCurrentTab () {
+            getCurrentTabId(function(currentTabId:number) {
+                const port = chrome.tabs.connect(currentTabId, <chrome.runtime.Port>{name: "knockknock"});
+                port.postMessage(<portMessage>{'message': 'initApp', 'payload': inputData});
+                port.onMessage.addListener(function(msg) {
+                    console.log('I am not expecting a message back?');
+                    console.log(msg);
                 });
-            }
-            
-        });
+            });
+        }
+        connectToCurrentTab();
     }
 
     function convertFileContentToArray(){
