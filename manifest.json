@@ -21,8 +21,7 @@
         "vendor/bootstrap.js"
       ],
       "css": [
-        "vendor/bootstrap.css",
-        ""
+        "vendor/bootstrap.css"
       ],
       "matches": ["*://tinder.com/*"]
     }
