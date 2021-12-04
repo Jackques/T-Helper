@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if(hasCompatibleHeaders && hasCompatibleValues){
                         console.log(`Result succes: `); 
                         console.dir(result);
-                        inputData = result;
+                        inputData = mapResultsArrayToresultDataRecordValues(result);
                         $('#succesText').text('Headers, labels and values are valid.').removeClass('d-none');
                         $('#activate').attr('disabled', null);
                     }else{
@@ -281,6 +281,19 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             
             return result;
+        });
+    }
+
+    function mapResultsArrayToresultDataRecordValues(resultsArray: any[]):DataRecordValues[][]{
+        return resultsArray.map((result)=>{
+            const newArray = [];
+            for (const property in result) {
+                 newArray.push({
+                     'label': String(property),
+                     'value': <unknown>result[property]
+                    });
+              }
+            return newArray
         });
     }
 
