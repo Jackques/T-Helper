@@ -34,7 +34,8 @@ export class DataRecord {
         */
 
     //todo: to ensure proper nesting without errors; ensure the datafield labels / headers ONLY contain alphanumeric characters AND dashes.. nothing else
-    private static usedDataFields:DataField[] = [
+    //todo: maybe needs a systemNo or something? Just like No but specifically for the system
+    private usedDataFields:DataField[] = [
         new DataField('No', 'The number of the person', true, false, false, true, true, true, {baseType: 'number', customCheckClass: null}),
         new DataField('Date-liked', 'The datetime when I gave the like/sent my first message', true, false, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         new DataField('Name', 'The name of the person', true, false, false, false, true, true, {baseType: 'string', customCheckClass: null}),
@@ -75,7 +76,7 @@ export class DataRecord {
 //todo: maybe it would be better to put all the check logic inside the DataField classes and subclasses anyway?
     
     // eslint-disable-next-line @typescript-eslint/ban-types
-    public static getDataFieldTypes(): {'label': string, 'checkDataMethod': Function}[] {
+    public getDataFieldTypes(): {'label': string, 'checkDataMethod': Function}[] {
         return this.usedDataFields.map((dataField: DataField) => {
             return { 'label': dataField.title, 'checkDataMethod': dataField.isDataEntryValid };
         });
