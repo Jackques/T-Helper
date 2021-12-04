@@ -2,13 +2,15 @@ import 'regenerator-runtime/runtime'
 import { parse } from 'tldts';
 import { TinderController } from './classes/controllers/TinderController';
 import { DataRecord } from './classes/data/dataRecord';
+import { dataTable } from './classes/data/dataTable';
+import { DataRecordValues } from './interfaces/data/dataRecordValues.interface';
 import { portMessage } from './interfaces/portMessage.interface';
 
 export class Main {
     private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
     private datingAppType = '';
 
-    public dataRecords: DataRecord[] = [];
+    private dataTable: dataTable = new dataTable();
     
     constructor() {
         console.log(`constructor content works`);
@@ -22,6 +24,12 @@ export class Main {
                 this.datingAppType = this.checkDatingApp();
                 if(this.datingAppType.length > 0){
                     this.datingAppController = this.initAppController(this.datingAppType);
+
+                    //todo: for every entry i the list received in payload
+                    msg.payload.forEach((msg:DataRecordValues[])=>{
+                        this.dataTable.addDataRecord(msg);
+                    });
+
                 }
                 //todo: if so, init getTinderAuth
             }

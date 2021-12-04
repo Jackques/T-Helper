@@ -37,6 +37,7 @@ export class DataField {
             return;
 
         }
+        console.log(`${this.title} - I would totally enter the values, but need to be inplemented first`);
         // todo: Create dataEntry class & objects for here to add. Properties must be: an incremented no, date & time? the data itself (depends on each type of data), auto-checking correct type of data received, etc? 
 
         // here in this method i do: check if the added data..

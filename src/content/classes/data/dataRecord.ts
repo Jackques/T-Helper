@@ -5,6 +5,8 @@ import { dataConversationVibe } from "./dataCheckLogic/dataCheckConversationVibe
 import { dataCheckGhosts } from "./dataCheckLogic/dataCheckGhosts";
 import { dataCheckReactionSpeed } from "./dataCheckLogic/dataCheckReactionSpeed";
 import { dataCheckReminders} from "./dataCheckLogic/dataCheckReminders";
+import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
+import { PropertiesChecker } from "../util/PropertiesChecker";
 
 export class DataRecord {
         /*
@@ -59,6 +61,41 @@ export class DataRecord {
         new DataField('Potential-click', 'Wether the vibe of the conversation was good enough to say "we clicked"', false, true, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Notes', 'Any interesting notes on this person', false, true, false, false, false, false, {baseType: 'string', customCheckClass: null}),
     ];
+
+    // why do this instead of simply creating object instances?
+    /* 
+    1. I can check if all data is present simply by using a method before i even need to create a class (or it creates an empty data class because the params did not pass the check)
+    2. This is very usefull for checking the fields before i parse the entire thing in popup! I do not need instances of everything right away! (only one instance needed from dataRecord)
+    3. Much like the usedDataFields; I can have a list of those without being tightly coupled with their respective classes; otherwise this class would need to know 
+    */
+
+    public addDataToDataFields(dataRecordValues:DataRecordValues[]):boolean{
+        // todo: check if all values in array match dataField names
+        if(this.isAllDataFieldsPresent(dataRecordValues)){
+            //if so, add data by label, value pairs, value can be entered by using the add method on the corresponding dataField
+            dataRecordValues.forEach((dataRecordValue)=>{
+                this.usedDataFields[this.getIndexOfDataFieldByTitle(dataRecordValue.label)].addDataEntry(dataRecordValue.value);
+            });
+            return true;
+        }else{
+            console.error('Missing some required data fields. Cannot add dataRecord');
+            return false;
+        }
+    }
+
+    private isAllDataFieldsPresent(dataRecordValueList: DataRecordValues[]):boolean{
+        return dataRecordValueList.every((dataRecordValue:DataRecordValues)=>{
+            return this.usedDataFields.findIndex((usedDataField:DataField)=>{
+                return usedDataField.title === dataRecordValue.label;
+            }) !== -1 ? true : false
+        })
+    }
+
+    private getIndexOfDataFieldByTitle(title: string):number{
+        return this.usedDataFields.findIndex((usedDataField)=>{
+            return usedDataField.title === title;
+        });
+    }
 
     /*  ZET HIER WELKE TAGS IK MOMENTEEL WEL GA ONDERSTEUNEN EN WELKE NIET! BEGIN KLEIN!
     'IsFake', // because maybe I want to keep track of how many fake profiles I encounter on any given app
