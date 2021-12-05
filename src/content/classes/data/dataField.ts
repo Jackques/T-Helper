@@ -13,14 +13,15 @@ export class DataField {
     public onlyGatherOnce: boolean;
 
     public dataLogic: logicContainer;
-    public dataEntries: any[] = [];
+    private dataEntry: unknown;
+    private dataEntryList: Record<string, unknown>[] = [];
 
     private _uniqueIdentifier:uniqueEntryChecker = new uniqueEntryChecker();
 
     constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
         this.title = title;
         this.description = description;
-        this.requiredField = requiredField;
+        this.requiredField = requiredField;// why did i need this again? What the difference between this setting and the requiresUI setting? Don;t i only need the requiresUI setting?
         this.requiresUI = requiresUI; //determines if the fields is visible in UI
         this.multipleDataEntry = multipleDataEntry;
         this.mustBeUnique = mustBeUnique;
@@ -35,17 +36,33 @@ export class DataField {
             //todo: create a notification system whereby me (the user) is notified through UI instead of console
             console.error('Incompatible dataEntry type with ptovided dataEntry type');
             return;
-
         }
-        console.log(`${this.title} - I would totally enter the values, but need to be inplemented first`);
-        // todo: Create dataEntry class & objects for here to add. Properties must be: an incremented no, date & time? the data itself (depends on each type of data), auto-checking correct type of data received, etc? 
 
+        //console.log(`My (${this.title}) values are now:`);
+
+        if(this.dataLogic.baseType === 'list'){
+            const isArrayDataEntryList:Record<string, unknown>[] | null = this._getArrayDataEntryList(dataEntry)
+
+            if(isArrayDataEntryList !== null){
+                this.dataEntryList = [...this.dataEntryList, ...isArrayDataEntryList];
+            }
+            //console.dir(this.dataEntryList)
+            
+        }else{
+            this.dataEntry = dataEntry;
+            //console.dir(this.dataEntry);
+        }
+        //console.log(`///////////////////////////////////////`);
+        
         // here in this method i do: check if the added data..
         // 1. can be added due to multipleDataEntry setting?
+            // -> yep, must also be checked for this
         // 2. must be unique check? if checked, check if given data is unique
+            // -> is that the responsibility of the field? or maybe the dataValue object?.. well only the field can control how many entries there already are AND if they're unique!?
         // 3. autoGather.. so idk? call something which gathers the data for this classobject?
+            // -> not here, but must be done in tindercontroller
         // 4. if one entry already exists, prevent the addition of multiple entries (e.g. i can change my attractiveness rating of a girl afterwards thus allowing multiple, but if i got a match with her or not is really only added once, thus should be prevented from adding the same data again)
-        //todo: actually enter the data
+            // -> yup, must also be checked for this
     }
 
     // public isDataEntryValid(dataEntry: unknown): boolean { //because apparantly it cannot find this otherwise
@@ -60,11 +77,11 @@ export class DataField {
         }
 
         const typeDataEntry:"string" | "number" | "boolean" | "object" | null = this._getTypeOfValue(dataEntry);
-        console.log(`dataEntry: ${dataEntry}, type of dataEntry: ${typeDataEntry} and the field is: ${this.title} with required baseType: ${this.dataLogic.baseType}`);
+        //console.log(`dataEntry: ${dataEntry}, type of dataEntry: ${typeDataEntry} and the field is: ${this.title} with required baseType: ${this.dataLogic.baseType}`);
 
         if(this.dataLogic.customCheckClass !== null){
             if(this.dataLogic.customCheckClass.isValidEntry(dataEntry)){
-                console.log('INPUT ACCEPTED!');
+                //console.log('INPUT ACCEPTED!');
                 return true;
             }
             console.error(`The converted data entry (${dataEntry}) does not satisfy the check method set for ${this.title}`);
@@ -74,21 +91,21 @@ export class DataField {
         switch (this.dataLogic.baseType) {
             case 'string': 
                 if(typeDataEntry === 'string'){
-                    console.log('INPUT ACCEPTED!');
+                    //console.log('INPUT ACCEPTED!');
                     return true;
                 }
                 console.error(`The data entry (${dataEntry}) provided for ${this.title} should be of type ${this.dataLogic.baseType} but was found to be of type ${this._getTypeOfValue(dataEntry)}`);
                 return false;
             case 'boolean': 
                 if(typeDataEntry === 'boolean'){
-                    console.log('INPUT ACCEPTED!');
+                    //console.log('INPUT ACCEPTED!');
                    return true; 
                 }
                 console.error(`The data entry (${dataEntry}) provided for ${this.title} should be of type ${this.dataLogic.baseType} but was found to be of type ${this._getTypeOfValue(dataEntry)}`);
                 return false;
             case 'number': 
                 if(typeDataEntry === 'number'){
-                    console.log('INPUT ACCEPTED!');
+                    //console.log('INPUT ACCEPTED!');
                     return true;
                 }
                 console.error(`The data entry (${dataEntry}) provided for ${this.title} should be of type ${this.dataLogic.baseType} but was found to be of type ${this._getTypeOfValue(dataEntry)}`);
@@ -120,6 +137,13 @@ export class DataField {
 
     private _isDataEntryUnique(identifier: string, dataEntry: unknown):boolean {
         return this._uniqueIdentifier.isUniqueEntry(identifier, dataEntry);
+    }
+
+    private _getArrayDataEntryList(dataEntry: unknown): Record<string, unknown>[] | null {
+        if(Array.isArray(dataEntry)){
+            return dataEntry;
+        }
+        return null;
     }
     
     
