@@ -22,8 +22,6 @@ export class TinderController implements datingAppController {
             if (this.dataRetrievalMethod === 'api') {
                 this.hasCredentials = this.getCredentials();
                 if (this.hasCredentials) {
-                    // Gather data chats from DOM? endpoint?
-                    // Load imported JSON
                     // Determine in chatmode or swipemode?
                     // Add UI helper?
 
@@ -38,17 +36,13 @@ export class TinderController implements datingAppController {
                     // this.getLiveData(); TEMPRARILY TURNED OFF
                 } else {
                     console.error(`Could not get credentials for tinder`);
-                    return;
                 }
-                return;
             }
             if (this.dataRetrievalMethod === 'dom') {
                 console.error(`Data retrieveMethod DOM is not yet supported`);
-                return;
             }
-
+        }else{
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
-            return;
         }
 
         this.UIController = new UIController();

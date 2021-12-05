@@ -13,13 +13,15 @@ export class Main {
     private dataTable: dataTable = new dataTable();
     
     constructor() {
-        console.log(`constructor content works`);
+        //console.log(`The main app constructor content works`);
 
         chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
             console.assert(port.name === "knockknock");
             port.onMessage.addListener((msg: portMessage) => {
             if(msg.message === 'initApp'){
-                console.dir(msg.payload);
+                //console.log(`I received the following message payload: `);
+                //console.dir(msg.payload);
+                
                 //todo: Move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
                 this.datingAppType = this.checkDatingApp();
                 if(this.datingAppType.length > 0){
@@ -31,22 +33,9 @@ export class Main {
 
                     this.datingAppController = this.initAppController(this.datingAppType);
                 }
-                //todo: if so, init getTinderAuth
             }
             });
           });
-
-                // DOES NOT SEEM TO WORK? DESPITE JQUERY BEING LOADED..
-                //Load jQuery library using plain JavaScript
-                (function(){
-                    const newscript = document.createElement('script');
-                    newscript.type = 'text/javascript';
-                    newscript.async = true;
-                    //newscript.src = 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js';
-                    newscript.src = 'https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js';
-                    (document.getElementsByTagName('head')[0]||document.getElementsByTagName('body')[0]).appendChild(newscript);
-                })();
-        
     }
 
     private checkDatingApp():string{

@@ -3,8 +3,6 @@ import $ from "jquery";
 export class UIController {
     // matched_with: ProfileName;
 
-    constructor() {}
-
     public addUIControls(): void {
 
         //NOTE: This will work perfectly since I can already manipulate the DOM long after the Tinder framework is done.
