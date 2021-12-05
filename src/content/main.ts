@@ -23,13 +23,13 @@ export class Main {
                 //todo: Move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
                 this.datingAppType = this.checkDatingApp();
                 if(this.datingAppType.length > 0){
-                    this.datingAppController = this.initAppController(this.datingAppType);
 
-                    //todo: for every entry i the list received in payload
+                    //for every entry i the list received in payload
                     msg.payload.forEach((msg:DataRecordValues[])=>{
                         this.dataTable.addDataRecord(msg);
                     });
 
+                    this.datingAppController = this.initAppController(this.datingAppType);
                 }
                 //todo: if so, init getTinderAuth
             }
@@ -66,7 +66,7 @@ export class Main {
     private initAppController(appType: string){
         switch(appType){
             case "tinder":
-                return new TinderController();
+                return new TinderController('api');
             case "happn":
                 alert('Happn is not yet supported');
                 return undefined;
