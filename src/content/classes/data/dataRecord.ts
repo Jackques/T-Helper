@@ -38,16 +38,21 @@ export class DataRecord {
     //todo: to ensure proper nesting without errors; ensure the datafield labels / headers ONLY contain alphanumeric characters AND dashes.. nothing else
     //todo: maybe needs a systemNo or something? Just like No but specifically for the system
     private usedDataFields:DataField[] = [
+            //systemmatchid? tinder provides me with a personid, match id etc..
         new DataField('No', 'The number of the person', true, false, false, true, true, true, {baseType: 'number', customCheckClass: null}),
-        new DataField('Date-liked', 'The datetime when I gave the like/sent my first message', true, false, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckDate()}),
+            // need to keep track of this myself, but since I'M swiping/liking this will not be a problem 
+            new DataField('Date-liked', 'The datetime when I gave the like/sent my first message', true, false, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         new DataField('Name', 'The name of the person', true, false, false, false, true, true, {baseType: 'string', customCheckClass: null}),
         new DataField('Age', 'The age of the person', false, false, false, false, true, true, {baseType: 'number', customCheckClass: null}), // preferably getting this by birthdate otherwise just the age number is fine too
-        new DataField('Has-profiletext', 'Wether or not this person has some text on the profile', true, false, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
+            // in match.bio
+            new DataField('Has-profiletext', 'Wether or not this person has some text on the profile', true, false, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Has-usefull-profiletext', 'Wether or not this person has some text on the profile', true, true, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Is-verified', 'Wether or not this person has some text on the profile', true, false, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Attractiveness-score', '', true, true, true, false, false, false, {baseType: 'number', customCheckClass: new dataAttractiveness()}), // NOTE! attractiveness rating on photo's can be 1, 2, 3, 6.5, 6, 7,5, 8 etc. but also: NAN (no photo available when there is litterally no photo?)
-        new DataField('Is-match', 'Wether we have a match/she responded or not', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
-        new DataField('Date-match', 'The datetime when I and the person had a match', true, false, false, false, true, false, {baseType: 'string', customCheckClass: new dataCheckDate()}),
+            // simply compare the past/current matches list in records against the values received by getMatches()
+            new DataField('Is-match', 'Wether we have a match/she responded or not', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
+            // in match.created_date = date match    
+            new DataField('Date-match', 'The datetime when I and the person had a match', true, false, false, false, true, false, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         new DataField('Match-sent-first-message', 'If this person sent me a first message', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}), // not-yet (if she did not yet send me a message within a certain time-period), no (if she did not send me a first message within a certain timeperiod after being matched), yes (if she did send me a first message within a certain time-period)
         new DataField('Match-responded', 'If this person responded to my first message', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Conversation-exists', 'If this person sent at least one message in between my first 3 messages', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
