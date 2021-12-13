@@ -1,5 +1,8 @@
 import { resolve } from "path";
 import { datingAppController } from "src/content/interfaces/controllers/datingAppController.interface";
+import { ParsedResultMatch } from "src/content/interfaces/controllers/ParsedResultMatch.interface";
+import { ParsedResultMessages } from "src/content/interfaces/http-requests/MessagesListTinder.interface";
+import { Match, MatchListTinderAPI } from "src/content/interfaces/http-requests/MatchesListTinder.interface";
 import { RequestHandler } from "src/content/interfaces/http-requests/RequestHandler.interface";
 import { Matches } from "src/content/interfaces/tinder_api/matches.interface";
 import { RequestHandlerTinder } from "../http-requests/requestHandlerTinder";
@@ -26,12 +29,14 @@ export class TinderController implements datingAppController {
                 if (this.hasCredentials) {
 
                     //todo: test to see if auth token works by using a simple request first?
-                    this.requestHandler = new RequestHandlerTinder(this.xAuthToken);
+                    this.requestHandler = new RequestHandlerTinder();
 
                     // TODO: 2. Gather data (by api's OR (less preferably) DOM)
                     this.getDataByAPI(this.requestHandler);
 
-                    //TODO: Inplement add tinder UI support overlay 
+                    //TODO: 3. Extract data & add it to dataRecords
+
+                    //TODO: 4 Inplement add tinder UI support overlay 
                     // (e.g. add icon/color to match who hasn't replied in a week)
                     // export retrieved data to csv/json?
                     
@@ -83,70 +88,91 @@ export class TinderController implements datingAppController {
         });
     }
 
-    public getDataByAPI(requestHandler: RequestHandler):void {
+    public getDataByAPI(requestHandler: RequestHandlerTinder):void {
         //todo: make seperate out logic in different methods because whilst 'getData' may be generic, getting it will differ for each supported app.
         console.log(`Getting tinder data`);
 
         if (requestHandler) {
-
-            /*
-            ATTEMPT recursive
-            */
-
             // eslint-disable-next-line @typescript-eslint/ban-types
-            const jack = function(fn:Function, times:number) {
-                console.log(`De functie die ik mee krijg om uit te voeren is: ${fn}`);
+            const getMatches = (fn:Function) => {
 
-                return new Promise(function(resolve, reject){
-                    let error:Error;
-                    const results:any[] = [];
+                return new Promise<ParsedResultMatch[]>((resolve, reject) =>{
+                    const results:ParsedResultMatch[] = [];
 
-                    const attempt = function(next_page_token?:string) {
+                    const attempt = (next_page_token?:string) => {
                         next_page_token = next_page_token ? next_page_token : '';
 
-                        console.log(`Dit is poging: ${times}`);
-                        if (times === 0) {
-                            reject(error);
-                        } else {
-                            fn(next_page_token).then((result: any)=>{
-                                //todo: if result contains property to recur
-                                console.log(`Resultaat jack (en next page token: ${next_page_token}) is:`);
-                                console.dir(result);
+                            fn(this.xAuthToken, next_page_token)
+                            .then((parsedResult: MatchListTinderAPI)=>{
+                                if(parsedResult?.data?.matches){
+                                    // results = [...results, ...parsedResult.data.matches];
 
-
-                                results.push(result);
-                                if(result.data.next_page_token){
-                                    // eslint-disable-next-line no-debugger
-                                    debugger;
-                                    attempt(result.data.next_page_token);
-                                    times = times-1;
+                                    parsedResult?.data?.matches.forEach((match: Match)=>{
+                                        results.push(
+                                            {
+                                            match: match,
+                                            matchMessages: []
+                                        }
+                                        );
+                                    });
+                                }
+                                
+                                if(parsedResult.data.next_page_token){
+                                    attempt(parsedResult.data.next_page_token);
                                 }else{
-                                    // eslint-disable-next-line no-debugger
-                                    debugger;
                                     resolve(results);
                                 }
-
                             })
                             .catch(function(e:Error){
-                                    //times--;
-                                    console.log(`Error jack is:`);
+                                    console.log(`Error retrieving matches:`);
                                     console.dir(e);
                                     const error = e;
                                     reject(error);
-                                    //setTimeout(function(){attempt()}, delay);
                                 });
-                        }
+                        
                     };
                     attempt();
-                }).then((resultaten)=>{
-                    // eslint-disable-next-line no-debugger
-                    debugger;
-                    console.dir(resultaten);
-                    });
+                })
             };
-            const test:string|null = localStorage.getItem('TinderWeb/APIToken') ? localStorage.getItem('TinderWeb/APIToken') : '';
-            const ding = new RequestHandlerTinder(<string>test);
-            jack(ding.getTinderMatches, 5);
+            getMatches(requestHandler.getMatches).then((matchList:ParsedResultMatch[])=>{
+                // eslint-disable-next-line no-debugger
+                // debugger;
+                // console.dir(matchList);
+
+                const test: any[] = [];
+
+                matchList.forEach((resultMatch, index, matchList)=>{
+                    // console.log(`Match name: ${match.person.name} en match id: ${match.id}`);
+                    if(index === 172){
+                        // TEMP: only set above check to 172 because i don't want to get messages for every match just yet!
+                        // console.log(`oh and the matchList is:`);
+                        console.dir(matchList);
+
+                        requestHandler.getMessagesFromMatch(this.xAuthToken, resultMatch.match.id)
+                        .then((messages:ParsedResultMessages)=>{
+                            debugger;
+                            matchList[index].matchMessages = messages.data.messages;
+                            // debugger;
+
+                            //TODO: Make recursive getting the messages
+                        });
+                    }
+
+                    if(index < 10){
+                        test.push(requestHandler.getMessagesFromMatch(this.xAuthToken, resultMatch.match.id));
+                        Promise.allSettled(test).then((retrievedValues:PromiseSettledResult<ParsedResultMessages>[])=>{
+                            console.log(`this only fires once right? Value of retrievedValues below`);
+                            retrievedValues.forEach((retrievedValue)=>{
+                                console.log(retrievedValue.status)
+                            })
+                            console.log(`this only fired once right?`);
+                        });
+                    }
+
+
+                });
+
+            });
             
             //note: track outgoing calls by this structure:
             // https://api.gotinder.com/{like|pass}/{_id}
@@ -171,6 +197,17 @@ export class TinderController implements datingAppController {
             4. on trigger; get matches, remove old currentMatches from new Matches list; only 1 match should remain, check if true otherwise throw big error & retry after 1 sec?
             5. check if match difference (which should be 1 match; our newest match); matches the name & age & evt. photo url
             6. get person info (tinder id etc.) on the match
+            */
+
+            // NOTE: Tinder workings;
+            /* 
+            There is a https://api.gotinder.com/v2/recs/core?locale=nl request which gives you 25 profile recommendations at a time, which contains for each user the user object which contains the id's, name, age, birthdate, picture etc.
+            maybe this info would be handy to log/record as well?
+            e.g.how many user recommendations i get which;
+            1. have profile text
+            2. are verified
+            3. more???
+            4. also contains pics,.. so in theory could build my own tinder app UI
             */
 
         }else{
