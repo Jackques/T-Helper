@@ -6,6 +6,11 @@ import { Matches } from  '../../interfaces/tinder_api/matches.interface';
 
 export class RequestHandlerTinder implements RequestHandler {
 
+    private getRandomCoupleHunderdMS():number{
+        // for some reason,.. private classes dont work?
+        return Math.floor(Math.random() * 100)+100;
+    }
+
     public async getMatches(auth_token: string, next_page_token_num?:string):Promise<MatchListTinderAPI>{
         console.dir(`ik ga tindermatches ophalen, oh en de nextpagetokenis: ${next_page_token_num}`);
         const next_page_token = next_page_token_num ? '&page_token='+next_page_token_num : '';
@@ -19,28 +24,32 @@ export class RequestHandlerTinder implements RequestHandler {
         const getMatches = new Promise<MatchListTinderAPI>((resolve, reject) => {
             // NOTE: Tinder gives you the 'next page of results' by providing the "next_page_token" provided with the previous request response if present
             // note 2: "message=0" if no messages have been exchanged yet, "message=1" if messages have been exchanged yet
-            fetch(`https://api.gotinder.com/v2/matches?locale=nl&count=100${next_page_token}`, {
-                method: 'GET',    
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Auth-Token': auth_token
-                    }
-            })
-            .then(result => {
-                return result.json() 
-                // the result of the fetch is a promise, but calling .json on this result also returns a promise!
-                // the first .then return the json representation of the result, which is also a promise..
-            }) 
-            .catch(error => {
-                console.log(`tindermatches error! Error is:`);
-                console.dir(error);
-                reject(error);
-            })
-            .then(resultJSON => {
-                // console.log(`tindermatches JSON result is: ${resultJSON}`);
-                resolve(resultJSON);
-            });
+            const ms = Math.floor(Math.random() * 100)+100;
+            setTimeout(() => {
+                console.log(`I delayed at: ${ms}`);
+                fetch(`https://api.gotinder.com/v2/matches?locale=nl&count=100${next_page_token}`, {
+                    method: 'GET',    
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Auth-Token': auth_token
+                        }
+                })
+                .then(result => {
+                    return result.json() 
+                    // the result of the fetch is a promise, but calling .json on this result also returns a promise!
+                    // the first .then return the json representation of the result, which is also a promise..
+                }) 
+                .catch(error => {
+                    console.log(`tindermatches error! Error is:`);
+                    console.dir(error);
+                    reject(error);
+                })
+                .then(resultJSON => {
+                    // console.log(`tindermatches JSON result is: ${resultJSON}`);
+                    resolve(resultJSON);
+                });
+            }, ms);
         });
         return getMatches;
     }
@@ -52,30 +61,34 @@ export class RequestHandlerTinder implements RequestHandler {
 
         // const getMatchMessages = new Promise<ParsedResultMessages>((resolve, reject) => {
         const getMatchMessages = new Promise<string>((resolve, reject) => {
-            //https://api.gotinder.com/v2/matches/528ce2770640a14b0f00007c601a943026064201006f6133/messages?locale=nl&count=100&page_token=MjAyMS0wNi0wNlQxOTo0Nzo0Ni4xMzJa
-            fetch(`https://api.gotinder.com/v2/matches/${match_id}/messages?locale=nl&count=100${next_page_token}`, {
-                method: 'GET',    
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Auth-Token': auth_token
-                    }
-            })
-            .then(result => {
-                console.log('2b');
-                return result.json() 
-            })
-            .catch(error => {
-                console.log(`tindermatchmessage error! Error is:`);
-                console.dir(error);
-                reject(error);
-            })
-            .then(resultJSON => {
-                console.log('2c');
-                console.log(`tindermatch message JSON result is:`);
-                console.dir(resultJSON);
-                resolve(resultJSON);
-            });
+            const ms = Math.floor(Math.random() * 100)+100;
+            setTimeout(() => {
+                console.log(`I delayed at: ${ms}`);
+                //https://api.gotinder.com/v2/matches/528ce2770640a14b0f00007c601a943026064201006f6133/messages?locale=nl&count=100&page_token=MjAyMS0wNi0wNlQxOTo0Nzo0Ni4xMzJa
+                fetch(`https://api.gotinder.com/v2/matches/${match_id}/messages?locale=nl&count=100${next_page_token}`, {
+                    method: 'GET',    
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Auth-Token': auth_token
+                        }
+                })
+                .then(result => {
+                    console.log('2b');
+                    return result.json() 
+                })
+                .catch(error => {
+                    console.log(`tindermatchmessage error! Error is:`);
+                    console.dir(error);
+                    reject(error);
+                })
+                .then(resultJSON => {
+                    console.log('2c');
+                    console.log(`tindermatch message JSON result is:`);
+                    console.dir(resultJSON);
+                    resolve(resultJSON);
+                });
+            }, ms);
         });
         return getMatchMessages;
 
