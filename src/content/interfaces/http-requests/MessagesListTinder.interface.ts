@@ -3,9 +3,9 @@ export interface ParsedResultMessages {
           "status": number
         },
         "data": {
-          "messages": Message[]
-        },
-        "next_page_token": string
+          "messages": Message[],
+          "next_page_token": string
+        }
 }
 export interface Message {
     "_id": string,
