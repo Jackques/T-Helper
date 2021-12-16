@@ -1,7 +1,7 @@
 import { resolve } from "path";
 import { datingAppController } from "src/content/interfaces/controllers/datingAppController.interface";
 import { ParsedResultMatch } from "src/content/interfaces/controllers/ParsedResultMatch.interface";
-import { ParsedResultMessages } from "src/content/interfaces/http-requests/MessagesListTinder.interface";
+import { Message, ParsedResultMessages } from "src/content/interfaces/http-requests/MessagesListTinder.interface";
 import { Match, MatchListTinderAPI } from "src/content/interfaces/http-requests/MatchesListTinder.interface";
 import { RequestHandler } from "src/content/interfaces/http-requests/RequestHandler.interface";
 import { Matches } from "src/content/interfaces/tinder_api/matches.interface";
@@ -144,42 +144,104 @@ export class TinderController implements datingAppController {
                 })
             };
             getMatches(requestHandler.getMatches).then((matchList:ParsedResultMatch[])=>{
-                // eslint-disable-next-line no-debugger
-                // debugger;
-                // console.dir(matchList);
 
-                const test: any[] = [];
+                // const test: any[] = [];
 
-                matchList.forEach((resultMatch, index, matchList)=>{
-                    // console.log(`Match name: ${match.person.name} en match id: ${match.id}`);
-                    if(index === 172){
-                        // TEMP: only set above check to 172 because i don't want to get messages for every match just yet!
-                        // console.log(`oh and the matchList is:`);
-                        console.dir(matchList);
+                // matchList.forEach((resultMatch, index, matchList)=>{
+                //     // console.log(`Match name: ${match.person.name} en match id: ${match.id}`);
+                //     if(index === 172){
+                //         // TEMP: only set above check to 172 because i don't want to get messages for every match just yet!
+                //         // console.log(`oh and the matchList is:`);
+                //         console.dir(matchList);
 
-                        requestHandler.getMessagesFromMatch(this.xAuthToken, resultMatch.match.id)
-                        .then((messages:ParsedResultMessages)=>{
-                            debugger;
-                            matchList[index].matchMessages = messages.data.messages;
-                            // debugger;
+                //         requestHandler.getMessagesFromMatch(this.xAuthToken, resultMatch.match.id)
+                //         .then((messages:ParsedResultMessages)=>{
+                //             // debugger;
+                //             matchList[index].matchMessages = messages.data.messages;
+                //             // debugger;
+                //             console.log(`No 172 matchMessages are: `);
+                //             console.dir(matchList[index].matchMessages);
 
-                            //TODO: Make recursive getting the messages
-                        });
-                    }
+                //             //TODO: Make recursive getting the messages
+                //         });
+                //     }
 
-                    if(index < 10){
-                        test.push(requestHandler.getMessagesFromMatch(this.xAuthToken, resultMatch.match.id));
-                        Promise.allSettled(test).then((retrievedValues:PromiseSettledResult<ParsedResultMessages>[])=>{
-                            console.log(`this only fires once right? Value of retrievedValues below`);
-                            retrievedValues.forEach((retrievedValue)=>{
-                                console.log(retrievedValue.status)
+                //     if(index < 10){
+                //         test.push(requestHandler.getMessagesFromMatch(this.xAuthToken, resultMatch.match.id));
+                //         Promise.allSettled(test).then((retrievedValues:PromiseSettledResult<ParsedResultMessages>[])=>{
+                //             console.log(`this only fires once right? Value of retrievedValues below`);
+                //             retrievedValues.forEach((retrievedValue)=>{
+                //                 console.log(retrievedValue.status)
+                //             })
+                //             console.log(`this only fired once right?`);
+                //         });
+                //     }
+                // });
+
+
+                const getMatchesMessages = async (fn:Function, id:string) => {
+                    console.log('START');
+                    console.log(1);
+
+
+                    return await new Promise<Message[]>((resolve, reject) =>{
+                        console.log(2);
+                        let resultsMessages:Message[] = [];
+                        const attempt = async (next_page_token?:string) => {
+                            next_page_token = next_page_token ? next_page_token : '';
+                            
+                            await fn(this.xAuthToken, id, next_page_token)
+                            .then(async (messages: ParsedResultMessages)=>{
+                                console.log(3);
+                                console.log('END');
+                                //todo: add messages to the matchMessages for this person
+                                // return resolve('duck');
+
+                                resultsMessages = [...resultsMessages, ...messages.data.messages]
+                                if(messages.data.next_page_token){
+                                    await attempt(messages.data.next_page_token);
+                                }else{
+                                    return resolve(resultsMessages);
+                                }
                             })
-                            console.log(`this only fired once right?`);
-                        });
+                            .catch((e: Error)=>{
+                                console.log(4);
+                                console.log('END');
+                                return resolve([]);
+                                console.log(`Error retrieving match messages:`);
+                                console.dir(e);
+                                const error = e;
+                                reject(error);
+                            })
+                        };
+                        attempt();
+                    });
+
+                
+
+                };
+                async function test(){
+                    for (let i = 0; i < matchList.length; i++) {
+                        matchList[i].matchMessages = await getMatchesMessages(requestHandler.getMessagesFromMatch, matchList[i].match.id)
+                        if(i > 25){
+                            console.log('CONGRATZ you reached the end!');
+                            // eslint-disable-next-line no-debugger
+                            debugger;
+                        }
                     }
+                }
+                test();
 
-
-                });
+                // async function getMatchMessages(matchList: ParsedResultMatch[]){
+                //     for (let i=0; i < matchList.length; i++) {
+                //         matchList[i].matchMessages = await matchList[i].matchMessages();
+                //         console.log('succes!');
+                //         console.dir(matchList[i].matchMessages);
+                //         console.log('--------------------------------------------------');
+                //     }
+                // }
+                // getMatchMessages(matchList);
+                
 
             });
             
@@ -223,11 +285,6 @@ export class TinderController implements datingAppController {
             console.error(`The requestHandler was not set`);
             return;
         }
-    }
-
-    private getMatchesMessages() {
-        //TODO: Add to getTinderData method
-        //TODO: Inplement method
     }
 
 }
