@@ -44,6 +44,15 @@ export class TinderController implements datingAppController {
                     // Determine in chatmode or swipemode?
                     // Add UI helper?
                     this.setSwipeHelperOnScreen();
+
+                    // HINT: In order to scroll to the very bottom of the messageList in tinder;
+                    /*
+                    Use 
+                    $0.children[$0.children.length-1].scrollIntoView()
+                    and a few ms after use;
+                    $0.scrollIntoView()
+                    .. and repeat again, again and again untill you have the full list
+                    */
                     
                 } else {
                     console.error(`Could not get credentials for tinder`);
