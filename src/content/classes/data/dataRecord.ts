@@ -7,11 +7,13 @@ import { dataCheckReactionSpeed } from "./dataCheckLogic/dataCheckReactionSpeed"
 import { dataCheckReminders} from "./dataCheckLogic/dataCheckReminders";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { PropertiesChecker } from "../util/PropertiesChecker";
+import { dataCheckSystemId } from "./dataCheckLogic/dataCheckSystemId";
 
 export class DataRecord {
         /*
         Output:
 
+        System-no                   - {appType: 'xxxx', id: 'x6x'}
         No                          - int
         Datum-liket                 - string datetime
         Naam                        - string any
@@ -39,6 +41,7 @@ export class DataRecord {
     //todo: maybe needs a systemNo or something? Just like No but specifically for the system
     private usedDataFields:DataField[] = [
             //systemmatchid? tinder provides me with a personid, match id etc..
+            new DataField('System-no', 'The number the system of the datingapp assigned this person to', true, false, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckSystemId()}),
         new DataField('No', 'The number of the person', true, false, false, true, true, true, {baseType: 'number', customCheckClass: null}),
             // need to keep track of this myself, but since I'M swiping/liking this will not be a problem 
             new DataField('Date-liked', 'The datetime when I gave the like/sent my first message', true, false, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckDate()}),
