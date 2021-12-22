@@ -4,6 +4,6 @@ import { RequestHandler } from "../http-requests/RequestHandler.interface";
 export interface datingAppController {
     listEndpoints: string[],
     getCredentials: () => boolean,
-    getDataByAPI: (requestHandler: RequestHandlerTinder) => void,
+    getDataByAPI: (requestHandler: RequestHandlerTinder, useMock: boolean) => void,
     setSwipeHelperOnScreen: () => void,
 }

@@ -31,7 +31,7 @@ export class Main {
                         this.dataTable.addDataRecord(msg);
                     });
 
-                    this.datingAppController = this.initAppController(this.datingAppType);
+                    this.datingAppController = this.initAppController(this.datingAppType, this.dataTable);
                 }
             }
             });
@@ -69,10 +69,10 @@ export class Main {
         }
     }
 
-    private initAppController(appType: string){
+    private initAppController(appType: string, dataTable: dataTable){
         switch(appType){
             case "tinder":
-                return new TinderController('api');
+                return new TinderController('api', dataTable);
             case "happn":
                 alert('Happn is not yet supported');
                 return undefined;

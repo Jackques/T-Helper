@@ -8,9 +8,12 @@ import { Matches } from "src/content/interfaces/tinder_api/matches.interface";
 import { RequestHandlerTinder } from "../http-requests/requestHandlerTinder";
 import { Person } from "../tinder/Person";
 import { UIController } from "../tinder/UIController";
+// import { matchesMock } from "src/content/classes/mocks/matchesMock";
+import { matchMockTwo } from "../mocks/matchesMockTwo";
+import { dataTable } from '../data/dataTable';
 
 export class TinderController implements datingAppController {
-    private nameController = 'TinderController';
+    private nameController = 'Tinder';
     listEndpoints = ['a', 'b', 'c'];
     hasCredentials = false;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
@@ -19,10 +22,13 @@ export class TinderController implements datingAppController {
     private requestHandler!: RequestHandlerTinder; // 'definite assignment assertion proerty (!) added here, is this a good practice?'
     private UIController!: UIController;
     public matches: Person[] = [];
+    private dataTable: dataTable;
 
-    constructor(dataRetrievalMethod: 'api' | 'dom' | null) {
+    constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: dataTable) {
 
         this.dataRetrievalMethod = dataRetrievalMethod;
+        this.dataTable = dataTable;
+
         if (this.dataRetrievalMethod === 'api' || this.dataRetrievalMethod === 'dom') {
             if (this.dataRetrievalMethod === 'api') {
                 this.hasCredentials = this.getCredentials();
@@ -31,10 +37,24 @@ export class TinderController implements datingAppController {
                     //todo: test to see if auth token works by using a simple request first?
                     this.requestHandler = new RequestHandlerTinder();
 
-                    // TODO: 2. Gather data (by api's OR (less preferably) DOM)
-                    this.getDataByAPI(this.requestHandler);
+                    // Gather data (by api's OR (less preferably) DOM)
+                    this.getDataByAPI(this.requestHandler, true).then((matches: ParsedResultMatch[] | undefined)=>{
+                        
+                        if(matches === undefined){
+                            console.error(`Could not retrieve matches`);
+                        }
+                        
+                        console.dir(matches);
+                        // eslint-disable-next-line no-debugger
+                        debugger;
 
-                    //TODO: 3. Extract data & add it to dataRecords
+                        //TODO: 3. Extract data & add it to dataRecords
+                        matches?.forEach((match: ParsedResultMatch)=>{
+                            const matchRecordIndex: number | null = dataTable.getRecordIndexBySystemId(match.match.id, this.nameController);
+                        });
+                    });
+
+                    
 
                     //TODO: 4 Inplement add tinder UI support overlay 
                     // (e.g. add icon/color to match who hasn't replied in a week)
@@ -97,9 +117,18 @@ export class TinderController implements datingAppController {
         });
     }
 
-    public getDataByAPI(requestHandler: RequestHandlerTinder):void {
+    public getDataByAPI(requestHandler: RequestHandlerTinder, useMock: boolean):Promise<ParsedResultMatch[] | undefined> {
         //todo: make seperate out logic in different methods because whilst 'getData' may be generic, getting it will differ for each supported app.
         console.log(`Getting tinder data`);
+
+        console.log(matchMockTwo);
+
+        if(useMock){
+            return new Promise<ParsedResultMatch[]>((resolve, reject)=>{
+                const test: ParsedResultMatch[] = <ParsedResultMatch[]><unknown>matchMockTwo;
+                resolve(test);
+            });
+        }
 
         if (requestHandler) {
             // eslint-disable-next-line @typescript-eslint/ban-types
@@ -143,46 +172,12 @@ export class TinderController implements datingAppController {
                     attempt();
                 })
             };
-            getMatches(requestHandler.getMatches).then((matchList:ParsedResultMatch[])=>{
+            return getMatches(requestHandler.getMatches).then((matchList:ParsedResultMatch[])=>{
 
-                // const test: any[] = [];
-
-                // matchList.forEach((resultMatch, index, matchList)=>{
-                //     // console.log(`Match name: ${match.person.name} en match id: ${match.id}`);
-                //     if(index === 172){
-                //         // TEMP: only set above check to 172 because i don't want to get messages for every match just yet!
-                //         // console.log(`oh and the matchList is:`);
-                //         console.dir(matchList);
-
-                //         requestHandler.getMessagesFromMatch(this.xAuthToken, resultMatch.match.id)
-                //         .then((messages:ParsedResultMessages)=>{
-                //             // debugger;
-                //             matchList[index].matchMessages = messages.data.messages;
-                //             // debugger;
-                //             console.log(`No 172 matchMessages are: `);
-                //             console.dir(matchList[index].matchMessages);
-
-                //             //TODO: Make recursive getting the messages
-                //         });
-                //     }
-
-                //     if(index < 10){
-                //         test.push(requestHandler.getMessagesFromMatch(this.xAuthToken, resultMatch.match.id));
-                //         Promise.allSettled(test).then((retrievedValues:PromiseSettledResult<ParsedResultMessages>[])=>{
-                //             console.log(`this only fires once right? Value of retrievedValues below`);
-                //             retrievedValues.forEach((retrievedValue)=>{
-                //                 console.log(retrievedValue.status)
-                //             })
-                //             console.log(`this only fired once right?`);
-                //         });
-                //     }
-                // });
-
-
+                // eslint-disable-next-line @typescript-eslint/ban-types
                 const getMatchesMessages = async (fn:Function, id:string) => {
                     console.log('START');
                     console.log(1);
-
 
                     return await new Promise<Message[]>((resolve, reject) =>{
                         console.log(2);
@@ -217,32 +212,24 @@ export class TinderController implements datingAppController {
                         attempt();
                     });
 
-                
-
                 };
-                async function test(){
+                async function getMessagesPerMatchesAsynchronously(){
+                    
+                    // used a standard for loop to ensure synchronous looping
                     for (let i = 0; i < matchList.length; i++) {
                         matchList[i].matchMessages = await getMatchesMessages(requestHandler.getMessagesFromMatch, matchList[i].match.id)
+                        
+                        //NOTE: Set limit to get messages from the first 25 matches ONLY! This is done to reduce time to load
                         if(i > 25){
                             console.log('CONGRATZ you reached the end!');
                             // eslint-disable-next-line no-debugger
-                            debugger;
+                            // debugger;
+
+                            return matchList;
                         }
                     }
                 }
-                test();
-
-                // async function getMatchMessages(matchList: ParsedResultMatch[]){
-                //     for (let i=0; i < matchList.length; i++) {
-                //         matchList[i].matchMessages = await matchList[i].matchMessages();
-                //         console.log('succes!');
-                //         console.dir(matchList[i].matchMessages);
-                //         console.log('--------------------------------------------------');
-                //     }
-                // }
-                // getMatchMessages(matchList);
-                
-
+                return getMessagesPerMatchesAsynchronously()
             });
             
             //note: track outgoing calls by this structure:
