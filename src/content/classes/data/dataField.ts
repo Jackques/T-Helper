@@ -171,10 +171,40 @@ export class DataField {
 
 }
 
+export class DataFieldSystemNo extends DataField {
+
+    constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    }
+
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
+        console.log('uses getBaseValue from extended DataFieldSystemNo');
+
+        const appType: string | null = optionalArgumentsObject?.hasOwnProperty('appType') ? optionalArgumentsObject.appType as string : null;
+        const valueObject: Record<string, string> = this.dataEntry as Record<string, string>;
+
+        if(Object.prototype.hasOwnProperty.call(valueObject, 'appType') && valueObject['appType'] === appType){
+            return this.dataEntry;
+        }else{
+            return null;
+        }
+    }
+
+}
+
 export class DataFieldReactionSpeedList extends DataField {
 
     constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
         super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    }
+
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
+        console.log('uses getBaseValue from extended DataFieldReactionSpeedList');
+        if(this.dataEntryList.length > 0){
+            return this.dataEntryList;
+        } else {
+            return this.dataEntry;
+        }
     }
 }
 
@@ -183,12 +213,26 @@ export class DataFieldReminderList extends DataField {
     constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
         super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
+
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
+        console.log('uses getBaseValue from extended DataFieldReminderList');
+        if(this.dataEntryList.length > 0){
+            return this.dataEntryList;
+        } else {
+            return this.dataEntry;
+        }
+    }
 }
 
 export class DataFieldGhostsList extends DataField {
     
     constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
         super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    }
+
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
+        console.log('uses getBaseValue from extended DataFieldGhostsList');
+        return this.dataEntry;
     }
 
     public updateMoment(updatedTime: string, updatedStatus: GhostStatus):void {
