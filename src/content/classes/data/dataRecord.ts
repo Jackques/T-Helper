@@ -105,6 +105,17 @@ export class DataRecord {
         });
     }
 
+    private getValueOfDataFieldByTitle(title: string, optionalArgumentsObject?: Record<string, unknown>):unknown | null {
+        // check if 'system-no' exists
+        const indexDataField:number = this.getIndexOfDataFieldByTitle(title);
+
+        if(indexDataField >= 0){
+            return this.usedDataFields[indexDataField].getValue(optionalArgumentsObject);
+        }else{
+            console.error(`Data field with title: "${title}" not found`);
+        }
+    }
+
     /*  ZET HIER WELKE TAGS IK MOMENTEEL WEL GA ONDERSTEUNEN EN WELKE NIET! BEGIN KLEIN!
     'IsFake', // because maybe I want to keep track of how many fake profiles I encounter on any given app
 
