@@ -5,15 +5,14 @@ export class dataTable {
     
     private dataRecords: DataRecord[] = [];
 
-    public getRecordIndexBySystemId(systemId: string, appType: string):number | null {
-        // throw new Error("Method not implemented.");
-        this.dataRecords.find((dataRecord: DataRecord)=>{
+    public getRecordIndexBySystemId(systemId: string, appType: string):number {
+        return this.dataRecords.findIndex((dataRecord: DataRecord)=>{
             //todo:  CONTINUE INPLEMENTING HERE
-            console.log('DATA RECORD: ');
-            console.log(dataRecord.getRecordPersonSystemId());
+            // console.log('DATA RECORD: ');
+            // console.log(dataRecord.getRecordPersonSystemId(appType));
 
+            return dataRecord.getRecordPersonSystemId(appType) === systemId
         });
-        return null;
     }
 
     public addDataRecord(dataRecord: DataRecordValues[]): boolean {

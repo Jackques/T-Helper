@@ -91,9 +91,9 @@ export class DataRecord {
         }
     }
 
-    public getRecordPersonSystemId(): string {
+    public getRecordPersonSystemId(appType: string): string {
         const labelPersonSystemid = 'System-no';
-        const valueDataField:unknown | null = this.getValueOfDataFieldByTitle(labelPersonSystemid, {'appType': 'tinder'});
+        const valueDataField:unknown | null = this.getValueOfDataFieldByTitle(labelPersonSystemid, {'appType': appType});
         if(valueDataField !== null && typeof valueDataField === 'object'){
             for(const [key, value] of Object.entries(valueDataField)){
                 if(key === 'id'){
