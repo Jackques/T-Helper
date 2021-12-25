@@ -13,8 +13,8 @@ export class DataField {
     public onlyGatherOnce: boolean;
 
     public dataLogic: logicContainer;
-    private dataEntry: unknown;
-    private dataEntryList: Record<string, unknown>[] = [];
+    protected dataEntry: unknown;
+    protected dataEntryList: Record<string, unknown>[] = [];
 
     private _uniqueIdentifier:uniqueEntryChecker = new uniqueEntryChecker();
 
@@ -29,6 +29,15 @@ export class DataField {
         this.onlyGatherOnce = onlyGatherOnce;
 
         this.dataLogic = dataLogic;
+    }
+
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
+        console.log('uses getBaseValue from datafield');
+        if(this.dataEntryList.length > 0){
+            return this.dataEntryList;
+        }else{
+            return this.dataEntry;
+        }
     }
 
     public addDataEntry(dataEntry:unknown):void {
