@@ -50,7 +50,24 @@ export class TinderController implements datingAppController {
 
                         //TODO: 3. Extract data & add it to dataRecords
                         matches?.forEach((match: ParsedResultMatch)=>{
+                            // get record index by systemid for each match
+                            //TODO: TEST: SHOULD RETURN RECORDINDEX FOR FOUND MATCH (MOCK THIS)
                             const matchRecordIndex: number | null = dataTable.getRecordIndexBySystemId(match.match.id, this.nameController);
+
+                            // eslint-disable-next-line no-debugger
+                            debugger;
+
+                            //TODO: if match doesnt exist, create new data record
+                            if(matchRecordIndex < 0){
+                                dataTable.addDataRecord([{label: 'title', value: match.match.person.name}]);
+                            }
+
+                            //TODO: (seperate method) if match does exist, add data to existing record by retrieved index
+                            //TODO: get from record for each data field;
+                            // if: multipleDataEntry (if yes, then i can add multiple values)
+                            // if: autoGather (if yes, then new data should be added if data does not already exist)
+                            // if: onlyGatherOnce (if yes, if no current data available,.. add data)
+                            // if: mustBeUnique (keep track of all values entered for this field name and check if the same value is not added twice (e.g. id))
                         });
                     });
 
