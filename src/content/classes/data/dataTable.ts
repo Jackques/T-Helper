@@ -2,7 +2,19 @@ import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.i
 import { DataRecord } from "./dataRecord";
 
 export class dataTable {
+    
     private dataRecords: DataRecord[] = [];
+
+    public getRecordIndexBySystemId(systemId: string, appType: string):number | null {
+        // throw new Error("Method not implemented.");
+        this.dataRecords.find((dataRecord: DataRecord)=>{
+            //todo:  CONTINUE INPLEMENTING HERE
+            console.log('DATA RECORD: ');
+            console.log(dataRecord.getRecordPersonSystemId());
+
+        });
+        return null;
+    }
 
     public addDataRecord(dataRecord: DataRecordValues[]): boolean {
         const newDataRecord = new DataRecord();
@@ -15,7 +27,6 @@ export class dataTable {
 
         console.error('Failed to add data');
         return false;
-
     }
 }
 

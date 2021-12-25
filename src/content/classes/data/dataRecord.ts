@@ -91,6 +91,20 @@ export class DataRecord {
         }
     }
 
+    public getRecordPersonSystemId(): string {
+        const labelPersonSystemid = 'System-no';
+        const valueDataField:unknown | null = this.getValueOfDataFieldByTitle(labelPersonSystemid, {'appType': 'tinder'});
+        if(valueDataField !== null && typeof valueDataField === 'object'){
+            for(const [key, value] of Object.entries(valueDataField)){
+                if(key === 'id'){
+                    return value as string;
+                }
+            }
+            return '';
+        }
+        return '';
+    }
+
     private isAllDataFieldsPresent(dataRecordValueList: DataRecordValues[]):boolean{
         return dataRecordValueList.every((dataRecordValue:DataRecordValues)=>{
             return this.usedDataFields.findIndex((usedDataField:DataField)=>{
