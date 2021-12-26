@@ -27,6 +27,10 @@ export class dataTable {
         console.error('Failed to add data');
         return false;
     }
+
+    public updateDataRecordByIndex(index:number, dataRecord: DataRecordValues[]){
+        this.dataRecords[index].addDataToDataFields(dataRecord);
+    }
 }
 
 /* 
