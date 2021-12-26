@@ -15,7 +15,7 @@ export class dataTable {
         });
     }
 
-    public addDataRecord(dataRecord: DataRecordValues[]): boolean {
+    public addNewDataRecord(dataRecord: DataRecordValues[]): boolean {
         const newDataRecord = new DataRecord();
         const isNewDataRecordValid = newDataRecord.addDataToDataFields(dataRecord);
 

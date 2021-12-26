@@ -28,7 +28,7 @@ export class Main {
 
                     //for every entry i the list received in payload
                     msg.payload.forEach((msg:DataRecordValues[])=>{
-                        this.dataTable.addDataRecord(msg);
+                        this.dataTable.addNewDataRecord(msg);
                     });
 
                     this.datingAppController = this.initAppController(this.datingAppType, this.dataTable);
