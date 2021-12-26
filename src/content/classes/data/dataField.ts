@@ -186,6 +186,10 @@ export class DataFieldSystemNo extends DataField {
         super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
+    public addDataEntry(){
+        //todo: check data by using; this.dataLogic.customCheckClass.isValidEntry
+    }
+
     public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
         console.log('uses getBaseValue from extended DataFieldSystemNo');
 
