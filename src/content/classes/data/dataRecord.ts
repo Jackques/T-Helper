@@ -8,6 +8,7 @@ import { dataCheckReminders} from "./dataCheckLogic/dataCheckReminders";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { PropertiesChecker } from "../util/PropertiesChecker";
 import { dataCheckSystemId } from "./dataCheckLogic/dataCheckSystemId";
+import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 
 export class DataRecord {
         /*
@@ -147,9 +148,16 @@ export class DataRecord {
 //todo: why not simply return the list above as is? instead of only trying to return the checkDataMethod. 
 //todo: maybe it would be better to put all the check logic inside the DataField classes and subclasses anyway?
     
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    public getDataFieldTypes(): {'label': string, 'checkDataMethod': Function}[] {
-        return this.usedDataFields.map((dataField: DataField) => {
+    public getDataFieldTypes(allowedFieldsOnly?: boolean): DataFieldTypes[] {
+        return this.usedDataFields.filter((dataField: DataField) => {
+            if(allowedFieldsOnly){
+                if(dataField.updateValueAllowed()){
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        }).map((dataField: DataField) => {
             return { 'label': dataField.title, 'checkDataMethod': dataField.isDataEntryValid };
         });
     }

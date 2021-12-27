@@ -1,9 +1,14 @@
+import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataRecord } from "./dataRecord";
 
 export class dataTable {
     
     private dataRecords: DataRecord[] = [];
+
+    public getAllowedFieldsByRecordIndex(index: number): DataFieldTypes[] {
+        return this.dataRecords[index].getDataFieldTypes(true);
+    }
 
     public getRecordIndexBySystemId(systemId: string, appType: string):number {
         return this.dataRecords.findIndex((dataRecord: DataRecord)=>{
