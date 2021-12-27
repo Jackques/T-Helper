@@ -44,8 +44,12 @@ export interface Match {
     "is_opener": boolean,
     "person": {
       "_id": string,
+      "badges"?: Badges[],
+      "bio"?: string,
       "birth_date": string, //datetime string
       "gender": number, //(1 for women, 0 for men?)
+      "hide_age"?: boolean,
+      "hide_distance"?: boolean,
       "name": string,
       "ping_time": string,
       "photos": [
@@ -75,4 +79,8 @@ export interface Match {
       "enabled": boolean
     },
     "is_archived": boolean
+  }
+
+  export interface Badges {
+    "type": string
   }
