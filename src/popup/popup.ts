@@ -4,6 +4,7 @@ import { DataRecord } from '../content/classes/data/dataRecord';
 import { PropertiesChecker } from "../content/classes/util/PropertiesChecker";
 import { portMessage } from "src/content/interfaces/portMessage.interface";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
+import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 
 document.addEventListener('DOMContentLoaded', function () {
     const reader = new FileReader();
@@ -11,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const propertiesChecker:PropertiesChecker = new PropertiesChecker();
 
     // eslint-disable-next-line @typescript-eslint/ban-types
-    const dataFieldTypes:{'label': string, 'checkDataMethod': Function}[] = new DataRecord().getDataFieldTypes();
+    const dataFieldTypes:DataFieldTypes[] = new DataRecord().getDataFieldTypes();
     const requiredHeadersList: string[] = dataFieldTypes.map((header) => header.label);
 
     // let inputData: Record<string, string | number | boolean | null | Record<string, string | number | boolean>> = null;
@@ -284,6 +285,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // todo: should probably want to refactor this since popup shouldn't be concerned with interal app data such as DataRecordValues
     function mapResultsArrayToresultDataRecordValues(resultsArray: any[]):DataRecordValues[][]{
         return resultsArray.map((result)=>{
             const newArray = [];
