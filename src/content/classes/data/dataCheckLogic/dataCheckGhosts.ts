@@ -6,11 +6,23 @@ import { dataCheck } from "./dataCheck";
 
 export class dataCheckGhosts extends dataCheck implements validEntry {
 
-    public requiredPropertiesList:requiredProperty[] = [{label: 'number', type: 'number'}, {label: 'timeSinceLastMessageMS', type: 'number'}, {label: 'status', type: 'string'}];
+    public requiredPropertiesList:requiredProperty[] = [
+        {
+            label: 'number', 
+            type: 'number'
+        }, {
+            label: 'timeSinceLastMessageMS', 
+            type: 'number'
+        }, {
+            label: 'status', 
+            type: 'string'
+        }
+    ];
     private _numberOfInstancesList:number[] = [];
 
     public isValidEntry(listEntry: Record<string, unknown>): boolean {
         const objList = this.getListEntryAsObjectList(listEntry);
+        let isPropertiesAndArgumentsValid = false;
 
         if(!objList){
             return false

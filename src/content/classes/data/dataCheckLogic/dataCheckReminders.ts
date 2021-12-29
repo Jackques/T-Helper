@@ -5,7 +5,25 @@ import { dataCheck } from "./dataCheck";
 
 export class dataCheckReminders extends dataCheck implements validEntry  {
 
-    requiredPropertiesList:requiredProperty[] = [{label: 'datetimeMyLastMessage', type: 'string'}, {label: 'datetimeReminderSent', type: 'string'}, {label: 'textContentReminder', type: 'string'}, {label: 'hasGottenReply', type: 'boolean'}];
+    requiredPropertiesList:requiredProperty[] = [
+        {
+            label: 'number', 
+            type: 'number'
+        },
+        {
+            label: 'datetimeMyLastMessage', 
+            type: 'string'
+        }, 
+        {
+            label: 'datetimeReminderSent', 
+            type: 'string'
+        }, {
+            label: 'textContentReminder', 
+            type: 'string'
+        }, {
+            label: 'hasGottenReply', 
+            type: 'boolean'
+        }];
 
     public isValidEntry(listEntry: unknown): boolean {
 

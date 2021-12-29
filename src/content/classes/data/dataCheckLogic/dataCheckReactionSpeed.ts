@@ -5,7 +5,11 @@ import { requiredProperty } from "src/content/interfaces/data/requiredProperty";
 
 export class dataCheckReactionSpeed extends dataCheck implements validEntry {
 
-    requiredPropertiesList:requiredProperty[] = [{label: 'datetimeMyLastMessage', type: 'string'}, {label: 'datetimeTheirResponse', type: 'string'}];
+    requiredPropertiesList:requiredProperty[] = [
+        {label: 'datetimeMyLastMessage', type: 'string'}, 
+        {label: 'datetimeTheirResponse', type: 'string'},
+        {label: 'differenceInMS', type: 'number'}
+    ];
 
     public isValidEntry(listEntry: Record<string, unknown>): boolean {
         const objList = this.getListEntryAsObjectList(listEntry);
