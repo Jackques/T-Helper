@@ -11,4 +11,4 @@ export class dataItemGhost {
     }
 }
 
-export enum GhostStatus { REPLIED = "replied", BLOCKED = "block", ONGOING = "ongoing" }
+export enum GhostStatus { REPLIED = "answered", NOT_REPLIED_TO_REMINDER = "unanswered-to-reminder", NOT_REPLIED = 'unanswered', BLOCKED = "block", }

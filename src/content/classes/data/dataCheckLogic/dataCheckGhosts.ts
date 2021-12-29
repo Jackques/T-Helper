@@ -36,7 +36,7 @@ export class dataCheckGhosts extends dataCheck implements validEntry {
     }
 
     private _isValidStatus(statusEntry: string):boolean {
-        return statusEntry === GhostStatus.BLOCKED || statusEntry === GhostStatus.ONGOING || statusEntry === GhostStatus.REPLIED ? true : false;
+        return statusEntry === GhostStatus.BLOCKED || statusEntry === GhostStatus.NOT_REPLIED || statusEntry === GhostStatus.REPLIED || statusEntry === GhostStatus.NOT_REPLIED_TO_REMINDER ? true : false;
     }
 
     private _isUniqueNumber(no:number):boolean {
