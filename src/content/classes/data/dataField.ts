@@ -40,6 +40,27 @@ export class DataField {
         }
     }
 
+    public hasValue(): boolean {
+        return this.dataEntry || this.dataEntryList.length > 0 ? true : false;
+    }
+    public updateValueAllowed(): boolean {
+        // if has value AND is multipleDataEntry -> can be updated, if has no value -> can be updated.. otherwise NO?
+        // if has value AND is onlyGatherOnce = false -> can be updated, if has no value -> can be updated.. otherwise NO
+        if(!this.hasValue()){
+            return true;
+        }
+
+        if(this.dataEntryList.length > 0 && this.multipleDataEntry){
+            return true;
+        }
+
+        if(this.dataEntry !== undefined && this.onlyGatherOnce){
+            return true;
+        }
+
+        return false;
+    }
+
     public addDataEntry(dataEntry:unknown):void {
         if(!this.isDataEntryValid(dataEntry)){
             //todo: create a notification system whereby me (the user) is notified through UI instead of console
@@ -47,21 +68,16 @@ export class DataField {
             return;
         }
 
-        //console.log(`My (${this.title}) values are now:`);
-
         if(this.dataLogic.baseType === 'list'){
             const isArrayDataEntryList:Record<string, unknown>[] | null = this._getArrayDataEntryList(dataEntry)
 
             if(isArrayDataEntryList !== null){
                 this.dataEntryList = [...this.dataEntryList, ...isArrayDataEntryList];
             }
-            //console.dir(this.dataEntryList)
             
         }else{
             this.dataEntry = dataEntry;
-            //console.dir(this.dataEntry);
         }
-        //console.log(`///////////////////////////////////////`);
         
         // here in this method i do: check if the added data..
         // 1. can be added due to multipleDataEntry setting?
@@ -74,23 +90,38 @@ export class DataField {
             // -> yup, must also be checked for this
     }
 
-    // public isDataEntryValid(dataEntry: unknown): boolean { //because apparantly it cannot find this otherwise
     public isDataEntryValid = (dataEntry: unknown): boolean => {
 
-        if(!this._isBaseTypeSet(this.dataLogic.baseType) || !this._isDataEntryNotEmpty(dataEntry)){
+        if(!this._isBaseTypeSet(this.dataLogic.baseType)){
             return false;
         }
+
+        // if the data entry is allowed to be empty, and IS empty
+        if(this.emptyAllowed && !this._isDataEntryNotEmpty(dataEntry)){
+            // return true because undefined/null is an acceptable value
+            return true;
+        }
+
+        //if the data entry is allowed to be empty, but data entry is not empty
+        // continue with the check
+
+        // if the data entry IS NOT allowed to be empty, but data entry IS empty
+        if(!this.emptyAllowed && !this._isDataEntryNotEmpty(dataEntry)){
+            console.error(`The data entry for  ${this.title} cannot be empty or of a falsy value. Value: (${dataEntry}).`);
+            return false;
+        }
+
+        // if the data entry IS NOT allowed to be empty, but the data entry is not empty
+        // continue with the check
 
         if(this.mustBeUnique && !this._isDataEntryUnique('noDataEntry', dataEntry)){
             console.error(`dataEntry: ${dataEntry} for title: ${this.title} does not have a unique numebr.`)
         }
 
         const typeDataEntry:"string" | "number" | "boolean" | "object" | null = this._getTypeOfValue(dataEntry);
-        //console.log(`dataEntry: ${dataEntry}, type of dataEntry: ${typeDataEntry} and the field is: ${this.title} with required baseType: ${this.dataLogic.baseType}`);
 
         if(this.dataLogic.customCheckClass !== null){
             if(this.dataLogic.customCheckClass.isValidEntry(dataEntry)){
-                //console.log('INPUT ACCEPTED!');
                 return true;
             }
             console.error(`The converted data entry (${dataEntry}) does not satisfy the check method set for ${this.title}`);
@@ -100,21 +131,18 @@ export class DataField {
         switch (this.dataLogic.baseType) {
             case 'string': 
                 if(typeDataEntry === 'string'){
-                    //console.log('INPUT ACCEPTED!');
                     return true;
                 }
                 console.error(`The data entry (${dataEntry}) provided for ${this.title} should be of type ${this.dataLogic.baseType} but was found to be of type ${this._getTypeOfValue(dataEntry)}`);
                 return false;
             case 'boolean': 
                 if(typeDataEntry === 'boolean'){
-                    //console.log('INPUT ACCEPTED!');
                    return true; 
                 }
                 console.error(`The data entry (${dataEntry}) provided for ${this.title} should be of type ${this.dataLogic.baseType} but was found to be of type ${this._getTypeOfValue(dataEntry)}`);
                 return false;
             case 'number': 
                 if(typeDataEntry === 'number'){
-                    //console.log('INPUT ACCEPTED!');
                     return true;
                 }
                 console.error(`The data entry (${dataEntry}) provided for ${this.title} should be of type ${this.dataLogic.baseType} but was found to be of type ${this._getTypeOfValue(dataEntry)}`);
@@ -138,7 +166,6 @@ export class DataField {
 
     private _isDataEntryNotEmpty(dataEntry: unknown){
         if(dataEntry === undefined || dataEntry === null || dataEntry === ""){
-            console.error(`The data entry for  ${this.title} cannot be empty or of a falsy value. Value: (${dataEntry}).`);
             return false;
         }
         return true;
@@ -186,13 +213,7 @@ export class DataFieldSystemNo extends DataField {
         super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
-    public addDataEntry(){
-        //todo: check data by using; this.dataLogic.customCheckClass.isValidEntry
-    }
-
     public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
-        console.log('uses getBaseValue from extended DataFieldSystemNo');
-
         const appType: string | null = optionalArgumentsObject?.hasOwnProperty('appType') ? optionalArgumentsObject.appType as string : null;
         const valueObject: Record<string, string> = this.dataEntry as Record<string, string>;
 
@@ -212,7 +233,6 @@ export class DataFieldReactionSpeedList extends DataField {
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
-        console.log('uses getBaseValue from extended DataFieldReactionSpeedList');
         if(this.dataEntryList.length > 0){
             return this.dataEntryList;
         } else {
@@ -228,7 +248,6 @@ export class DataFieldReminderList extends DataField {
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
-        console.log('uses getBaseValue from extended DataFieldReminderList');
         if(this.dataEntryList.length > 0){
             return this.dataEntryList;
         } else {
@@ -244,7 +263,6 @@ export class DataFieldGhostsList extends DataField {
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
-        console.log('uses getBaseValue from extended DataFieldGhostsList');
         return this.dataEntry;
     }
 
