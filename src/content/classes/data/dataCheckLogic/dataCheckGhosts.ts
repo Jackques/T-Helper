@@ -24,6 +24,7 @@ export class dataCheckGhosts extends dataCheck implements validEntry {
             }
             return false;
         });
+        this.resetUniqueNumber();
     }
 
     public argumentChecker(requiredPropertiesList: requiredProperty[], listEntry: Record<string, unknown>): boolean {
@@ -43,8 +44,13 @@ export class dataCheckGhosts extends dataCheck implements validEntry {
             this._numberOfInstancesList.push(no);
             return true;
         }else{
+            console.error(`Number already exists`);
             return false;
         }
+    }
+
+    public resetUniqueNumber():void{
+        this._numberOfInstancesList = [];
     }
 
 }
