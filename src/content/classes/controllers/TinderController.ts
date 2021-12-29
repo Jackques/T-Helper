@@ -37,6 +37,8 @@ export class TinderController implements datingAppController {
                     //todo: test to see if auth token works by using a simple request first?
                     this.requestHandler = new RequestHandlerTinder();
 
+                    //TODO: For each match (with the corresponding datingapp property in systemId), I should first get THEIR MATCHDATA & MATCHMESSAGES! Loop over it& update the data!
+
                     // Gather data (by api's OR (less preferably) DOM)
                     this.getDataByAPI(this.requestHandler, true).then((matches: ParsedResultMatch[] | undefined)=>{
                         
