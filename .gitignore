@@ -5,3 +5,5 @@ coverage
 .idea/
 
 src/content/classes/mocks/
+
+exampleFiles/
