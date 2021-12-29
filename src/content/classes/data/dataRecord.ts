@@ -42,33 +42,33 @@ export class DataRecord {
     //todo: maybe needs a systemNo or something? Just like No but specifically for the system
     private usedDataFields:DataField[] = [
             //systemmatchid? tinder provides me with a personid, match id etc..
-        new DataFieldSystemNo('System-no', 'The number the system of the datingapp assigned this person to', true, false, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckSystemId()}),
+        new DataFieldSystemNo('System-no', 'The number the system of the datingapp assigned this person to', false, false, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckSystemId()}),
         new DataField('No', 'The number of the person', true, false, false, true, true, true, {baseType: 'number', customCheckClass: null}),
             // need to keep track of this myself, but since I'M swiping/liking this will not be a problem 
             new DataField('Date-liked', 'The datetime when I gave the like/sent my first message', true, false, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckDate()}),
-        new DataField('Name', 'The name of the person', true, false, false, false, true, true, {baseType: 'string', customCheckClass: null}),
-        new DataField('Age', 'The age of the person', false, false, false, false, true, true, {baseType: 'number', customCheckClass: null}), // preferably getting this by birthdate otherwise just the age number is fine too
+        new DataField('Name', 'The name of the person', false, false, false, false, true, true, {baseType: 'string', customCheckClass: null}),
+        new DataField('Age', 'The age of the person', true, false, false, false, true, true, {baseType: 'number', customCheckClass: null}), // preferably getting this by birthdate otherwise just the age number is fine too
             // in match.bio
-            new DataField('Has-profiletext', 'Wether or not this person has some text on the profile', true, false, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
-        new DataField('Has-usefull-profiletext', 'Wether or not this person has some text on the profile', true, true, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
-        new DataField('Is-verified', 'Wether or not this person has some text on the profile', true, false, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
-        new DataField('Attractiveness-score', '', true, true, true, false, false, false, {baseType: 'number', customCheckClass: new dataAttractiveness()}), // NOTE! attractiveness rating on photo's can be 1, 2, 3, 6.5, 6, 7,5, 8 etc. but also: NAN (no photo available when there is litterally no photo?)
+            new DataField('Has-profiletext', 'Wether or not this person has some text on the profile', false, false, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Has-usefull-profiletext', 'Wether or not this person has some USEFULL text on the profile', true, true, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Is-verified', 'Wether or not this person is verified', false, false, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Attractiveness-score', 'The attractivenesslevel for this person', true, true, true, false, false, false, {baseType: 'number', customCheckClass: new dataAttractiveness()}), // NOTE! attractiveness rating on photo's can be 1, 2, 3, 6.5, 6, 7,5, 8 etc. but also: NAN (no photo available when there is litterally no photo?)
             // simply compare the past/current matches list in records against the values received by getMatches()
-            new DataField('Is-match', 'Wether we have a match/she responded or not', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
+            new DataField('Is-match', 'Wether we have a match or not', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
             // in match.created_date = date match    
             new DataField('Date-match', 'The datetime when I and the person had a match', true, false, false, false, true, false, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         new DataField('Match-sent-first-message', 'If this person sent me a first message', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}), // not-yet (if she did not yet send me a message within a certain time-period), no (if she did not send me a first message within a certain timeperiod after being matched), yes (if she did send me a first message within a certain time-period)
         new DataField('Match-responded', 'If this person responded to my first message', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Conversation-exists', 'If this person sent at least one message in between my first 3 messages', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
-        new DataField('Vibe-conversation', 'The feeling of how easy & fun it is to have a conversation with this person ranging from 1 (very responsive & fun) to 6 (hardly responsive & teeth pulling)', false, true, true, false, false, false, {baseType: 'number', customCheckClass: new dataConversationVibe()}),
-        new DataFieldGhostsList('How-many-ghosts', 'How many times this person did not respond in a certain timeframe', false, false, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckGhosts()}),
-        new DataField('Acquired-number', 'Did I get further contact details (e.g. phone number) from this person?', false, true, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
-        new DataFieldReactionSpeedList('Response-speed', 'The moments of time between each response', false, false, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckReactionSpeed()}), // de dagen & tijden tussen de eerste nieuwe berichten vanuit de ander
-        new DataFieldReminderList('Reminders-amount', 'The amount of reminders I sent and if they worked', false, true, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckReminders()}),
-        new DataField('Blocked-or-no-contact', 'If this person blocked me/deleted our conversation or indicated they did not wish further contact', false, true, false, false, true, false, {baseType: 'boolean', customCheckClass: null}), // needs a UI too!
-        new DataField('Interested-in-sex', 'Wether this person has indicated to be interested in a hookup or not', false, true, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
-        new DataField('Potential-click', 'Wether the vibe of the conversation was good enough to say "we clicked"', false, true, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
-        new DataField('Notes', 'Any interesting notes on this person', false, true, false, false, false, false, {baseType: 'string', customCheckClass: null}),
+        new DataField('Vibe-conversation', 'The feeling of how easy & fun it is to have a conversation with this person ranging from 1 (very responsive & fun) to 6 (hardly responsive & teeth pulling)', true, true, true, false, false, false, {baseType: 'number', customCheckClass: new dataConversationVibe()}),
+        new DataFieldGhostsList('How-many-ghosts', 'How many times this person did respond in a certain timeframe', true, false, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckGhosts()}),
+        new DataField('Acquired-number', 'Did I get further contact details (e.g. phone number) from this person?', true, true, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataFieldReactionSpeedList('Response-speed', 'The moments of time between each response', true, false, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckReactionSpeed()}), // de dagen & tijden tussen de eerste nieuwe berichten vanuit de ander
+        new DataFieldReminderList('Reminders-amount', 'The amount of reminders I sent and if they worked', true, true, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckReminders()}),
+        new DataField('Blocked-or-no-contact', 'If this person blocked me/deleted our conversation or indicated they did not wish further contact', true, true, false, false, true, false, {baseType: 'boolean', customCheckClass: null}), // needs a UI too!
+        new DataField('Interested-in-sex', 'Wether this person has indicated to be interested in a hookup or not', true, true, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Potential-click', 'Wether the vibe of the conversation was good enough to say "we clicked"', true, true, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Notes', 'Any interesting notes on this person', true, true, false, false, false, false, {baseType: 'string', customCheckClass: null}),
     ];
 
     // why do this instead of simply creating object instances?

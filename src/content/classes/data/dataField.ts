@@ -5,7 +5,7 @@ import { GhostStatus } from "./dataItems/dataItemGhost";
 export class DataField {
     public title: string;
     public description: string;
-    public requiredField: boolean;
+    public emptyAllowed: boolean;
     public requiresUI: boolean;
     public multipleDataEntry: boolean;
     public mustBeUnique: boolean;
@@ -21,7 +21,7 @@ export class DataField {
     constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
         this.title = title;
         this.description = description;
-        this.requiredField = requiredField;// why did i need this again? What the difference between this setting and the requiresUI setting? Don;t i only need the requiresUI setting?
+        this.emptyAllowed = requiredField;// why did i need this again? What the difference between this setting and the requiresUI setting? Don;t i only need the requiresUI setting? Idea; refactor this to a specific string keyword mentioning the required ui element needed e.g. 'radio'
         this.requiresUI = requiresUI; //determines if the fields is visible in UI
         this.multipleDataEntry = multipleDataEntry;
         this.mustBeUnique = mustBeUnique;
