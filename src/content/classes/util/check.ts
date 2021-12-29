@@ -3,6 +3,6 @@ export class Check {
         return new Date(dateString) ? true : false;
     }
     static isPositiveNumberEntry(numberEntry: number): boolean {
-        return numberEntry > 0 ? true : false;
+        return numberEntry >= 0 ? true : false;
     }
 }
