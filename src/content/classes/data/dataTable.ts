@@ -5,6 +5,7 @@ import { DataRecord } from "./dataRecord";
 export class dataTable {
     
     private dataRecords: DataRecord[] = [];
+    private dataRecordAmount = 0;
 
     public getAllowedFieldsByRecordIndex(index: number): DataFieldTypes[] {
         return this.dataRecords[index].getDataFieldTypes(true);
@@ -12,17 +13,39 @@ export class dataTable {
 
     public getRecordIndexBySystemId(systemId: string, appType: string):number {
         return this.dataRecords.findIndex((dataRecord: DataRecord)=>{
-            //todo:  CONTINUE INPLEMENTING HERE
             // console.log('DATA RECORD: ');
             // console.log(dataRecord.getRecordPersonSystemId(appType));
 
-            return dataRecord.getRecordPersonSystemId(appType) === systemId
+            return dataRecord.getRecordPersonSystemId(appType) === systemId;
         });
     }
 
     public addNewDataRecord(dataRecord: DataRecordValues[]): boolean {
         const newDataRecord = new DataRecord();
         const isNewDataRecordValid = newDataRecord.addDataToDataFields(dataRecord);
+
+        const newDataRecordNumberValue: DataRecordValues | undefined = dataRecord.find((dataRecord)=>{
+            return dataRecord.label === 'No'
+        });
+
+        if(newDataRecordNumberValue?.value){
+            // data record no is truthy, thus needs to be checked if the number does not already exist
+            // if so, throw error
+            if(<number>newDataRecordNumberValue?.value <= this.dataRecordAmount){
+                console.error(`Data record with no: ${newDataRecordNumberValue?.value} already exists. New record not added.`);
+                return false;
+            }
+            // if not, replace the current number with the number provided by this new row.
+            this.dataRecordAmount = <number>newDataRecordNumberValue?.value
+            
+        }else{
+            // if provided number is falsy, update auto incremented number from this.dataRecordAmount
+            this.dataRecordAmount = this.dataRecordAmount+1;
+            newDataRecord.addDataToDataFields([{
+                label: 'No',
+                value: this.dataRecordAmount
+            }]);
+        }
 
         if(isNewDataRecordValid){
             this.dataRecords.push(newDataRecord);
@@ -33,7 +56,7 @@ export class dataTable {
         return false;
     }
 
-    public updateDataRecordByIndex(index:number, dataRecord: DataRecordValues[]){
+    public updateDataRecordByIndex(index:number, dataRecord: DataRecordValues[]):void {
         this.dataRecords[index].addDataToDataFields(dataRecord);
     }
 }
