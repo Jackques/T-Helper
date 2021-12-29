@@ -2,6 +2,7 @@ import { validEntry } from "src/content/interfaces/data/validEntry";
 import { dataCheck } from "./dataCheck";
 import { Check } from "../../util/check";
 import { requiredProperty } from "src/content/interfaces/data/requiredProperty";
+import { DateHelper } from "../../util/dateHelper";
 
 export class dataCheckReactionSpeed extends dataCheck implements validEntry {
 
@@ -29,16 +30,17 @@ export class dataCheckReactionSpeed extends dataCheck implements validEntry {
     }
 
     public argumentChecker(requiredPropertiesList: requiredProperty[], listEntry: Record<string, unknown>): boolean {
-        let result = false;
-        result = requiredPropertiesList.every((requiredProperty:requiredProperty) => {
-            return Check.isValidDate(listEntry[requiredProperty.label] as string);
+        const hasRequiredArguments = requiredPropertiesList.every((requiredProperty:requiredProperty) => {
+            if(requiredProperty.label === 'datetimeMyLastMessage' || requiredProperty.label === 'datetimeTheirResponse'){
+                return DateHelper.isValidDate(listEntry[requiredProperty.label] as string)
+            }else{
+                return typeof listEntry[requiredProperty.label] === 'number';
+            }
+            
         });
-        result = this._isDateDifferencePositive(listEntry[requiredPropertiesList[0].label] as string, listEntry[requiredPropertiesList[1].label] as string);
-        return result;
-    }
-
-    private _isDateDifferencePositive(firstDate:string, secondDate:string):boolean{
-        return new Date(secondDate) > new Date(firstDate)
+        const differenceBetweenDates = DateHelper.getAmountMilisecondesBetweenDates(listEntry[requiredPropertiesList[0].label] as string, listEntry[requiredPropertiesList[1].label] as string);
+        const isDifferenceDatesPositiveNumber = differenceBetweenDates !== undefined && differenceBetweenDates > 0 ? true : false;
+        return hasRequiredArguments && isDifferenceDatesPositiveNumber;
     }
 
 }
