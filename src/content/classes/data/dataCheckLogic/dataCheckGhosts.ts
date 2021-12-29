@@ -30,21 +30,22 @@ export class dataCheckGhosts extends dataCheck implements validEntry {
         if(objList.length === 0){
             return true;
         }
-        return objList.every((obj:Record<string, unknown>) => {
+        isPropertiesAndArgumentsValid = objList.every((obj:Record<string, unknown>) => {
             if(this.checkListEntryByPropertiesAndTypes(this.requiredPropertiesList, obj)){
                 return this.argumentChecker(this.requiredPropertiesList, obj);
             }
             return false;
         });
         this.resetUniqueNumber();
+        return isPropertiesAndArgumentsValid;
+
     }
 
     public argumentChecker(requiredPropertiesList: requiredProperty[], listEntry: Record<string, unknown>): boolean {
-        let result = false;
-        result = Check.isPositiveNumberEntry(<number>listEntry[requiredPropertiesList[0].label]) && this._isUniqueNumber(<number>listEntry[requiredPropertiesList[0].label]);
-        result = Check.isPositiveNumberEntry(<number>listEntry[requiredPropertiesList[1].label]);
-        result = this._isValidStatus(<string>listEntry[requiredPropertiesList[2].label]);
-        return result;
+        const isNumberPositiveAndUnique = Check.isPositiveNumberEntry(<number>listEntry[requiredPropertiesList[0].label]) && this._isUniqueNumber(<number>listEntry[requiredPropertiesList[0].label]);
+        const isTimeSinceLastMessageMSPositive = Check.isPositiveNumberEntry(<number>listEntry[requiredPropertiesList[1].label]);
+        const isStatusValid = this._isValidStatus(<string>listEntry[requiredPropertiesList[2].label]);
+        return isNumberPositiveAndUnique && isTimeSinceLastMessageMSPositive && isStatusValid;
     }
 
     private _isValidStatus(statusEntry: string):boolean {
