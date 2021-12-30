@@ -453,6 +453,28 @@ export class TinderController implements datingAppController {
         });
     }
 
+    public getCurrentScreenByDOM(): ScreenNavStateCombo {
+        const swipeIdentifier = '.recsToolbar'; 
+        const chatIdentifier = '.chat';
+        const chatProfileIdentifier = '.chatProfile';
+
+        let currentPage: ScreenNavStateCombo;
+
+        switch (true) {
+                case $(swipeIdentifier).length > 0 ? true : false:
+                  currentPage = ScreenNavStateCombo.Swipe;
+                  break;
+                case $(chatIdentifier).length > 0 && $(chatProfileIdentifier).length > 0 ? true : false:
+                  currentPage = ScreenNavStateCombo.Chat;
+                  break;
+                default:
+                    currentPage = ScreenNavStateCombo.UnknownScreen;
+                    break;
+        }
+
+        return currentPage;
+    }
+
     public getDataByAPI(requestHandler: RequestHandlerTinder, useMock: boolean):Promise<ParsedResultMatch[] | undefined> {
         //todo: make seperate out logic in different methods because whilst 'getData' may be generic, getting it will differ for each supported app.
         console.log(`Getting tinder data`);
