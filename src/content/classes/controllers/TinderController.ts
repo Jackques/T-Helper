@@ -15,6 +15,7 @@ import { DataRecord } from "../data/dataRecord";
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DateHelper } from "../util/dateHelper";
 import { GhostStatus } from "../data/dataItems/dataItemGhost";
+import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 
 
 export class TinderController implements datingAppController {
@@ -28,6 +29,9 @@ export class TinderController implements datingAppController {
     private UIController!: UIController;
     public matches: Person[] = [];
     private dataTable: dataTable;
+
+    private currentScreenTimeoutId:number | null = null;
+    private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
 
     constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: dataTable) {
 
@@ -50,10 +54,6 @@ export class TinderController implements datingAppController {
                         if(matches === undefined){
                             console.error(`Could not retrieve matches`);
                         }
-                        
-                        console.dir(matches);
-                        // eslint-disable-next-line no-debugger
-                        // debugger;
 
                         //Extract data & add it to dataRecords
                         matches?.forEach((match: ParsedResultMatch)=>{
@@ -70,17 +70,17 @@ export class TinderController implements datingAppController {
                             let allowedFields: DataFieldTypes[];
 
                             // eslint-disable-next-line no-debugger
-                            debugger;
+                            // debugger;
 
                             //todo: update to equal to or greater than
                             if(matchRecordIndex < 0){
                                 //TODO: if match doesnt exist, create new data record, fill new record with all data needed
-                                console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
+                                // console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
                                 allowedFields = new DataRecord().getDataFieldTypes();
                                 tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, allowedFields);
                                 dataTable.addNewDataRecord(tinderMatchDataRecordValues);
                             }else{
-                                console.log(`Going to UPDATE data record for: ${match.match.person.name}`);
+                                // console.log(`Going to UPDATE data record for: ${match.match.person.name}`);
                                 allowedFields = dataTable.getAllowedFieldsByRecordIndex(matchRecordIndex);
                                 tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, allowedFields);
                                 dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
@@ -97,18 +97,15 @@ export class TinderController implements datingAppController {
                         });
                         console.log(`And here is my data table:`);
                         console.dir(dataTable);
+
+                        //TODO: 4 Inplement add tinder UI support overlay 
+                        // (e.g. add icon/color to match who hasn't replied in a week)
+                        // export retrieved data to csv/json?
+                        
+                        // Determine in chatmode or swipemode?
+                        // Add UI helper?
+                        this.setSwipeHelperOnScreen();
                     });
-
-                    
-
-                    //TODO: 4 Inplement add tinder UI support overlay 
-                    // (e.g. add icon/color to match who hasn't replied in a week)
-                    // export retrieved data to csv/json?
-                    
-                    
-                    // Determine in chatmode or swipemode?
-                    // Add UI helper?
-                    this.setSwipeHelperOnScreen();
 
                     // HINT: In order to scroll to the very bottom of the messageList in tinder;
                     /*
@@ -436,7 +433,53 @@ export class TinderController implements datingAppController {
     }
 
     public setSwipeHelperOnScreen() {
-        // debugger;
+
+        // V 1. set up mutation observer for swipe, chat etc. to execute methods if DOM changes (switch screen, receive message etc.)
+        // V 2. recognize which screen we are on (swipe, chat or other?)
+        // 3. Listen for screen navigatie changes (can do this inside of the callback)
+        // 4. IF swipe; show swipe helpers (fields which require UI derived from dataTable)
+        // 4.b IF swipe; show like/reject/superlike buttons only if fields which require UI have been filled
+        // 4.c IF swipe; update fields which have autoGather (&autoGatherOnce) set to true
+        // 5. IF chat; show chat helpers (which require UI) with current value (get current record)
+        // 5.b IF chat; update fields which have autogather set to true
+        
+        // main & aside container (with this class) is always present as far as i know, so should always work.
+        const swipeOrChatContainerIdentifier = '.App__body > .desktop > main.BdStart';
+
+        const $SOCcontainer = $('body').find(swipeOrChatContainerIdentifier).first()[0];
+        // const currentScreen: ScreenNavStateCombo;
+
+        if(!$SOCcontainer){
+            console.error(`Element with identifier not found: ${swipeOrChatContainerIdentifier}. Please update identifiers.`);
+            return;
+        }
+
+        const callback = (mutations: MutationRecord[]) =>{
+            if(this.currentScreenTimeoutId){
+                // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
+                return;
+            }
+            if(this.currentScreen === this.getCurrentScreenByDOM()){
+                // if current screen at this time is still the same, do not re-update the currentscreen
+                return;
+            }
+            this.currentScreenTimeoutId = setTimeout(()=>{
+                //TODO: show loading overlay while setTimeout started & hide overlay when ended (currentScreen is updated)
+                this.currentScreen = this.getCurrentScreenByDOM();
+                console.log(this.currentScreen);
+                this.currentScreenTimeoutId = null;
+            },500);
+        };
+
+        // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
+        // Thus I can always apply DOM manipulations on them when needed!
+        const observer = new MutationObserver(callback);
+        observer.observe($SOCcontainer, {
+            childList: true, // observe direct children
+            subtree: true, // lower descendants too
+            characterDataOldValue: true, // pass old data to callback
+        });
+
         const html = `<form>
         <div class="form-group">
           <label for="exampleInputEmail1">Email address</label>
