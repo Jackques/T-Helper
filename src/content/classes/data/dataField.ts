@@ -26,17 +26,21 @@ export class DataField {
 
     private _uniqueIdentifier:uniqueEntryChecker = new uniqueEntryChecker();
 
-    constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
         this.title = title;
         this.description = description;
-        this.emptyAllowed = requiredField;// why did i need this again? What the difference between this setting and the requiresUI setting? Don;t i only need the requiresUI setting? Idea; refactor this to a specific string keyword mentioning the required ui element needed e.g. 'radio'
-        this.requiresUI = requiresUI; //determines if the fields is visible in UI
+        this.emptyAllowed = requiredField;// why did i need this again? What the difference between this setting and the UISetting setting? Don;t i only need the UISetting setting? Idea; refactor this to a specific string keyword mentioning the required ui element needed e.g. 'radio'
+        this.UISetting = UISetting; //determines if the fields is visible in UI
         this.multipleDataEntry = multipleDataEntry;
         this.mustBeUnique = mustBeUnique;
         this.autoGather = autoGather; //if true, then check in the provided dataSource if e.g. a numnber already exists. if not assign a new (increment from the former) number to this person
         this.onlyGatherOnce = onlyGatherOnce;
 
         this.dataLogic = dataLogic;
+
+        if(!this._isDataFieldValid()){
+            console.error(`Data field ${this.title} is not valid. Check the logs and update.`);
+        }
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
@@ -213,12 +217,39 @@ export class DataField {
         }
     }
 
+    private _isDataFieldValid(): boolean {
+        const isBaseTypeSet = this._isBaseTypeSet(this.dataLogic.baseType);
+        const isUISettingValid = this._isUISettingValid(this.UISetting);
+        return isBaseTypeSet && isUISettingValid ? true : false;
+    }
+
+    private _isUISettingValid(UISetting: UISetting): boolean {
+
+        // if UIrequired is none, only 'none' may be given for field type
+        if(UISetting.UIrequired === UIRequired.NONE && UISetting.UIrequiredType !== null){
+            console.error(`UIRequired is set to ${UIRequired.NONE} thus the required type can only be of value ${null}`);
+            return false;
+        }
+
+        // if UIrequired may only be one of certain types defined in UIrequired enum
+        if(!Object.values(UIRequired).includes(UISetting.UIrequired)){
+            console.error(`UIRequired may only be one of the following types: ${Object.values(UIRequired).toString()}`);
+            return false;
+        }
+        // if UIrequiredType may only be one of certain types defined in UIrequiredType enum
+        if(UISetting.UIrequiredType !== null && !Object.values(UIRequiredType).includes(UISetting.UIrequiredType)){
+            console.error(`UIrequiredType may only be one of the following types: ${Object.values(UIRequiredType).toString()} or null if UIRequired is set to NONE`);
+            return false;
+        }
+
+        return true;
+    }
 }
 
 export class DataFieldSystemNo extends DataField {
 
-    constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
-        super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
@@ -236,8 +267,8 @@ export class DataFieldSystemNo extends DataField {
 
 export class DataFieldReactionSpeedList extends DataField {
 
-    constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
-        super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
@@ -251,8 +282,8 @@ export class DataFieldReactionSpeedList extends DataField {
 
 export class DataFieldReminderList extends DataField {
     
-    constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
-        super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
@@ -266,8 +297,8 @@ export class DataFieldReminderList extends DataField {
 
 export class DataFieldGhostsList extends DataField {
     
-    constructor(title:string, description:string, requiredField:boolean, requiresUI:boolean, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
-        super(title, description, requiredField, requiresUI, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
