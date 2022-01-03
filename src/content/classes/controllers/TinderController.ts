@@ -464,11 +464,14 @@ export class TinderController implements datingAppController {
                 // if current screen at this time is still the same, do not re-update the currentscreen
                 return;
             }
+            this.removeAllUIHelpers();
             this.currentScreenTimeoutId = setTimeout(()=>{
                 //TODO: show loading overlay while setTimeout started & hide overlay when ended (currentScreen is updated)
                 this.currentScreen = this.getCurrentScreenByDOM();
                 console.log(this.currentScreen);
                 this.currentScreenTimeoutId = null;
+
+                this.addUIHelpers(this.currentScreen, UIRequiredFieldsList);
             },500);
         };
 
@@ -495,6 +498,29 @@ export class TinderController implements datingAppController {
             alert('this works! 2');
             console.dir($('#exampleInputEmail1').val())
         });
+    }
+    public addUIHelpers(currentScreen: ScreenNavStateCombo, UIRequiredFieldsList: DataFieldTypes[]): void {
+        
+        // UIRequiredFieldsList.forEach((uiRequiredField)=>{
+        //     // uiRequiredField.label
+        //     // TODO: CONTINUE HERE
+        // });
+        const uiRequiredDataFieldTypes:DataFieldTypes[] = new DataRecord().getDataFieldTypes(false, true);
+
+        if(currentScreen === ScreenNavStateCombo.Swipe){
+            $('.recsCardboard__cards.Expand').css('right', '325px'); //right: 325px;
+            $('.recsPage.CenterAlign > div[role="region"]:first').prepend('<div id="uiHelperFieldsContainer" class="uiHelperFieldsContainer">test</div>');
+        }
+
+        //todo: create checker method which checks if above DOM element ref exists, otherwise throw error
+        //todo: FUTURE; create checker method which checks if all required DOM elements used here still exist (auto loop through application?)
+        //todo: add other state (if,.. or seperate method) for adding chat ui helper VS swipe ui helper. Currently working on swipe ui helper
+        // throw new Error("Method not implemented.");
+    }
+    public removeAllUIHelpers():void {
+        //TODO
+        // throw new Error("Method not implemented.");
+        console.log(`removeAllUIHelpers method called, still needs to be inplemented`);
     }
 
     public getCurrentScreenByDOM(): ScreenNavStateCombo {
