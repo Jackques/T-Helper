@@ -132,7 +132,9 @@ export class DataRecord {
     }
 
     /*  ZET HIER WELKE TAGS IK MOMENTEEL WEL GA ONDERSTEUNEN EN WELKE NIET! BEGIN KLEIN!
-    'IsFake', // because maybe I want to keep track of how many fake profiles I encounter on any given app
+    'IsFake', // e.g. obvious catfishes, because maybe I want to keep track of how many (OBVIOUSLY) fake profiles I encounter on any given app
+    'seemsFake', // e.g. IG-modellike profiles with whom no man ever matches? Or do (some) men match with them?
+    'emptyProfiles', // e.g. how many empty profiles i encounter?
 
     'Woonplaats', // because maybe I want to keep track of the distance between me and my (potential) match so I can take that variabele into account if many matches ghost e.g. because they may be too far away (tinder/happn happens to show me the distance, if not availble I can get the city at least (or ask the person myself) thus use this to calculate the distance from me: https://www.distance24.org/api.xhtml)
 
