@@ -2,12 +2,19 @@ import { baseTypes, logicContainer } from "src/content/interfaces/logicContainer
 import { uniqueEntryChecker } from "../util/uniqueEntryChecker";
 import { GhostStatus } from "./dataItems/dataItemGhost";
 
+export enum UIRequired { SELECT_ONLY = 'select_only', CHAT_ONLY = 'chat_only', ALL = 'all', NONE = 'none' }
+export enum UIRequiredType { TEXTAREA = 'textarea', ALPHANUMERIC_INPUT = 'alphanumeric-input', SLIDER = 'slider', SWITCH = 'switch' }
+
+export interface UISetting {
+    UIrequired: UIRequired,
+    UIrequiredType: UIRequiredType | null,
+}
+
 export class DataField {
     public title: string;
     public description: string;
     public emptyAllowed: boolean;
-    public requiresUI: boolean; //TODO: Refactor this to enum; 'only-select' (when this tag needs a UI, but only on selection proces), 'only-chat' (when this tag needs a UI, but only on chats), 'ALL' (when it needs to appear on both selection, chats and other future states e.g. notes), 'NONE' (when it does not need any UI at all)
-    //TODO: TODO: add UI property: UI-type (only need to support so far; 'textarea' ,'alphanumeric-input', 'slider', 'switch' WITH default value?)
+    public UISetting: UISetting;
     public multipleDataEntry: boolean;
     public mustBeUnique: boolean;
     public autoGather: boolean;
