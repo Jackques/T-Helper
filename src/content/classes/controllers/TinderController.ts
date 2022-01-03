@@ -169,6 +169,9 @@ export class TinderController implements datingAppController {
                 case 'Attractiveness-score':
                     dataRecordValuesList.push({ 'label': 'Attractiveness-score', 'value': undefined});
                     break;
+                case 'Did-i-like':
+                    dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': true});
+                    break;
                 case 'Is-match':
                     dataRecordValuesList.push({ 'label': 'Is-match', 'value': true});
                     break;
