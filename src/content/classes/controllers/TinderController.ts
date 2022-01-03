@@ -104,7 +104,8 @@ export class TinderController implements datingAppController {
                         
                         // Determine in chatmode or swipemode?
                         // Add UI helper?
-                        this.setSwipeHelperOnScreen();
+                        const uiRequiredFieldsList:DataFieldTypes[] = new DataRecord().getDataFieldTypes();
+                        this.setSwipeHelperOnScreen(uiRequiredFieldsList);
                     });
 
                     // HINT: In order to scroll to the very bottom of the messageList in tinder;
@@ -432,11 +433,11 @@ export class TinderController implements datingAppController {
         return false;
     }
 
-    public setSwipeHelperOnScreen() {
+    public setSwipeHelperOnScreen(UIRequiredFieldsList: DataFieldTypes[]): void {
 
         // V 1. set up mutation observer for swipe, chat etc. to execute methods if DOM changes (switch screen, receive message etc.)
         // V 2. recognize which screen we are on (swipe, chat or other?)
-        // 3. Listen for screen navigatie changes (can do this inside of the callback)
+        // V 3. Listen for screen navigatie changes (can do this inside of the callback)
         // 4. IF swipe; show swipe helpers (fields which require UI derived from dataTable)
         // 4.b IF swipe; show like/reject/superlike buttons only if fields which require UI have been filled
         // 4.c IF swipe; update fields which have autoGather (&autoGatherOnce) set to true
