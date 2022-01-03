@@ -6,7 +6,8 @@ export class DataField {
     public title: string;
     public description: string;
     public emptyAllowed: boolean;
-    public requiresUI: boolean;
+    public requiresUI: boolean; //TODO: Refactor this to enum; 'only-select' (when this tag needs a UI, but only on selection proces), 'only-chat' (when this tag needs a UI, but only on chats), 'ALL' (when it needs to appear on both selection, chats and other future states e.g. notes), 'NONE' (when it does not need any UI at all)
+    //TODO: TODO: add UI property: UI-type (only need to support so far; 'textarea' ,'alphanumeric-input', 'slider', 'switch' WITH default value?)
     public multipleDataEntry: boolean;
     public mustBeUnique: boolean;
     public autoGather: boolean;
