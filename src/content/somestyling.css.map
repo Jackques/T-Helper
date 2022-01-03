@@ -5,8 +5,8 @@
 		"somestyling.scss"
 	],
 	"sourcesContent": [
-		"body{\r\n    background-color: pink !important;\r\n    // this will only set on tinder right? due to the matches in the manifest.json reference!\r\n    // this is what it used to be:\r\n    // \"matches\": [\"<all_urls>\"]\r\n}\r\n\r\n.recsPage {\r\n    background-color: indianred !important;\r\n}"
+		"body{\r\n    background-color: pink !important;\r\n    // this will only set on tinder right? due to the matches in the manifest.json reference!\r\n    // this is what it used to be:\r\n    // \"matches\": [\"<all_urls>\"]\r\n}\r\n\r\n.recsPage {\r\n    background-color: indianred !important;\r\n}\r\n\r\n.uiHelperFieldsContainer {\r\n    position: absolute;\r\n    top: 0px;\r\n    right: -75px;\r\n    z-index: 9999999999;\r\n    width: 100%;\r\n    height: 100%;\r\n    background-color: yellow;\r\n}"
 	],
 	"names": [],
-	"mappings": "AAAA,AAAA,IAAI,CAAA;EACA,gBAAgB,EAAE,eAAe;CAIpC;;AAED,AAAA,SAAS,CAAC;EACN,gBAAgB,EAAE,oBAAoB;CACzC"
+	"mappings": "AAAA,AAAA,IAAI,CAAA;EACA,gBAAgB,EAAE,eAAe;CAIpC;;AAED,AAAA,SAAS,CAAC;EACN,gBAAgB,EAAE,oBAAoB;CACzC;;AAED,AAAA,wBAAwB,CAAC;EACrB,QAAQ,EAAE,QAAQ;EAClB,GAAG,EAAE,GAAG;EACR,KAAK,EAAE,KAAK;EACZ,OAAO,EAAE,UAAU;EACnB,KAAK,EAAE,IAAI;EACX,MAAM,EAAE,IAAI;EACZ,gBAAgB,EAAE,MAAM;CAC3B"
 }
