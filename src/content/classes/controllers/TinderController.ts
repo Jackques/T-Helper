@@ -343,7 +343,7 @@ export class TinderController implements datingAppController {
             amountOfGhosts = amountOfGhosts+1;
         }
 
-        //TODO: TEST THIS WITH BLOCKED MATCH! 
+        //TODO: TEST THIS WITH BLOCKED MATCH! (TIP: J. is now a blocked match as of 3-1-2022?)
         // 1. DOES THE 'DEAD' PROPERTY IN THE API RESPONSE REPRESENT A BLOCKED/REMOVED MATCH & THUS MESSAGES?
         // 2. DOES THE 'LAST ACTIVITY DATE' REPRESENT WHEN THE MATCH BLOCKED/REMOVED THE CHAT?
         // 3. IF I HAVE GOTTEN HER NUMBER, THIS DOES NOT COUNT AS A GHOST
@@ -510,15 +510,36 @@ export class TinderController implements datingAppController {
         // });
         const uiRequiredDataFieldTypes:DataFieldTypes[] = new DataRecord().getDataFieldTypes(false, true);
 
+        debugger;
+
         if(currentScreen === ScreenNavStateCombo.Swipe){
             $('.recsCardboard__cards.Expand').css('right', '325px'); //right: 325px;
             $('.recsPage.CenterAlign > div[role="region"]:first').prepend('<div id="uiHelperFieldsContainer" class="uiHelperFieldsContainer">test</div>');
+
+            uiRequiredDataFieldTypes.forEach(()=>{
+                // check if #uiHelperFieldsContainer exists?
+                // if not exist, throw error. If exist continue.
+                // get id of potential swipe, crate new datarecord & addtoTable (only if liked/disliked)
+
+                //TODO: new idea; instead of getting the fields.. get the fields by dataRecord AND loop over each field,(update: NO!); checking the UISetting, emptyAllowed, multipleDataEntry etc.
+                // or maybe like.. STILL get the record but use the title's as keys for getting the exact dataField and using that dataField reference to get properties like checking the UISetting, emptyAllowed, multipleDataEntry etc.
+
+                // const test = new DataRecord().
+
+
+                // get the type of field, show correct UI helper in #uiHelperFieldsContainer
+                // add event listener to the UI component, listener updates new dataRecord
+
+                //switch to other screen? remove data record
+                //liked? ADD FIELD; LIKED/DISLIKED & keep data record
+            })
         }
 
         //todo: create checker method which checks if above DOM element ref exists, otherwise throw error
         //todo: FUTURE; create checker method which checks if all required DOM elements used here still exist (auto loop through application?)
         //todo: add other state (if,.. or seperate method) for adding chat ui helper VS swipe ui helper. Currently working on swipe ui helper
-        // throw new Error("Method not implemented.");
+
+        //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
     }
     public removeAllUIHelpers():void {
         //TODO
