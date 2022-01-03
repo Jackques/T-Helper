@@ -170,7 +170,7 @@ export class DataRecord {
                 return false;
             }
             if(requiredFieldsOnly){
-                if(dataField.requiresUI){
+                if(dataField.UISetting.UIrequired !== UIRequired.NONE){
                     return true;
                 }
                 return false;
@@ -178,7 +178,7 @@ export class DataRecord {
             // default returns all data fields
             return true;
         }).map((dataField: DataField) => {
-            return { 'label': dataField.title, 'checkDataMethod': dataField.isDataEntryValid };
+            return { 'label': dataField.title, 'dataType': dataField.dataLogic.baseType, 'requiredFieldType': dataField.UISetting.UIrequiredType,'checkDataMethod': dataField.isDataEntryValid };
         });
     }
 
