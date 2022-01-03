@@ -23,6 +23,7 @@ export class DataRecord {
         Heeft-zinnige-profieltekst  - boolean
         Geverifieerd                - boolean
         Aantrekkelijkheidsscore     - int
+        Liked/disliked              - boolean
         Match                       - boolean
         Datum-match                 - string datetime 
         Ander-eerste-bericht        - boolean
@@ -53,6 +54,8 @@ export class DataRecord {
         new DataField('Has-usefull-profiletext', 'Wether or not this person has some USEFULL text on the profile', true, true, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Is-verified', 'Wether or not this person is verified', false, false, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Attractiveness-score', 'The attractivenesslevel for this person', true, true, true, false, false, false, {baseType: 'number', customCheckClass: new dataAttractiveness()}), // NOTE! attractiveness rating on photo's can be 1, 2, 3, 6.5, 6, 7,5, 8 etc. but also: NAN (no photo available when there is litterally no photo?)
+
+            new DataField('Did-i-like', 'Wether I liked/showed interest in this person', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
             // simply compare the past/current matches list in records against the values received by getMatches()
             new DataField('Is-match', 'Wether we have a match or not', true, false, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
             // in match.created_date = date match    
