@@ -19,7 +19,7 @@ import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 
 
 export class TinderController implements datingAppController {
-    private nameController = 'Tinder';
+    private nameController = 'tinder';
     listEndpoints = ['a', 'b', 'c'];
     hasCredentials = false;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
