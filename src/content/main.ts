@@ -36,7 +36,13 @@ export class Main {
                 }
             }
             });
-          });
+            port.onMessage.addListener((msg: portMessage) => {
+                if(msg.message === 'background'){
+                    console.dir(msg);
+                    console.log(`do stuff`);
+                }
+            })
+        });
 
           /*
           browser.webRequest.onCompleted.addListener(
