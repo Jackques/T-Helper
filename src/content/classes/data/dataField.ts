@@ -76,7 +76,7 @@ export class DataField {
     public addDataEntry(dataEntry:unknown):void {
         if(!this.isDataEntryValid(dataEntry)){
             //todo: create a notification system whereby me (the user) is notified through UI instead of console
-            console.error('Incompatible dataEntry type with ptovided dataEntry type');
+            console.error('Incompatible dataEntry type with provided dataEntry type');
             return;
         }
 
