@@ -161,7 +161,7 @@ export class DataRecord {
 //todo: why not simply return the list above as is? instead of only trying to return the checkDataMethod. 
 //todo: maybe it would be better to put all the check logic inside the DataField classes and subclasses anyway?
     
-    public getDataFieldTypes(allowedFieldsOnly?: boolean, requiredFieldsOnly?: boolean): DataFieldTypes[] {
+    public getDataFieldTypes(allowedFieldsOnly?: boolean, requiredUIFieldsOnly?: boolean): DataFieldTypes[] {
         return this.usedDataFields.filter((dataField: DataField) => {
             if(allowedFieldsOnly){
                 if(dataField.updateValueAllowed()){
@@ -169,7 +169,7 @@ export class DataRecord {
                 }
                 return false;
             }
-            if(requiredFieldsOnly){
+            if(requiredUIFieldsOnly){
                 if(dataField.UISetting.UIrequired !== UIRequired.NONE){
                     return true;
                 }
