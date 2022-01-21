@@ -16,6 +16,7 @@ import {dataCheckReminders} from "./dataCheckLogic/dataCheckReminders";
 import {DataRecordValues} from "src/content/interfaces/data/dataRecordValues.interface";
 import {dataCheckSystemId} from "./dataCheckLogic/dataCheckSystemId";
 import {DataFieldTypes} from "src/content/interfaces/data/dataFieldTypes.interface";
+import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 
 export class DataRecord {
         /*
@@ -162,7 +163,7 @@ export class DataRecord {
 //todo: why not simply return the list above as is? instead of only trying to return the checkDataMethod. 
 //todo: maybe it would be better to put all the check logic inside the DataField classes and subclasses anyway?
     
-    public getDataFieldTypes(allowedFieldsOnly?: boolean, requiredUIFieldsOnly?: boolean): DataFieldTypes[] {
+    public getDataFieldTypes(allowedFieldsOnly?: boolean, requiredUIFieldsOnly?: boolean, requiredUiScreen?: UIRequired): DataFieldTypes[] {
         return this.usedDataFields.filter((dataField: DataField) => {
             if(allowedFieldsOnly){
                 if(dataField.updateValueAllowed()){
@@ -170,8 +171,16 @@ export class DataRecord {
                 }
                 return false;
             }
+
+            //todo: logic below is a huge mess, fix!
             if(requiredUIFieldsOnly){
                 if(dataField.UISetting.UIrequired !== UIRequired.NONE){
+                    if(dataField.UISetting.UIrequired === UIRequired.ALL){
+                        return true;
+                    }
+                    if(requiredUiScreen !== undefined){
+                        return dataField.UISetting.UIrequired === requiredUiScreen ? true : false;
+                    }
                     return true;
                 }
                 return false;
