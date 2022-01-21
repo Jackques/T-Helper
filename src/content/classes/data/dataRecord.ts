@@ -146,6 +146,7 @@ export class DataRecord {
     'seemsFake', // e.g. IG-modellike profiles with whom no man ever matches? Or do (some) men match with them?
     'emptyProfiles', // e.g. how many empty profiles i encounter?
 
+    'conversation', // HIGHLY recommended to simply save the entire conversation history. Why not? I can ALWAYS preform any kindoff logic on it to extract data from it.
     'Woonplaats', // because maybe I want to keep track of the distance between me and my (potential) match so I can take that variabele into account if many matches ghost e.g. because they may be too far away (tinder/happn happens to show me the distance, if not availble I can get the city at least (or ask the person myself) thus use this to calculate the distance from me: https://www.distance24.org/api.xhtml)
 
     'type-of-match' //OPTIONAL tag; tells me the type of match e.g.; boost, super-like, normal etc.
