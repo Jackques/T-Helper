@@ -1,4 +1,3 @@
-import { resolve } from "path";
 import { datingAppController } from "src/content/interfaces/controllers/datingAppController.interface";
 import { ParsedResultMatch } from "src/content/interfaces/controllers/ParsedResultMatch.interface";
 import { Message, ParsedResultMessages } from "src/content/interfaces/http-requests/MessagesListTinder.interface";
@@ -603,7 +602,6 @@ export class TinderController implements datingAppController {
                 // 6. addtoTable 
 
                 });
-                const idSwipePerson: string = this.getIdSwipePerson();
 
         }
 
@@ -612,11 +610,6 @@ export class TinderController implements datingAppController {
         //todo: add other state (if,.. or seperate method) for adding chat ui helper VS swipe ui helper. Currently working on swipe ui helper
 
         //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
-    }
-    public removeAllUIHelpers():void {
-        //TODO
-        // throw new Error("Method not implemented.");
-        console.log(`removeAllUIHelpers method called, still needs to be inplemented`);
     }
 
     public getCurrentScreenByDOM(): ScreenNavStateCombo {
