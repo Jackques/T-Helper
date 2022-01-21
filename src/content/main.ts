@@ -20,24 +20,24 @@ export class Main {
 
         chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
             console.assert(port.name === "knockknock");
-            port.onMessage.addListener((msg: portMessage) => {
-            if(msg.message === 'initApp'){
-                //console.log(`I received the following message payload: `);
-                //console.dir(msg.payload);
-                
-                //todo: Move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
-                this.datingAppType = this.checkDatingApp();
-                if(this.datingAppType.length > 0){
+            port.onMessage.addListener((portMessage: PortMessage) => {
+                if(portMessage.messageSender === 'POPUP'){
+                    //console.log(`I received the following message payload: `);
+                    //console.dir(msg.payload);
+                    
+                    //todo: Move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
+                    this.datingAppType = this.checkDatingApp();
+                    if(this.datingAppType.length > 0){
 
-                    //for every entry i the list received in payload
-                    //todo: CURRENTLY; i ASSUME the dataTable will be empty (which it most likely is), but maybe i would want to check here if prior data already exists, thus updating data rather than creating new records
-                    msg.payload.forEach((msg:DataRecordValues[])=>{
-                        this.dataTable.addNewDataRecord(msg);
-                    });
+                        //for every entry i the list received in payload
+                        //todo: CURRENTLY; i ASSUME the dataTable will be empty (which it most likely is), but maybe i would want to check here if prior data already exists, thus updating data rather than creating new records
+                        portMessage.payload.forEach((msg:DataRecordValues[])=>{
+                            this.dataTable.addNewDataRecord(msg);
+                        });
 
                         this.datingAppController = this.initAppController(this.datingAppType, this.dataTable, this.dataStorage);
+                    }
                 }
-            }
             });
             port.onMessage.addListener((msg: PortMessage) => {
                 if(msg.messageSender === 'BACKGROUND' && msg.action === 'SUBMIT_ACTION'){
