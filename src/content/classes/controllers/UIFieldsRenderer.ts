@@ -2,7 +2,7 @@ import { TemplateSetting } from "src/content/interfaces/controllers/templateSett
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { UIRequiredType } from "../data/dataField";
-import { SubmitType } from "../data/dataRecord";
+import { SubmitType } from "../../../SubmitType";
 import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 
 export class UIFieldsRenderer {

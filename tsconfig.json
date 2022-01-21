@@ -32,6 +32,6 @@
     "./src"
   ],
   "files": [
-    "./vue-shims.d.ts"
+    "./vue-shims.d.ts", "./src/content/classes/data/SubmitType.ts"
   ]
 }
