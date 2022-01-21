@@ -50,23 +50,6 @@ export class Main {
                 }
             })
         });
-
-          /*
-          browser.webRequest.onCompleted.addListener(
-            listener,             // function
-            filter,               //  object
-            extraInfoSpec         //  optional array of strings
-          )
-          */
-        //   chrome.webRequest.onCompleted.addListener(
-        //     function(test:any){
-        //         console.log('webRequest:');
-        //         console.dir(test);
-        //     }
-        //   )
-        
-        // ERROR:
-        // CAN ONLY BE INPLEMENTED IN BACKGROUND.JS?
     }
 
     private checkDatingApp():string{
