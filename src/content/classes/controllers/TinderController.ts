@@ -2,7 +2,6 @@ import { datingAppController } from "src/content/interfaces/controllers/datingAp
 import { ParsedResultMatch } from "src/content/interfaces/controllers/ParsedResultMatch.interface";
 import { Message, ParsedResultMessages } from "src/content/interfaces/http-requests/MessagesListTinder.interface";
 import { Badges, Match, MatchListTinderAPI } from "src/content/interfaces/http-requests/MatchesListTinder.interface";
-import { UIController } from "../tinder/UIController";
 import { matchMockTwo } from "../mocks/matchesMock";
 import { dataTable } from '../data/dataTable';
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
@@ -29,7 +28,6 @@ export class TinderController implements datingAppController {
 
     private xAuthToken = '';
     private requestHandler!: RequestHandlerTinder; // 'definite assignment assertion proerty (!) added here, is this a good practice?'
-    private UIController!: UIController;
     public matches: Person[] = [];
     private dataTable: dataTable;
     private dataStorage: dataStorage;
@@ -131,8 +129,6 @@ export class TinderController implements datingAppController {
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
         }
 
-        this.UIController = new UIController();
-        this.UIController.addUIControls(); // WORKS I can create my own UI using Jquery AND manipulate the DOM with Jquery (and possibly also the mutationObserver)
     }
 
     private parseMatchDataToDataRecordValues(match: ParsedResultMatch, allowedFields: DataFieldTypes[]): DataRecordValues[] {
