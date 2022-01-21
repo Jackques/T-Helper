@@ -1,16 +1,19 @@
 import 'regenerator-runtime/runtime'
+import { SubmitAction } from 'src/background/requestInterceptor';
 import { parse } from 'tldts';
 import { TinderController } from './classes/controllers/TinderController';
 import { DataRecord } from './classes/data/dataRecord';
+import { dataStorage } from './classes/data/dataStorage';
 import { dataTable } from './classes/data/dataTable';
 import { DataRecordValues } from './interfaces/data/dataRecordValues.interface';
-import { portMessage } from './interfaces/portMessage.interface';
+import { PortMessage } from './interfaces/portMessage.interface';
 
 export class Main {
     private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
     private datingAppType = '';
 
     private dataTable: dataTable = new dataTable();
+    private dataStorage = new dataStorage();
     
     constructor() {
         //console.log(`The main app constructor content works`);
