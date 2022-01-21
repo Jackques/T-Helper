@@ -75,12 +75,14 @@ export class TinderController implements datingAppController {
 
                             // eslint-disable-next-line no-debugger
                             // debugger;
+                            
 
                             //todo: update to equal to or greater than
                             if(matchRecordIndex < 0){
                                 //TODO: if match doesnt exist, create new data record, fill new record with all data needed
                                 // console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
-                                allowedFields = new DataRecord().getDataFieldTypes();
+                                const newDataRecord = new DataRecord();
+                                allowedFields = newDataRecord.getDataFieldTypes();
                                 tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, allowedFields);
                                 dataTable.addNewDataRecord(tinderMatchDataRecordValues);
                             }else{
@@ -105,11 +107,7 @@ export class TinderController implements datingAppController {
                         //TODO: 4 Inplement add tinder UI support overlay 
                         // (e.g. add icon/color to match who hasn't replied in a week)
                         // export retrieved data to csv/json?
-                        
-                        // Determine in chatmode or swipemode?
-                        // Add UI helper?
-                        const uiRequiredFieldsList:DataFieldTypes[] = new DataRecord().getDataFieldTypes();
-                        this.setSwipeHelperOnScreen(uiRequiredFieldsList);
+                        this.setSwipeHelperOnScreen();
                     });
 
                     // HINT: In order to scroll to the very bottom of the messageList in tinder;
@@ -134,8 +132,8 @@ export class TinderController implements datingAppController {
 
         this.UIController = new UIController();
         this.UIController.addUIControls(); // WORKS I can create my own UI using Jquery AND manipulate the DOM with Jquery (and possibly also the mutationObserver)
-
     }
+
     private parseMatchDataToDataRecordValues(match: ParsedResultMatch, allowedFields: DataFieldTypes[]): DataRecordValues[] {
         const dataRecordValuesList: DataRecordValues[] = [];
 
@@ -440,7 +438,7 @@ export class TinderController implements datingAppController {
         return false;
     }
 
-    public setSwipeHelperOnScreen(UIRequiredFieldsList: DataFieldTypes[]): void {
+    public setSwipeHelperOnScreen(): void {
 
         // V 1. set up mutation observer for swipe, chat etc. to execute methods if DOM changes (switch screen, receive message etc.)
         // V 2. recognize which screen we are on (swipe, chat or other?)
@@ -455,12 +453,14 @@ export class TinderController implements datingAppController {
         const swipeOrChatContainerIdentifier = '.App__body > .desktop > main.BdStart';
 
         const $SOCcontainer = $('body').find(swipeOrChatContainerIdentifier).first()[0];
-        // const currentScreen: ScreenNavStateCombo;
 
         if(!$SOCcontainer){
             console.error(`Element with identifier not found: ${swipeOrChatContainerIdentifier}. Please update identifiers.`);
             return;
         }
+
+        this.currentScreen = this.getCurrentScreenByDOM();
+        this.addUIHelpers(this.currentScreen);
 
         const callback = (mutations: MutationRecord[]) =>{
             if(this.currentScreenTimeoutId){
@@ -471,14 +471,14 @@ export class TinderController implements datingAppController {
                 // if current screen at this time is still the same, do not re-update the currentscreen
                 return;
             }
-            this.removeAllUIHelpers();
+
             this.currentScreenTimeoutId = setTimeout(()=>{
                 //TODO: show loading overlay while setTimeout started & hide overlay when ended (currentScreen is updated)
                 this.currentScreen = this.getCurrentScreenByDOM();
                 console.log(this.currentScreen);
                 this.currentScreenTimeoutId = null;
 
-                this.addUIHelpers(this.currentScreen, UIRequiredFieldsList);
+                this.addUIHelpers(this.currentScreen);
             },500);
         };
 
@@ -506,13 +506,8 @@ export class TinderController implements datingAppController {
             console.dir($('#exampleInputEmail1').val())
         });
     }
-    public addUIHelpers(currentScreen: ScreenNavStateCombo, UIRequiredFieldsList: DataFieldTypes[]): void {
-        
+
     public addUIHelpers(currentScreen: ScreenNavStateCombo): void {
-        //     // uiRequiredField.label
-        //     // TODO: CONTINUE HERE
-        // });
-        const uiRequiredDataFieldTypes:DataFieldTypes[] = new DataRecord().getDataFieldTypes(false, true);
 
         if(currentScreen === ScreenNavStateCombo.Swipe){
             
