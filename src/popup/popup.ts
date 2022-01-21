@@ -2,7 +2,7 @@ import $ from "jquery";
 import csv from "csvtojson";
 import { DataRecord } from '../content/classes/data/dataRecord';
 import { PropertiesChecker } from "../content/classes/util/PropertiesChecker";
-import { portMessage } from "src/content/interfaces/portMessage.interface";
+import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 
@@ -16,14 +16,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const requiredHeadersList: string[] = dataFieldTypes.map((header) => header.label);
 
     // let inputData: Record<string, string | number | boolean | null | Record<string, string | number | boolean>> = null;
-    let inputData: DataRecordValues[][] | null = null;
+    let inputDataList: DataRecordValues[][] | null = null;
 
     function onFileInputChange(evt:Event){
         $('#warnText').hide();
         $('#succesText').hide();
 
         $('#activate').prop('disabled', true);
-        inputData = null;
+        inputDataList = null;
 
         const uploadedFile: File | undefined = getTargetFile(evt);
         if(uploadedFile && isValidFileType(uploadedFile)){
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function sendFileDataToContent(){
-        if(!inputData){
+        if(!inputDataList){
             console.error('inputData is not set');
             return;
         }
@@ -98,11 +98,11 @@ document.addEventListener('DOMContentLoaded', function () {
         function connectToCurrentTab () {
             getCurrentTabId(function(currentTabId:number) {
                 const port = chrome.tabs.connect(currentTabId, <chrome.runtime.Port>{name: "knockknock"});
-                port.postMessage(<portMessage>{'message': 'initApp', 'payload': inputData});
-                port.onMessage.addListener(function(msg) {
-                    console.log('I am not expecting a message back?');
-                    console.log(msg);
-                });
+                port.postMessage(<PortMessage>{'messageSender': 'POPUP', 'action': 'INIT', 'payload': inputDataList});
+                // port.onMessage.addListener(function(msg) {
+                //     console.log('I am not expecting a message back?');
+                //     console.log(msg);
+                // });
             });
         }
         connectToCurrentTab();
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if(hasCompatibleHeaders && hasCompatibleValues){
                         console.log(`Result succes: `); 
                         console.dir(result);
-                        inputData = mapResultsArrayToresultDataRecordValues(result);
+                        inputDataList = mapResultsArrayToresultDataRecordValues(result);
                         $('#succesText').text('Headers, labels and values are valid.').removeClass('d-none');
                         $('#activate').attr('disabled', null);
                     }else{
