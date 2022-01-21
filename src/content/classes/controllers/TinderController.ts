@@ -725,42 +725,6 @@ export class TinderController implements datingAppController {
                 }
                 return getMessagesPerMatchesAsynchronously()
             });
-            
-            //note: track outgoing calls by this structure:
-            // https://api.gotinder.com/{like|pass}/{_id}
-
-            //note: track webRequests; (don't forget to enable this in permissions!)
-            //https://developer.chrome.com/docs/extensions/reference/webRequest/
-
-            //otherwise use this:
-            // https://gist.github.com/benjamingr/0433b52559ad61f6746be786525e97e8
-
-            // determine if the rerquest is sent by xmlhttp or ajax. if ajax, you can also use this;
-            // https://www.npmjs.com/package/jquery-ajax-tracking?activeTab=readme
-
-            // options;
-            // https://stackoverflow.com/questions/43813770/how-to-intercept-all-http-requests-including-form-submits/43815800
-
-            // mocht al het bovenstaande niet werken; 
-            /*
-            1. track current viewing person name, age evt. photo url
-            2. get currentMatchesList
-            3. track the button-click event waarbij de person wordt geliked
-            4. on trigger; get matches, remove old currentMatches from new Matches list; only 1 match should remain, check if true otherwise throw big error & retry after 1 sec?
-            5. check if match difference (which should be 1 match; our newest match); matches the name & age & evt. photo url
-            6. get person info (tinder id etc.) on the match
-            */
-
-            // NOTE: Tinder workings;
-            /* 
-            There is a https://api.gotinder.com/v2/recs/core?locale=nl request which gives you 25 profile recommendations at a time, which contains for each user the user object which contains the id's, name, age, birthdate, picture etc.
-            maybe this info would be handy to log/record as well?
-            e.g.how many user recommendations i get which;
-            1. have profile text
-            2. are verified
-            3. more???
-            4. also contains pics,.. so in theory could build my own tinder app UI
-            */
 
         }else{
             console.error(`The requestHandler was not set`);
