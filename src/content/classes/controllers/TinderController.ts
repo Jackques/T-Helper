@@ -491,21 +491,6 @@ export class TinderController implements datingAppController {
             subtree: true, // lower descendants too
             characterDataOldValue: true, // pass old data to callback
         });
-
-        const html = `<form>
-        <div class="form-group">
-          <label for="exampleInputEmail1">Email address</label>
-          <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
-          <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-        </div>`;
-        $('.App__body').prepend('<button type="button" id="testingbutton" class="btn btn-success">Success</button>');
-        $('.App__body').prepend(html);
-
-        $(document).on("click", '.App__body #testingbutton', function (evt) {
-            console.log('this works! 2');
-            alert('this works! 2');
-            console.dir($('#exampleInputEmail1').val())
-        });
     }
 
     public addUIHelpers(currentScreen: ScreenNavStateCombo): void {
@@ -517,7 +502,7 @@ export class TinderController implements datingAppController {
                 const newDataRecord:DataRecord = new DataRecord();
 
                 // eslint-disable-next-line no-debugger
-                debugger;
+                // debugger;
                 
                 
                 // 2. check if #uiHelperFieldsContainer exists?
