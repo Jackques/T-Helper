@@ -8,4 +8,50 @@
   background-color: yellow;
 }
 
+.loadingOverlay {
+  height: 100%;
+  width: 100%;
+  background: rgba(60, 60, 60, 0.9);
+  position: fixed;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+}
+
+.loadingOverlay .loadingOverlayContainer {
+  width: 200px;
+  height: 200px;
+}
+
+.loadingOverlay .loadingOverlayContainer .spinner-border {
+  height: 100%;
+  width: 100%;
+}
+
+/* field helpers additional styling */
+.fieldContainer {
+  margin-bottom: 15px;
+}
+
+.rangeNumberDisplayContainer {
+  display: flex;
+}
+
+.rangeNumberDisplayContainer .rangeNumberDisplay {
+  text-align: center;
+  width: 11.5%;
+  font-size: 10px;
+}
+
+.rangeNumberDisplayContainer .rangeNumberDisplay:first-child {
+  text-align: left;
+  width: 4%;
+}
+
+.rangeNumberDisplayContainer .rangeNumberDisplay:last-child {
+  text-align: right;
+  width: 4%;
+}
+
 /*# sourceMappingURL=somestyling.css.map */

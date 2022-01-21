@@ -3,24 +3,21 @@ import { datingAppController } from "src/content/interfaces/controllers/datingAp
 import { ParsedResultMatch } from "src/content/interfaces/controllers/ParsedResultMatch.interface";
 import { Message, ParsedResultMessages } from "src/content/interfaces/http-requests/MessagesListTinder.interface";
 import { Badges, Match, MatchListTinderAPI } from "src/content/interfaces/http-requests/MatchesListTinder.interface";
-import { RequestHandler } from "src/content/interfaces/http-requests/RequestHandler.interface";
-import { Matches } from "src/content/interfaces/tinder_api/matches.interface";
-import { RequestHandlerTinder } from "../http-requests/requestHandlerTinder";
-import { Person } from "../tinder/Person";
 import { UIController } from "../tinder/UIController";
 import { matchMockTwo } from "../mocks/matchesMock";
 import { dataTable } from '../data/dataTable';
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
-import { DataRecord } from "../data/dataRecord";
+import { DataRecord, SubmitType } from "../data/dataRecord";
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DateHelper } from "../util/dateHelper";
 import { GhostStatus } from "../data/dataItems/dataItemGhost";
 import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
-
+import { UIFieldsRenderer } from "./UIFieldsRenderer";
 import { RequestHandlerTinder } from "../http-requests/requestHandlerTinder";
 import { Person } from "../tinder/Person";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { dataStorage } from '../data/dataStorage';
+import { UIRequired } from "../data/dataField";
 import { PersonAction } from "./../../../peronAction.enum"; // todo: had to move this to top level AND make a relative path.. but since ALL components (content, background, popup) share the same interfaces/enums etc. why not move everything to top lvl for importing? ALSO; why did an error occur when i tried to relative import this?
 
 export class TinderController implements datingAppController {
@@ -28,6 +25,7 @@ export class TinderController implements datingAppController {
     listEndpoints = ['a', 'b', 'c'];
     hasCredentials = false;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
+    private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer();
 
     private xAuthToken = '';
     private requestHandler!: RequestHandlerTinder; // 'definite assignment assertion proerty (!) added here, is this a good practice?'
