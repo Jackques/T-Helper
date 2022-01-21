@@ -32,14 +32,18 @@ export class Main {
                         this.dataTable.addNewDataRecord(msg);
                     });
 
-                    this.datingAppController = this.initAppController(this.datingAppType, this.dataTable);
+                        this.datingAppController = this.initAppController(this.datingAppType, this.dataTable, this.dataStorage);
                 }
             }
             });
-            port.onMessage.addListener((msg: portMessage) => {
-                if(msg.message === 'background'){
+            port.onMessage.addListener((msg: PortMessage) => {
+                if(msg.messageSender === 'BACKGROUND' && msg.action === 'SUBMIT_ACTION'){
                     console.dir(msg);
                     console.log(`do stuff`);
+                    // eslint-disable-next-line no-debugger
+                    debugger;
+
+                    this.dataStorage.addActionToDataStore(<SubmitAction>msg.payload[0]);
                 }
             })
         });
@@ -76,10 +80,10 @@ export class Main {
         }
     }
 
-    private initAppController(appType: string, dataTable: dataTable){
+    private initAppController(appType: string, dataTable: dataTable, dataStorage: dataStorage){
         switch(appType){
             case "tinder":
-                return new TinderController('api', dataTable);
+                return new TinderController('api', dataTable, dataStorage);
             case "happn":
                 alert('Happn is not yet supported');
                 return undefined;

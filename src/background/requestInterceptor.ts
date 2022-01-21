@@ -1,19 +1,9 @@
-import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
-import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
-import { portMessage } from "src/content/interfaces/portMessage.interface";
+import { PersonAction } from "../peronAction.enum";
+import { PortMessage } from "src/content/interfaces/portMessage.interface";
 
 export class requestInterceptor {
   public activeTabId: number | undefined;
   public xAuthToken: string | undefined;
-
-  //TODO: Refactor this so contentscript asks bg script for this info instead of other way around.
-  private isMessageSent = false;
-
-  private lastAction: RequestStoredValues = {
-    likedPerson: null,
-    superLikedPerson: null,
-    passedPerson: null
-  };
 
   constructor() {
     chrome.webRequest.onBeforeRequest.addListener(
@@ -23,32 +13,36 @@ export class requestInterceptor {
           return;
         }
 
-        let action: 'likedPersonId' | 'superLikedPerson' | 'passedPersonId' | undefined;
-        let dataField:DataRecordValues | undefined;
+        // todo: refactor this to interface in own file?
+        let action: SubmitAction | undefined = undefined;
 
         switch (true) {
           case details.url.startsWith('https://api.gotinder.com/like/'):
-            action = 'likedPersonId';
-            dataField = this._getDataRecordValueNewPerson(details.url);
-            this.lastAction.likedPerson = dataField;
+            action = {
+              'submitType': PersonAction.LIKED_PERSON,
+              'personId': this._getPersonIdFromUrl(details.url)
+            };
             break;
-          case details.url.startsWith('https://api.gotinder.com/superlike/'): //todo: check if this is correct
-            action = 'superLikedPerson';
-            dataField = this._getDataRecordValueNewPerson(details.url);
-            this.lastAction.superLikedPerson = dataField;
+          case details.url.startsWith('https://api.gotinder.com/superlike/') && details.url.includes('super'):
+            // superlike example: https://api.gotinder.com/like/57f2a33a6dda1f6b095088af/super?locale=nl
+            action = {
+              'submitType': PersonAction.SUPER_LIKED_PERSON,
+              'personId': this._getPersonIdFromUrl(details.url)
+            };
             break;
           case details.url.startsWith('https://api.gotinder.com/pass/'):
-            action = 'passedPersonId';
-            dataField = this._getDataRecordValueNewPerson(details.url);
-            this.lastAction.passedPerson = dataField;
+            action = {
+              'submitType': PersonAction.PASSED_PERSON,
+              'personId': this._getPersonIdFromUrl(details.url)
+            };
             break;
           default:
             break;
         }
 
-        // if(action && dataField){
-        //   this.sendMessageToContent(action, dataField);
-        // }
+        if(action){
+          this.sendMessageToContent(action);
+        }
 
       },
       { urls: ["https://api.gotinder.com/*"] },
@@ -68,40 +62,30 @@ export class requestInterceptor {
     });
 
   }
-  private _getDataRecordValueNewPerson(url: string): DataRecordValues {
-    return {
-      'label': 'System-no', 
-      'value': {
-        'appType': 'tinder', 
-        'id': this._getPersonIdFromUrl(url)
-      }
-    };
-  }
+
   private _getPersonIdFromUrl(url: string): string {
     const urlStrippedStart: string = url.replace('https://api.gotinder.com/like/', '');
     return urlStrippedStart.slice(0, urlStrippedStart.indexOf('?'));
   }
 
-  private sendMessageToContent(action: string, dataField: DataRecordValues): void {
+  private sendMessageToContent(submitAction: SubmitAction): void {
     console.log('going to send message before if');
     console.dir(`active tab is: ${this.activeTabId}`);
     if (this.activeTabId) {
       console.log('going to send message after if');
       const port = chrome.tabs.connect(this.activeTabId, <chrome.runtime.Port>{name: "knockknock"});
-      
-      port.postMessage(<portMessage>{
-        'message': 'background', 
-        'action': action,
-        'payload': [
-          dataField
-        ]
-      });
+      const portMessage: PortMessage = {
+        'messageSender': 'BACKGROUND', 
+        'action': 'SUBMIT_ACTION',
+        'payload': [submitAction]
+      }; 
+      port.postMessage(portMessage);
       console.log(`message sent from background!`);
     }
   }
 
   private isTinderRequest(details: chrome.webRequest.WebRequestHeadersDetails): boolean {
-    return details.initiator && details.initiator === "https://tinder.com" ? true : false;
+    return details.initiator && details.initiator === "https://tinder.com" || details.initiator === "https://api.gotinder.com" ? true : false;
   }
 
   private setTinderTabId():void {
@@ -118,12 +102,7 @@ export class requestInterceptor {
   }
 }
 
-interface RequestHeader {
-  name: string;
-  value: string;
-}
-interface RequestStoredValues {
-  likedPerson: DataRecordValues | null,
-  superLikedPerson: DataRecordValues | null,
-  passedPerson: DataRecordValues | null
+export interface SubmitAction {
+  submitType: PersonAction | undefined,
+  personId: string
 }

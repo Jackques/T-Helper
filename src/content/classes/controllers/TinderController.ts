@@ -17,6 +17,11 @@ import { DateHelper } from "../util/dateHelper";
 import { GhostStatus } from "../data/dataItems/dataItemGhost";
 import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 
+import { RequestHandlerTinder } from "../http-requests/requestHandlerTinder";
+import { Person } from "../tinder/Person";
+import { PortMessage } from "src/content/interfaces/portMessage.interface";
+import { dataStorage } from '../data/dataStorage';
+import { PersonAction } from "./../../../peronAction.enum"; // todo: had to move this to top level AND make a relative path.. but since ALL components (content, background, popup) share the same interfaces/enums etc. why not move everything to top lvl for importing? ALSO; why did an error occur when i tried to relative import this?
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
@@ -29,14 +34,16 @@ export class TinderController implements datingAppController {
     private UIController!: UIController;
     public matches: Person[] = [];
     private dataTable: dataTable;
+    private dataStorage: dataStorage;
 
     private currentScreenTimeoutId:number | null = null;
     private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
 
-    constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: dataTable) {
+    constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: dataTable, dataStorage: dataStorage) {
 
         this.dataRetrievalMethod = dataRetrievalMethod;
         this.dataTable = dataTable;
+        this.dataStorage = dataStorage;
 
         if (this.dataRetrievalMethod === 'api' || this.dataRetrievalMethod === 'dom') {
             if (this.dataRetrievalMethod === 'api') {
@@ -504,35 +511,102 @@ export class TinderController implements datingAppController {
     }
     public addUIHelpers(currentScreen: ScreenNavStateCombo, UIRequiredFieldsList: DataFieldTypes[]): void {
         
-        // UIRequiredFieldsList.forEach((uiRequiredField)=>{
+    public addUIHelpers(currentScreen: ScreenNavStateCombo): void {
         //     // uiRequiredField.label
         //     // TODO: CONTINUE HERE
         // });
         const uiRequiredDataFieldTypes:DataFieldTypes[] = new DataRecord().getDataFieldTypes(false, true);
 
-        debugger;
-
         if(currentScreen === ScreenNavStateCombo.Swipe){
-            $('.recsCardboard__cards.Expand').css('right', '325px'); //right: 325px;
-            $('.recsPage.CenterAlign > div[role="region"]:first').prepend('<div id="uiHelperFieldsContainer" class="uiHelperFieldsContainer">test</div>');
+            
+                
+                // 1. create new data record
+                const newDataRecord:DataRecord = new DataRecord();
 
-            uiRequiredDataFieldTypes.forEach(()=>{
-                // check if #uiHelperFieldsContainer exists?
+                // eslint-disable-next-line no-debugger
+                debugger;
+                
+                
+                // 2. check if #uiHelperFieldsContainer exists?
                 // if not exist, throw error. If exist continue.
-                // get id of potential swipe, crate new datarecord & addtoTable (only if liked/disliked)
+                this.uiRenderer.renderFieldsContainerForScreen(currentScreen);
+                
+                // 3. loop over & show uiRequiredDataFieldTypes data fields
+                const uiRequiredDataFieldTypes:DataFieldTypes[] = newDataRecord.getDataFieldTypes(false, true, UIRequired.SELECT_ONLY);
+                
+                // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
+                this.uiRenderer.renderFieldsFromDataFieldTypes(uiRequiredDataFieldTypes, (value: DataRecordValues) => {
+                    // callback for setting values once button has been pressed
+                    console.log('Callback received a value!');
+                    console.log(value);
+                    // eslint-disable-next-line no-debugger
+                    debugger;
+                    newDataRecord.addDataToDataFields([value]);
+                }, (submitType: SubmitType) => {
+                    console.log('Callback received a submit type!');
+                    this.uiRenderer.setLoadingOverlay('loadingSwipeAction', true);
+                    console.log(submitType);
 
-                //TODO: new idea; instead of getting the fields.. get the fields by dataRecord AND loop over each field,(update: NO!); checking the UISetting, emptyAllowed, multipleDataEntry etc.
-                // or maybe like.. STILL get the record but use the title's as keys for getting the exact dataField and using that dataField reference to get properties like checking the UISetting, emptyAllowed, multipleDataEntry etc.
+                    console.log(this.dataStorage);
+                    console.assert(this.dataStorage.popLastActionFromDataStore() === undefined);
+                    // eslint-disable-next-line no-debugger
+                    debugger;
 
-                // const test = new DataRecord().
+                        // 1. get (request) personid from backgroundscript (get response), after 3 sec
+                        setTimeout(()=>{
+                            console.log('so.. is dataStore set?');
+                            console.log(this.dataStorage);
+                            const jack:any | undefined = this.dataStorage.popLastActionFromDataStore();
+                            console.log(jack);
 
+                            
 
-                // get the type of field, show correct UI helper in #uiHelperFieldsContainer
-                // add event listener to the UI component, listener updates new dataRecord
+                            if(jack !== undefined){
+                                let personActionStatus: boolean | undefined = undefined;
+                                if(jack.submitType === PersonAction.LIKED_PERSON){
+                                    personActionStatus = true;
+                                }
+                                if(jack.submitType === PersonAction.SUPER_LIKED_PERSON){
+                                    personActionStatus = true;
+                                }
+                                if(jack.submitType === PersonAction.PASSED_PERSON){
+                                    personActionStatus = false;
+                                }
 
-                //switch to other screen? remove data record
-                //liked? ADD FIELD; LIKED/DISLIKED & keep data record
-            })
+                                if(personActionStatus === undefined){
+                                    return;
+                                }
+
+                                
+                                newDataRecord.addDataToDataFields([{
+                                    label: 'personid',
+                                    value: jack.personId
+                                },{
+                                    label: 'Did-i-like',
+                                    value: personActionStatus
+                                }
+                            ]);
+                            }
+    
+                            this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
+                            // eslint-disable-next-line no-debugger
+                            debugger;
+                        }, 3000);
+                        
+                        // 2. if succesfull; add record to datatable
+                        // 3. if unsuccesfull; throw error, remove record
+
+                        
+                    
+                    //code to send message to open notification. This will eventually move into my extension logic
+                
+                // 4. get/set values for linking with dataRecord by using; addDataToDataFields(dataRecordValues:DataRecordValues[])
+                // 5. on click submit; get personid of potential swipe (only if liked/disliked/superliekd), 
+                // 6. addtoTable 
+
+                });
+                const idSwipePerson: string = this.getIdSwipePerson();
+
         }
 
         //todo: create checker method which checks if above DOM element ref exists, otherwise throw error
