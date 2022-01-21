@@ -90,7 +90,7 @@ export class DataRecord {
     */
 
     public addDataToDataFields(dataRecordValues:DataRecordValues[]):boolean{
-        // todo: check if all values in array match dataField names
+        // check if all values in array match dataField names
         if(this.isAllDataFieldsPresent(dataRecordValues)){
             //if so, add data by label, value pairs, value can be entered by using the add method on the corresponding dataField
             dataRecordValues.forEach((dataRecordValue)=>{
@@ -117,6 +117,11 @@ export class DataRecord {
         return '';
     }
 
+    /**
+     * Checks wether all data record values array provided in the param exist in the data record
+     * @param {DataRecordValues[]} dataRecordValueList
+     * @returns {boolean}
+     */
     private isAllDataFieldsPresent(dataRecordValueList: DataRecordValues[]):boolean{
         return dataRecordValueList.every((dataRecordValue:DataRecordValues)=>{
             return this.usedDataFields.findIndex((usedDataField:DataField)=>{
@@ -193,3 +198,4 @@ export class DataRecord {
     }
 
 }
+
