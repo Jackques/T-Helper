@@ -49,13 +49,6 @@ export class requestInterceptor {
       ['requestBody']
     );
 
-    // chrome.webRequest.onAuthRequired.addListener((watisthis)=>{
-    //   debugger
-    // });
-    // chrome.webRequest.onCompleted.addListener((test)=>{
-    //   debugger;
-    // });
-
     chrome.tabs.onActivated.addListener((activeTabInfo:chrome.tabs.TabActiveInfo) => {
       console.dir(`Activetab changed! The id is now: ${activeTabInfo.tabId}`);
       this.setTinderTabId();
