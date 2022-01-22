@@ -507,8 +507,9 @@ export class TinderController implements datingAppController {
                 // 3. loop over & show uiRequiredDataFieldTypes data fields
                 const uiRequiredDataFieldTypes:DataFieldTypes[] = newDataRecord.getDataFieldTypes(false, true, UIRequired.SELECT_ONLY);
                 
-
+                // Set initial values for swipe
                 newDataRecord.addDataToDataFields([
+                    // set initial value 
                 {
                     label: 'Date-liked-or-passed',
                     value: new Date().toISOString()
@@ -528,6 +529,15 @@ export class TinderController implements datingAppController {
                 {
                     label: 'Is-verified',
                     value: this.getIsVerifiedFromUI()
+                },
+                    // set initial value to later be adjusted by ui control
+                {
+                    label: 'Has-usefull-profiletext',
+                    value: false
+                },
+                {
+                    label: 'Attractiveness-score',
+                    value: 6
                 }
                 ]);
 
