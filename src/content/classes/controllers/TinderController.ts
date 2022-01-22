@@ -441,9 +441,7 @@ export class TinderController implements datingAppController {
         // V 1. set up mutation observer for swipe, chat etc. to execute methods if DOM changes (switch screen, receive message etc.)
         // V 2. recognize which screen we are on (swipe, chat or other?)
         // V 3. Listen for screen navigatie changes (can do this inside of the callback)
-        // 4. IF swipe; show swipe helpers (fields which require UI derived from dataTable)
-        // 4.b IF swipe; show like/reject/superlike buttons only if fields which require UI have been filled
-        // 4.c IF swipe; update fields which have autoGather (&autoGatherOnce) set to true
+        // V 4. IF swipe; show swipe helpers (fields which require UI derived from dataTable)
         // 5. IF chat; show chat helpers (which require UI) with current value (get current record)
         // 5.b IF chat; update fields which have autogather set to true
         
