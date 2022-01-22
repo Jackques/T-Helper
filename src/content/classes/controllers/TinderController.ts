@@ -575,6 +575,7 @@ export class TinderController implements datingAppController {
                                     return;
                                 }
 
+                                //TODO: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
                                 
                                 newDataRecord.addDataToDataFields([{
                                     label: 'personid',
@@ -604,6 +605,8 @@ export class TinderController implements datingAppController {
                 });
 
         }
+
+        //todo: create ability to while swipe/chat see all the values being stored for this record/person
 
         //todo: create checker method which checks if above DOM element ref exists, otherwise throw error
         //todo: FUTURE; create checker method which checks if all required DOM elements used here still exist (auto loop through application?)
