@@ -18,6 +18,7 @@ import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { dataStorage } from '../data/dataStorage';
 import { UIRequired } from "../data/dataField";
 import { PersonAction } from "./../../../peronAction.enum"; // todo: had to move this to top level AND make a relative path.. but since ALL components (content, background, popup) share the same interfaces/enums etc. why not move everything to top lvl for importing? ALSO; why did an error occur when i tried to relative import this?
+import { SubmitAction } from "src/background/requestInterceptor";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
@@ -508,14 +509,39 @@ export class TinderController implements datingAppController {
                 // 3. loop over & show uiRequiredDataFieldTypes data fields
                 const uiRequiredDataFieldTypes:DataFieldTypes[] = newDataRecord.getDataFieldTypes(false, true, UIRequired.SELECT_ONLY);
                 
+
+                newDataRecord.addDataToDataFields([
+                {
+                    label: 'Date-liked-or-passed',
+                    value: new Date().toISOString()
+                },
+                {
+                    label: 'Name',
+                    value: this.getPersonNameFromUI()
+                },
+                {
+                    label: 'Age',
+                    value: this.getPersonAgeFromUI()
+                },
+                {
+                    label: 'Has-profiletext',
+                    value: this.getHasProfileTextFromUI()
+                },
+                {
+                    label: 'Is-verified',
+                    value: this.getIsVerifiedFromUI()
+                }
+                ]);
+
                 // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
                 this.uiRenderer.renderFieldsFromDataFieldTypes(uiRequiredDataFieldTypes, (value: DataRecordValues) => {
                     // callback for setting values once button has been pressed
-                    console.log('Callback received a value!');
-                    console.log(value);
+                    console.log(`Added value to new data record; label: ${value.label}, value: ${value.value}`);
                     // eslint-disable-next-line no-debugger
-                    debugger;
+                    // debugger;
                     newDataRecord.addDataToDataFields([value]);
+                    console.log(`Updated dataRecord: `);
+                    console.dir(newDataRecord);
                 }, (submitType: SubmitType) => {
                     console.log('Callback received a submit type!');
                     this.uiRenderer.setLoadingOverlay('loadingSwipeAction', true);
@@ -530,20 +556,20 @@ export class TinderController implements datingAppController {
                         setTimeout(()=>{
                             console.log('so.. is dataStore set?');
                             console.log(this.dataStorage);
-                            const jack:any | undefined = this.dataStorage.popLastActionFromDataStore();
-                            console.log(jack);
+                            const submitAction:SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
+                            console.log(submitAction);
 
                             
 
-                            if(jack !== undefined){
+                            if(submitAction !== undefined){
                                 let personActionStatus: boolean | undefined = undefined;
-                                if(jack.submitType === PersonAction.LIKED_PERSON){
+                                if(submitAction.submitType === PersonAction.LIKED_PERSON){
                                     personActionStatus = true;
                                 }
-                                if(jack.submitType === PersonAction.SUPER_LIKED_PERSON){
+                                if(submitAction.submitType === PersonAction.SUPER_LIKED_PERSON){
                                     personActionStatus = true;
                                 }
-                                if(jack.submitType === PersonAction.PASSED_PERSON){
+                                if(submitAction.submitType === PersonAction.PASSED_PERSON){
                                     personActionStatus = false;
                                 }
 
@@ -554,12 +580,11 @@ export class TinderController implements datingAppController {
                                 
                                 newDataRecord.addDataToDataFields([{
                                     label: 'personid',
-                                    value: jack.personId
+                                    value: submitAction.personId
                                 },{
                                     label: 'Did-i-like',
                                     value: personActionStatus
-                                }
-                            ]);
+                                }]);
                             }
     
                             this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
@@ -587,6 +612,35 @@ export class TinderController implements datingAppController {
         //todo: add other state (if,.. or seperate method) for adding chat ui helper VS swipe ui helper. Currently working on swipe ui helper
 
         //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
+    }
+    public getIsVerifiedFromUI(): boolean {
+        const isVerifiedDOMNode:HTMLElement = $('div[aria-hidden="false"] title:contains(Geverifieerd!)').first()[0];
+        return isVerifiedDOMNode && isVerifiedDOMNode.textContent && isVerifiedDOMNode.textContent === 'Geverifieerd!' ? true : false;
+    }
+
+    public getHasProfileTextFromUI(): boolean {
+        const profileTextDOMNode:HTMLElement = $('div[aria-hidden="false"] div.BreakWord').first()[0];
+        return profileTextDOMNode && profileTextDOMNode.textContent && profileTextDOMNode.textContent.length > 0 ? true : false;
+    }
+
+    public getPersonAgeFromUI(): number | null {
+        const ageDOMNode:HTMLElement = $('div[aria-hidden="false"] span[itemprop="age"]').first()[0];
+        if(ageDOMNode && ageDOMNode.textContent){
+            return parseInt(ageDOMNode.textContent);
+        }else{
+            console.error(`Could not get age property. Please check the DOM settings`);
+            return null;
+        }
+    }
+
+    public getPersonNameFromUI(): string | null {
+        const nameDOMNode:HTMLElement = $('div[aria-hidden="false"] span[itemprop="name"]').first()[0];
+        if(nameDOMNode){
+            return nameDOMNode.textContent;
+        }else{
+            console.error(`Could not get name property. Please check the DOM settings`);
+            return null;
+        }
     }
 
     public getCurrentScreenByDOM(): ScreenNavStateCombo {
