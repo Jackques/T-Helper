@@ -22,7 +22,7 @@
       ],
       "css": [
         "vendor/bootstrap.css",
-        "content/somestyling.css"
+        "content/styles.css"
       ],
       "matches": ["*://tinder.com/*"]
     }

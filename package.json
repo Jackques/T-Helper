@@ -14,12 +14,12 @@
     "clean": "rimraf dist",
     "copy:static": "copyfiles manifest.json assets/**/* dist",
     "copy:vendor": "copyfiles -f src/vendor/* dist/vendor",
-    "copy:content-css": "copyfiles -f src/content/somestyling.css src/content/somestyling.css.map dist/content",
+    "copy:content-css": "copyfiles -f src/content/styles.css src/content/styles.css.map dist/content",
     "dist": "npm run clean && npm run build --no-minify && npm run copy:static && npm run content-sass && npm run copy:content-css && npm run copy:vendor",
     "lint": "eslint --ext .ts,.tsx ./src",
     "test": "jest -c ./config/jest.config.js",
     "popup-sass": "node-sass --output-style expanded --source-map true --source-map-contents true --precision 6 ./src/popup/popup-styles.scss ./src/popup/popup-styles.css",
-    "content-sass": "node-sass --output-style expanded --source-map true --source-map-contents true --precision 6 ./src/content/somestyling.scss ./src/content/somestyling.css"
+    "content-sass": "node-sass --output-style expanded --source-map true --source-map-contents true --precision 6 ./src/content/styles.scss ./src/content/styles.css"
   },
   "author": "Yuri Drabik <yurist38@mail.ru>",
   "license": "MIT",
