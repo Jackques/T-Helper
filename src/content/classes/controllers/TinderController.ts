@@ -588,7 +588,7 @@ export class TinderController implements datingAppController {
                             this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
                             // eslint-disable-next-line no-debugger
                             debugger;
-                        }, 3000);
+                        }, 1000);
                         
                         // 2. if succesfull; add record to datatable
                         // 3. if unsuccesfull; throw error, remove record
