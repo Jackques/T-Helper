@@ -87,7 +87,7 @@ export class TinderController implements datingAppController {
                                 
                                 const dataAddedSuccessfully:boolean = newDataRecord.addDataToDataFields(tinderMatchDataRecordValues);
                                 if(dataAddedSuccessfully){
-                                    dataTable.addNewDataRecord(newDataRecord);
+                                    this.dataTable.addNewDataRecord(newDataRecord);
                                 }else{
                                     console.error(`Error adding data from retrieved match. Please check match retrieved and error log.`);
                                 }
