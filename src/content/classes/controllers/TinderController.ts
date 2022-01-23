@@ -468,10 +468,12 @@ export class TinderController implements datingAppController {
                 return;
             }
 
+            this.uiRenderer.setLoadingOverlay('switchScreen', true);
+
             this.currentScreenTimeoutId = setTimeout(()=>{
-                //TODO: show loading overlay while setTimeout started & hide overlay when ended (currentScreen is updated)
                 this.currentScreen = this.getCurrentScreenByDOM();
-                console.log(this.currentScreen);
+                console.log(`Current screen: ${this.currentScreen}`);
+                this.uiRenderer.setLoadingOverlay('switchScreen', false);
                 this.currentScreenTimeoutId = null;
 
                 this.addUIHelpers(this.currentScreen);
@@ -506,7 +508,7 @@ export class TinderController implements datingAppController {
                 
                 // 3. loop over & show uiRequiredDataFieldTypes data fields
                 const uiRequiredDataFieldTypes:DataFieldTypes[] = newDataRecord.getDataFieldTypes(false, true, UIRequired.SELECT_ONLY);
-                
+
                 // Set initial values for swipe
                 newDataRecord.addDataToDataFields([
                     // set initial value 
