@@ -659,11 +659,16 @@ export class TinderController implements datingAppController {
         const chatIdentifier = '.chat';
         const chatProfileIdentifier = '.chatProfile';
 
+        const backButtonOnMainPanelIdentifier = 'a[href="/app/recs"].focus-button-style';
+
         let currentPage: ScreenNavStateCombo;
 
         switch (true) {
-                case $(swipeIdentifier).length > 0 ? true : false:
+                case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length === 0 ? true : false:
                   currentPage = ScreenNavStateCombo.Swipe;
+                  break;
+                case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length > 0 ? true : false:
+                  currentPage = ScreenNavStateCombo.SwipeProfile;
                   break;
                 case $(chatIdentifier).length > 0 && $(chatProfileIdentifier).length > 0 ? true : false:
                   currentPage = ScreenNavStateCombo.Chat;

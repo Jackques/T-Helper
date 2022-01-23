@@ -1,5 +1,6 @@
 export enum ScreenNavStateCombo {
     UnknownScreen = "UNKNOWN",
     Swipe = "SWIPE",
-    Chat = "CHAT"
+    SwipeProfile = "SWIPEPROFILE",
+    Chat = "CHAT",
 }
