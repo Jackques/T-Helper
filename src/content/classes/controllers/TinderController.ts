@@ -154,9 +154,9 @@ export class TinderController implements datingAppController {
                     //todo: ensure providing null increments the number in dataTable instead of throwing error
                     dataRecordValuesList.push({ 'label': 'No', 'value': undefined});
                     break;
-                case 'Date-liked':
+                case 'Date-liked-or-passed':
                     // does not get logged by tinder, thus can only be logged by me, thus should be undefined
-                    dataRecordValuesList.push({ 'label': 'Date-liked', 'value': undefined});
+                    dataRecordValuesList.push({ 'label': 'Date-liked-or-passed', 'value': undefined});
                     break;
                 case 'Name':
                     dataRecordValuesList.push({ 'label': 'Name', 'value': match.match.person.name});
