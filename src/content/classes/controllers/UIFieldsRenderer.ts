@@ -272,6 +272,12 @@ export class UIFieldsRenderer {
             return;
         }
         if(visibility){
+
+            // if loadingOverlay with the same name already exists, do nothing
+            if($(`#${uniqueId}`).length > 0){
+                return;
+            }
+
             $(`body`).append(`
             <div id="${uniqueId}" class="loadingOverlay">
                 <div class="loadingOverlayContainer">
