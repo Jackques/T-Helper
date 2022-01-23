@@ -177,9 +177,7 @@ export class UIFieldsRenderer {
 
     public renderFieldsContainerForScreen(screen: ScreenNavStateCombo, additionalScreenAdjustmentCommands?: () => void): void {
         if(screen === ScreenNavStateCombo.Swipe){
-            $('.recsCardboard__cards.Expand').css('right', '325px');
-
-            $('.recsPage.CenterAlign > div[role="region"]:first').prepend(`
+            $('body').prepend(`
                 <div id="uiHelperFields" class="uiHelperFieldsContainer">
                     <div class="container">
                         <div class="row">
