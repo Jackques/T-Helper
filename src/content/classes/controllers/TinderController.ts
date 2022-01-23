@@ -601,12 +601,16 @@ export class TinderController implements datingAppController {
                                 //TODO: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
                                 
                                 newDataRecord.addDataToDataFields([{
-                                    label: 'personid',
-                                    value: submitAction.personId
+                                    label: 'System-no',
+                                    value: {
+                                        appType: 'tinder', 
+                                        tempId: submitAction.personId
+                                    }
                                 },{
                                     label: 'Did-i-like',
                                     value: personActionStatus
                                 }]);
+
                             }
     
                             this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
