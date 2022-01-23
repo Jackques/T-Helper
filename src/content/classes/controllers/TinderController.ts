@@ -491,6 +491,10 @@ export class TinderController implements datingAppController {
     }
 
     public addUIHelpers(currentScreen: ScreenNavStateCombo): void {
+        if(currentScreen === ScreenNavStateCombo.SwipeProfile){
+            // if still on the swipe screen (but in profile detail view), don't change anything and keep the current form
+            return;
+        }
 
         if(currentScreen === ScreenNavStateCombo.Swipe){
             
