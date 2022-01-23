@@ -611,6 +611,7 @@ export class TinderController implements datingAppController {
                                     value: personActionStatus
                                 }]);
 
+                                this.dataTable.addNewDataRecord(newDataRecord);
                             }
     
                             this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
