@@ -117,6 +117,31 @@ export class DataRecord {
         return '';
     }
 
+    public getNoDataRecord(): number | undefined {
+        const currentRecordNumberValue: unknown = this.getValueOfDataFieldByTitle('No');
+        if(typeof currentRecordNumberValue === 'number'){
+            return currentRecordNumberValue as number;
+        }else{
+            return undefined;
+        }
+    }
+
+    public setNoDataRecord(no: number): void {
+        if(no && typeof no === 'number'){
+            if(no <= 0){
+                console.error(`Provided numbner cannot be 0 or less`);
+                return;
+            }
+
+            this.usedDataFields[this.getIndexOfDataFieldByTitle('No')].addDataEntry(no)
+            return;
+        }else{
+            console.error(`No (valid) number provided to set No for this data record: ${this}`);
+            return;
+        }
+        
+    }
+
     /**
      * Checks wether all data record values array provided in the param exist in the data record
      * @param {DataRecordValues[]} dataRecordValueList
