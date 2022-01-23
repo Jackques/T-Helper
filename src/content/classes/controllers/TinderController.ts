@@ -84,7 +84,14 @@ export class TinderController implements datingAppController {
                                 const newDataRecord = new DataRecord();
                                 allowedFields = newDataRecord.getDataFieldTypes();
                                 tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, allowedFields);
-                                dataTable.addNewDataRecord(tinderMatchDataRecordValues);
+                                
+                                const dataAddedSuccessfully:boolean = newDataRecord.addDataToDataFields(tinderMatchDataRecordValues);
+                                if(dataAddedSuccessfully){
+                                    dataTable.addNewDataRecord(newDataRecord);
+                                }else{
+                                    console.error(`Error adding data from retrieved match. Please check match retrieved and error log.`);
+                                }
+                                
                             }else{
                                 // console.log(`Going to UPDATE data record for: ${match.match.person.name}`);
                                 allowedFields = dataTable.getAllowedFieldsByRecordIndex(matchRecordIndex);

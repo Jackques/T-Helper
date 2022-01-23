@@ -32,7 +32,14 @@ export class Main {
                         //for every entry i the list received in payload
                         //todo: CURRENTLY; i ASSUME the dataTable will be empty (which it most likely is), but maybe i would want to check here if prior data already exists, thus updating data rather than creating new records
                         portMessage.payload.forEach((msg:DataRecordValues[])=>{
-                            this.dataTable.addNewDataRecord(msg);
+                            const newDataRecord = new DataRecord();
+                            
+                            const isDataAddedSuccesfully: boolean = newDataRecord.addDataToDataFields(msg);
+                            if(isDataAddedSuccesfully){
+                                this.dataTable.addNewDataRecord(newDataRecord);
+                            }else{
+                                console.error(`Error adding data from import. Please check data fields from import and error log.`);
+                            }
                         });
 
                         this.datingAppController = this.initAppController(this.datingAppType, this.dataTable, this.dataStorage);
