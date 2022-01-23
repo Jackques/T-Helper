@@ -458,11 +458,15 @@ export class TinderController implements datingAppController {
         this.currentScreen = this.getCurrentScreenByDOM();
         this.addUIHelpers(this.currentScreen);
 
-        const callback = (mutations: MutationRecord[]) =>{
-            if(this.currentScreenTimeoutId){
+        // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
+        // Thus I can always apply DOM manipulations on them when needed!
+        const observer = new MutationObserver((mutations: MutationRecord[]) =>{
+
+            if(this.currentScreenTimeoutId !== null){
                 // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
                 return;
             }
+
             if(this.currentScreen === this.getCurrentScreenByDOM()){
                 // if current screen at this time is still the same, do not re-update the currentscreen
                 return;
@@ -478,11 +482,7 @@ export class TinderController implements datingAppController {
 
                 this.addUIHelpers(this.currentScreen);
             },500);
-        };
-
-        // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
-        // Thus I can always apply DOM manipulations on them when needed!
-        const observer = new MutationObserver(callback);
+        });
         observer.observe($SOCcontainer, {
             childList: true, // observe direct children
             subtree: true, // lower descendants too
