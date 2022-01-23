@@ -179,24 +179,16 @@ export class UIFieldsRenderer {
         if(screen === ScreenNavStateCombo.Swipe){
             $('body').prepend(`
                 <div id="uiHelperFields" class="uiHelperFieldsContainer">
-                    <div class="container">
-                        <div class="row">
-                            <div id="uiHelperFieldsContainer" class="col-12">
-                                <p class="h5">T-Helper fields</p>
+                    <form id="uiHelperFieldsForm">
+                        <div class="container">
+                            <div class="row">
+                                <div id="uiHelperFieldsContainer" class="col-12">
+                                    <p class="h5">T-Helper fields</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
-            `);
-
-            $('body').append(`
-            <div class='overlay'>
-                <div class='d-flex justify-content-center justify-content-xl-around'>
-                    <div class='align-items-center'>
-                        <div class='spinner-border text-primary' role='status'></div>
-                    </div>
-                </div>
-            </div>
             `);
 
             this._setSubmitEventHandlers();
