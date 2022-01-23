@@ -127,7 +127,7 @@ export class DataField {
         // continue with the check
 
         if(this.mustBeUnique && !this._isDataEntryUnique('noDataEntry', dataEntry)){
-            console.error(`dataEntry: ${dataEntry} for title: ${this.title} does not have a unique numebr.`)
+            console.error(`dataEntry: ${dataEntry} for property: ${this.title} does not have a unique number.`)
         }
 
         const typeDataEntry:"string" | "number" | "boolean" | "object" | null = this._getTypeOfValue(dataEntry);
