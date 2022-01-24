@@ -244,13 +244,9 @@ export class UIFieldsRenderer {
         }
     }
 
-    public resetAllUIHelpers(): void {
-        this.removeAllUIHelpers();
-    }
-
     public resetExistingFields(): void {
         const HTMLFormElement = $(`#uiHelperFieldsForm`).first();
-        if(HTMLFormElement[0].tagName === 'FORM'){
+        if(HTMLFormElement.length > 0 && HTMLFormElement[0].tagName === 'FORM'){
             //todo: there must be a better way to do this?
             HTMLFormElement.trigger("reset");
 
@@ -258,8 +254,6 @@ export class UIFieldsRenderer {
             HTMLFormElement.find('textarea').each(function(){
                 this.value = '';
             });
-        }else{
-            console.error(`Form cannot be reset because for reference is not a recognized HTML Form element. Please check the HTML reference`);
         }
     }
 
