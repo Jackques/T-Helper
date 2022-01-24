@@ -475,11 +475,12 @@ export class TinderController implements datingAppController {
             }
 
             if(this.currentScreen === this.getCurrentScreenByDOM()){
-                // if current screen at this time is still the same, do not re-update the currentscreen
                 return;
             }
 
             this.uiRenderer.setLoadingOverlay('switchScreen', true);
+
+            this.uiRenderer.removeAllUIHelpers();
 
             this.currentScreenTimeoutId = setTimeout(()=>{
                 this.currentScreen = this.getCurrentScreenByDOM();
@@ -487,6 +488,7 @@ export class TinderController implements datingAppController {
                 this.uiRenderer.setLoadingOverlay('switchScreen', false);
                 this.currentScreenTimeoutId = null;
 
+                console.log(`execute add UI helpers for screen: ${this.currentScreen}`);
                 this.addUIHelpers(this.currentScreen);
             },500);
         });
@@ -502,25 +504,20 @@ export class TinderController implements datingAppController {
             // if still on the swipe screen (but in profile detail view), don't change anything and keep the current form
             return;
         }
+    public addUIHelpers(currentScreen: ScreenNavStateCombo, forceRefresh?: boolean): void {
 
         if(currentScreen === ScreenNavStateCombo.Swipe){
-            
-                
-                // 1. create new data record
+
+                if(forceRefresh){
+                    this.uiRenderer.removeAllUIHelpers();
+                }
+
                 const newDataRecord:DataRecord = new DataRecord();
 
-                // eslint-disable-next-line no-debugger
-                // debugger;
-                
-                
-                // 2. check if #uiHelperFieldsContainer exists?
-                // if not exist, throw error. If exist continue.
                 this.uiRenderer.renderFieldsContainerForScreen(currentScreen);
                 
-                // 3. loop over & show uiRequiredDataFieldTypes data fields
                 const uiRequiredDataFieldTypes:DataFieldTypes[] = newDataRecord.getDataFieldTypes(false, true, UIRequired.SELECT_ONLY);
 
-                // Set initial values for swipe
                 newDataRecord.addDataToDataFields([
                     // set initial value 
                 {
@@ -556,13 +553,11 @@ export class TinderController implements datingAppController {
 
                 // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
                 this.uiRenderer.renderFieldsFromDataFieldTypes(uiRequiredDataFieldTypes, (value: DataRecordValues) => {
-                    // callback for setting values once button has been pressed
                     console.log(`Added value to new data record; label: ${value.label}, value: ${value.value}`);
-                    // eslint-disable-next-line no-debugger
-                    // debugger;
                     newDataRecord.addDataToDataFields([value]);
                     console.log(`Updated dataRecord: `);
                     console.dir(newDataRecord);
+
                 }, (submitType: SubmitType) => {
                     console.log('Callback received a submit type!');
                     this.uiRenderer.setLoadingOverlay('loadingSwipeAction', true);
@@ -570,17 +565,13 @@ export class TinderController implements datingAppController {
 
                     console.log(this.dataStorage);
                     console.assert(this.dataStorage.popLastActionFromDataStore() === undefined);
-                    // eslint-disable-next-line no-debugger
-                    debugger;
 
-                        // 1. get (request) personid from backgroundscript (get response), after 3 sec
+                        // get (request) personid from backgroundscript (get response), after 3 sec
                         setTimeout(()=>{
                             console.log('so.. is dataStore set?');
                             console.log(this.dataStorage);
                             const submitAction:SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
                             console.log(submitAction);
-
-                            
 
                             if(submitAction !== undefined){
                                 let personActionStatus: boolean | undefined = undefined;
@@ -599,7 +590,6 @@ export class TinderController implements datingAppController {
                                 }
 
                                 //TODO: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
-                                
                                 newDataRecord.addDataToDataFields([{
                                     label: 'System-no',
                                     value: {
@@ -612,27 +602,21 @@ export class TinderController implements datingAppController {
                                 }]);
 
                                 this.dataTable.addNewDataRecord(newDataRecord);
+
+                                this.addUIHelpers(currentScreen, true);
                             }
     
                             this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
-                            // eslint-disable-next-line no-debugger
-                            debugger;
-                        }, 1000);
-                        
-                        // 2. if succesfull; add record to datatable
-                        // 3. if unsuccesfull; throw error, remove record
 
-                        
-                    
-                    //code to send message to open notification. This will eventually move into my extension logic
-                
-                // 4. get/set values for linking with dataRecord by using; addDataToDataFields(dataRecordValues:DataRecordValues[])
-                // 5. on click submit; get personid of potential swipe (only if liked/disliked/superliekd), 
-                // 6. addtoTable 
+                        }, 1000);
 
                 });
 
         }
+
+        //todo: create view to show gathered info for all dataFields (thus also showing current value of; name, age, hasProfiletext etc.)
+        //todo: create 're-try retrieve' button; for when the tinder UI finishes loading too late and my app already attempted to gather data
+        //todo: figure out a solution to auto get 'hasProfileText' for when a profile DOES HAVE profileText but isnt show in the initial view because there is too much other info (location, age, distance, job etc.).. maybe do inplement a previous screen?
 
         //todo: create ability to while swipe/chat see all the values being stored for this record/person
 
