@@ -48,11 +48,8 @@ export class Main {
             });
             port.onMessage.addListener((msg: PortMessage) => {
                 if(msg.messageSender === 'BACKGROUND' && msg.action === 'SUBMIT_ACTION'){
+                    console.log(`Received submit action from background script: `);
                     console.dir(msg);
-                    console.log(`do stuff`);
-                    // eslint-disable-next-line no-debugger
-                    debugger;
-
                     this.dataStorage.addActionToDataStore(<SubmitAction>msg.payload[0]);
                 }
             })
