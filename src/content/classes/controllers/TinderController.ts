@@ -499,11 +499,23 @@ export class TinderController implements datingAppController {
         });
     }
 
-    public addUIHelpers(currentScreen: ScreenNavStateCombo): void {
-        if(currentScreen === ScreenNavStateCombo.SwipeProfile){
-            // if still on the swipe screen (but in profile detail view), don't change anything and keep the current form
-            return;
-        }
+    // while the method below does work perfectly and might be pretty relialble;
+    // setting this up will be quite time consuming as i need to account for all the variations of different screens and not by getting their final status, but getting the dom element which are brought to the screen
+    // thus for now; it's not worth it to inplement, especially not since the other method is working fine.
+    // public getCurrentScreenByMutations(mutations: MutationRecord[]): ScreenNavStateCombo {
+    //     mutations.forEach((mutation)=>{ 
+    //         mutation.addedNodes?.forEach((node)=>{
+    //             $(node).find("span").each(function(element){
+    //                 if(this.textContent === "Terug"){
+    //                     console.warn('Terugbutton found!');
+    //                     console.warn(this);
+    //                 }
+    //             });
+    //         });
+    //     });
+    //     return ScreenNavStateCombo.UnknownScreen;
+    // }
+
     public addUIHelpers(currentScreen: ScreenNavStateCombo, forceRefresh?: boolean): void {
 
         if(currentScreen === ScreenNavStateCombo.Swipe){
