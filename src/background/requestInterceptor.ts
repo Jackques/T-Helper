@@ -17,12 +17,6 @@ export class requestInterceptor {
         let action: SubmitAction | undefined = undefined;
 
         switch (true) {
-          case details.url.startsWith('https://api.gotinder.com/like/'):
-            action = {
-              'submitType': PersonAction.LIKED_PERSON,
-              'personId': this._getPersonIdFromUrl(details.url)
-            };
-            break;
           case details.url.startsWith('https://api.gotinder.com/superlike/') && details.url.includes('super'):
             // superlike example: https://api.gotinder.com/like/57f2a33a6dda1f6b095088af/super?locale=nl
             action = {
@@ -30,7 +24,15 @@ export class requestInterceptor {
               'personId': this._getPersonIdFromUrl(details.url)
             };
             break;
+          case details.url.startsWith('https://api.gotinder.com/like/'):
+            // like url example: https://api.gotinder.com/like/61ed3245cf08560100178715?locale=nl
+            action = {
+              'submitType': PersonAction.LIKED_PERSON,
+              'personId': this._getPersonIdFromUrl(details.url)
+            };
+            break;
           case details.url.startsWith('https://api.gotinder.com/pass/'):
+            // pass url example: https://api.gotinder.com/pass/61d9f860039cc801009182a1?locale=nl&s_number=8699887070750215
             action = {
               'submitType': PersonAction.PASSED_PERSON,
               'personId': this._getPersonIdFromUrl(details.url)
@@ -57,8 +59,20 @@ export class requestInterceptor {
   }
 
   private _getPersonIdFromUrl(url: string): string {
-    const urlStrippedStart: string = url.replace('https://api.gotinder.com/like/', '');
-    return urlStrippedStart.slice(0, urlStrippedStart.indexOf('?'));
+    
+    let personIdStr = url.split('/').find((string) => {
+      if(string.length > 2){
+        const subStr = string.substring(0,2);
+          return !isNaN(Number(subStr));
+    }});
+
+    if(personIdStr){
+      personIdStr = personIdStr.indexOf('?') !== -1 ? personIdStr.substring(0, personIdStr.indexOf('?')) : personIdStr;
+      personIdStr = personIdStr.indexOf('&') !== -1 ? personIdStr.substring(0, personIdStr.indexOf('&')) : personIdStr;
+      return personIdStr;
+    }
+    console.error(`Could not get personId from url. Please check the settings for retrieving personId from string`);
+    return url;
   }
 
   private sendMessageToContent(submitAction: SubmitAction): void {
