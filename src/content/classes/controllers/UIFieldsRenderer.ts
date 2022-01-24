@@ -6,7 +6,7 @@ import { SubmitType } from "../../../SubmitType";
 import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 
 export class UIFieldsRenderer {
-
+    
     private templatesList: TemplateSetting[] = [
         {
             name: 'sliderBootstrap',
@@ -115,8 +115,6 @@ export class UIFieldsRenderer {
         };
 
         const submitEventHandler = (event:Event) => {
-            // eslint-disable-next-line no-debugger
-            debugger;
             const submitType:SubmitType | undefined = this._getSubmitType(<HTMLInputElement>event.currentTarget);
             if(this.submitCallback && submitType){
                 this.submitCallback(submitType);
