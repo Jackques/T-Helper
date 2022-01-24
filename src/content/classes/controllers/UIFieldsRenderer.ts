@@ -234,14 +234,33 @@ export class UIFieldsRenderer {
         });
     }
 
-    public removeAllUIHelpers():void {
-        //TODO
-        // throw new Error("Method not implemented.");
-        console.log(`removeAllUIHelpers method called, still needs to be inplemented`);
+    public removeAllUIHelpers(): void {
+        this.resetExistingFields();
+        const helperFieldsContainer = $(`#uiHelperFields`);
+        if(helperFieldsContainer){
+            helperFieldsContainer.remove();
+        }else{
+            console.error(`Cannot find helper fields container to remove. Please check reference to HTMLElement.`);
+        }
+    }
+
+    public resetAllUIHelpers(): void {
+        this.removeAllUIHelpers();
     }
 
     public resetExistingFields(): void {
-        console.log('reset fields method called, still needs to be inplemented');
+        const HTMLFormElement = $(`#uiHelperFieldsForm`).first();
+        if(HTMLFormElement[0].tagName === 'FORM'){
+            //todo: there must be a better way to do this?
+            HTMLFormElement.trigger("reset");
+
+            //todo: also; this is done to exclusively set the value of all textarea's to empty? There must be a better way?
+            HTMLFormElement.find('textarea').each(function(){
+                this.value = '';
+            });
+        }else{
+            console.error(`Form cannot be reset because for reference is not a recognized HTML Form element. Please check the HTML reference`);
+        }
     }
 
     /**
