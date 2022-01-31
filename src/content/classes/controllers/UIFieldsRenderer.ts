@@ -176,7 +176,7 @@ export class UIFieldsRenderer {
     public renderFieldsContainerForScreen(screen: ScreenNavStateCombo, additionalScreenAdjustmentCommands?: () => void): void {
         if(screen === ScreenNavStateCombo.Swipe){
             $('body').prepend(`
-                <div id="uiHelperFields" class="uiHelperFieldsContainer">
+                <div id="uiHelperFields" class="uiHelperFieldsContainer uiHelperFieldsContainer--select">
                     <form id="uiHelperFieldsForm">
                         <div class="container">
                             <div class="row">
@@ -188,28 +188,47 @@ export class UIFieldsRenderer {
                     </form>
                 </div>
             `);
-
             this._setSubmitEventHandlers();
         }
+
         if(screen === ScreenNavStateCombo.Chat){
-            console.log('NEEDS INPLEMENTATION FOR CHAT');
+            $('body').prepend(`
+            <div id="uiHelperFields" class="uiHelperFieldsContainer uiHelperFieldsContainer--chat">
+                <form id="uiHelperFieldsForm">
+                    <div class="container">
+                        <div class="row">
+                            <div id="uiHelperFieldsContainer" class="col-12">
+                                <p class="h5">T-Helper fields</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        `);
         }
+
+        if(additionalScreenAdjustmentCommands){
+            additionalScreenAdjustmentCommands();
+        }
+        
     }
+
     private _setSubmitEventHandlers(): void {
-        const submitButtonDOMType_pass = $(".recsCardboard__cards span:contains('Nee bedankt')").first();
-        if(submitButtonDOMType_pass[0]){
-            submitButtonDOMType_pass.parent('button').attr('id', 'submitAction_passed');
-        }
+            const submitButtonDOMType_pass = $(".recsCardboard__cards span:contains('Nee bedankt')").first();
+            if(submitButtonDOMType_pass[0]){
+                submitButtonDOMType_pass.parent('button').attr('id', 'submitAction_passed');
+            }
 
-        const submitButtonDOMType_superlike = $(".recsCardboard__cards span:contains('Super Like')").first();
-        if(submitButtonDOMType_superlike[0]){
-            submitButtonDOMType_superlike.parent('button').attr('id', 'submitAction_superliked');
-        }
+            const submitButtonDOMType_superlike = $(".recsCardboard__cards span:contains('Super Like')").first();
+            if(submitButtonDOMType_superlike[0]){
+                submitButtonDOMType_superlike.parent('button').attr('id', 'submitAction_superliked');
+            }
 
-        const submitButtonDOMType_like = $(".recsCardboard__cards span:contains('Leuk')").first();
-        if(submitButtonDOMType_like[0]){
-            submitButtonDOMType_like.parent('button').attr('id', 'submitAction_liked');
-        }
+            const submitButtonDOMType_like = $(".recsCardboard__cards span:contains('Leuk')").first();
+            if(submitButtonDOMType_like[0]){
+                submitButtonDOMType_like.parent('button').attr('id', 'submitAction_liked');
+            }
+
     }
 
     public renderFieldsFromDataFieldTypes(dataFieldTypes: DataFieldTypes[], valuesCallback: (value: DataRecordValues) => void, submitCallback: (submitType: SubmitType) => void){
@@ -236,6 +255,8 @@ export class UIFieldsRenderer {
 
     public removeAllUIHelpers(): void {
         this.resetExistingFields();
+        this.valuesCallback = undefined;
+        this.submitCallback = undefined;
         const helperFieldsContainer = $(`#uiHelperFields`);
         if(helperFieldsContainer){
             helperFieldsContainer.remove();
