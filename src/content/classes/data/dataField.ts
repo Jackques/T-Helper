@@ -1,3 +1,4 @@
+import { DataFieldMessage } from "src/content/interfaces/data/dataFieldMessage.interface";
 import { baseTypes, logicContainer } from "src/content/interfaces/logicContainer.interface";
 import { uniqueEntryChecker } from "../util/uniqueEntryChecker";
 import { GhostStatus } from "./dataItems/dataItemGhost";
@@ -280,6 +281,26 @@ export class DataFieldSystemNo extends DataField {
         this.dataEntry = dataEntry;
     }
 
+}
+
+export class DataFieldMessages extends DataField {
+    
+    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    }
+
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
+        if(this.dataEntryList.length > 0){
+            return this.dataEntryList;
+        } else {
+            return this.dataEntry;
+        }
+    }
+
+    public getLastMessage(): Record<string, unknown> | null {
+        const messagesListLength: number = this.dataEntryList.length;
+        return messagesListLength > 0 ? this.dataEntryList[messagesListLength - 1] : null;
+    }
 }
 
 export class DataFieldReactionSpeedList extends DataField {
