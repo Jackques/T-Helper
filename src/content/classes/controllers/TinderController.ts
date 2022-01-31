@@ -797,7 +797,7 @@ export class TinderController implements datingAppController {
                     currentPage = ScreenNavStateCombo.UnknownScreen;
                     break;
         }
-
+        console.log(`You are on page: ${currentPage}`);
         return currentPage;
     }
 
