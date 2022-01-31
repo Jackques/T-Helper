@@ -19,7 +19,9 @@ import {DataFieldTypes} from "src/content/interfaces/data/dataFieldTypes.interfa
 import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 
 export class DataRecord {
-        /*
+        
+    private needsToBeUpdated = false;
+    /*
         Output:
 
         System-no                   - {appType: 'xxxx', id: 'x6x'}
