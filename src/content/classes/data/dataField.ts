@@ -83,9 +83,16 @@ export class DataField {
         if(this.dataLogic.baseType === 'list'){
             const isArrayDataEntryList:Record<string, unknown>[] | null = this._getArrayDataEntryList(dataEntry)
 
-            if(isArrayDataEntryList !== null){
-                this.dataEntryList = [...this.dataEntryList, ...isArrayDataEntryList];
+            if(isArrayDataEntryList){
+                if(this.multipleDataEntry){
+                    if(isArrayDataEntryList !== null){
+                        this.dataEntryList = [...this.dataEntryList, ...isArrayDataEntryList];
+                    }
+                }else{
+                    this.dataEntryList = isArrayDataEntryList;
+                }
             }
+            
             
         }else{
             this.dataEntry = dataEntry;
