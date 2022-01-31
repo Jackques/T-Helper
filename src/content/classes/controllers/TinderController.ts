@@ -165,6 +165,12 @@ export class TinderController implements datingAppController {
                     //todo: ensure providing null increments the number in dataTable instead of throwing error
                     dataRecordValuesList.push({ 'label': 'No', 'value': undefined});
                     break;
+                case 'Messages':
+                    dataRecordValuesList.push({ 'label': 'Messages', 'value': match.matchMessages ? this._convertTinderMessagesForDataRecord(match.matchMessages, match.match.person._id) : []});
+                    break;
+                case 'Last-updated':
+                    dataRecordValuesList.push({ 'label': 'Last-updated', 'value': new Date().toISOString()});
+                    break
                 case 'Date-liked-or-passed':
                     // does not get logged by tinder, thus can only be logged by me, thus should be undefined
                     dataRecordValuesList.push({ 'label': 'Date-liked-or-passed', 'value': undefined});
@@ -256,6 +262,21 @@ export class TinderController implements datingAppController {
         });
         return dataRecordValuesList;
     }
+    private _convertTinderMessagesForDataRecord(matchMessages: Message[], matchId: string): {message: string, timestamp: number, author: string}[] {
+        //todo: why can't i set the interface to {message: string, timestamp: number, author: 'me' | 'match'}[] ?
+        const messagesForDataRecord: {message: string, timestamp: number, author: string}[] = [];
+        matchMessages.forEach((matchMessage) => {
+            messagesForDataRecord.push(
+                {
+                    message: matchMessage.message,
+                    timestamp: matchMessage.timestamp,
+                    author: matchMessage.from === matchId ? 'match' : 'me'
+                }
+            );
+        });
+        return messagesForDataRecord;
+    }
+
     private _getReminderAmount(matchMessages: Message[], personId: string): any[] {
         const reminderAmountList:any = [];
         let reminderAmount = 0;
