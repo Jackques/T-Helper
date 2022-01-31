@@ -1,11 +1,22 @@
 .uiHelperFieldsContainer {
   position: absolute;
   z-index: 2;
+  background-color: yellow;
+}
+
+.uiHelperFieldsContainer--select {
   width: 350px;
   height: 700px;
   right: 200px;
   top: 75px;
-  background-color: yellow;
+}
+
+.uiHelperFieldsContainer--chat {
+  height: 765px;
+  width: 300px;
+  top: auto;
+  bottom: 73px;
+  right: 515px;
 }
 
 .loadingOverlay {
