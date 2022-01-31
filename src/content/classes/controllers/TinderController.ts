@@ -16,7 +16,7 @@ import { RequestHandlerTinder } from "../http-requests/requestHandlerTinder";
 import { Person } from "../tinder/Person";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { dataStorage } from '../data/dataStorage';
-import { UIRequired } from "../data/dataField";
+import { DataField, UIRequired } from "../data/dataField";
 import { PersonAction } from "./../../../peronAction.enum"; // todo: had to move this to top level AND make a relative path.. but since ALL components (content, background, popup) share the same interfaces/enums etc. why not move everything to top lvl for importing? ALSO; why did an error occur when i tried to relative import this?
 import { SubmitAction } from "src/background/requestInterceptor";
 
@@ -549,6 +549,64 @@ export class TinderController implements datingAppController {
     // }
 
     public addUIHelpers(currentScreen: ScreenNavStateCombo, forceRefresh?: boolean): void {
+        if(currentScreen === ScreenNavStateCombo.Chat){
+
+            if(forceRefresh){
+                this.uiRenderer.removeAllUIHelpers();
+            }
+
+            // 1. get current messageListItemPerson
+            const currentMatchid:string = this.getCurrentMatchIdFromChatScreen();
+            let dataRecord: DataRecord | null = null;
+            let dataFields: DataField[] | undefined | null = undefined;
+                
+            // 2. get record in table for this person
+            if(currentMatchid.length > 0){
+                const recordIndexId = this.dataTable.getRecordIndexBySystemId(currentMatchid, 'tinder');
+                if(recordIndexId !== -1){
+                    // todo: so i need to get the data first BEFORE i update the record? or just change this entirely?
+                    // todo: why do i need to include undefined here while at no point in the assignment of this variabele does it ever get undefined assigned to it?
+                    dataRecord = this.dataTable.getRecordByRecordIndex(recordIndexId);
+                    if(dataRecord !== null){
+                        dataFields = dataRecord.getDataRecordDataFields();
+
+                        // 3. show helpers for chat (all?), make space above messagebox, put helper container there?
+                        this.uiRenderer.renderFieldsContainerForScreen(currentScreen, () => {
+                            $('[aria-label="Gespreksgeschiedenis"]').css('width', '730px');
+                        });
+                        let uiRequiredDataFieldTypes: DataFieldTypes[];
+
+                        if(dataFields && dataFields.length > 0){
+                            uiRequiredDataFieldTypes = dataRecord.getDataFieldTypes(false, true, UIRequired.CHAT_ONLY);
+
+                            this.uiRenderer.renderFieldsFromDataFieldTypes(uiRequiredDataFieldTypes, 
+                                (value: DataRecordValues) => {
+                                    //TODO: TODO: TODO: figure out how to set value on the ui fields and update.. thats all
+                            }, (submitType: SubmitType) => {
+                                dataRecord?.setUpdateMessages(true);
+                                //TODO: TODO: TODO: ik was bezig om the ontvangen messages ook toe te voegen in de Messages dataField en last-updated in de respectievelijke data field. dat is gelukt, komt door de popup checker heen, nu nog alleen bij parse matches ook de juiste data vullen (zal makkelijk zijn!) en dan houd ik niet alleen de lijst met messages bij voor future use maar kan ik dus altijd zien wanneer een record voor het laatst is geupdate EN altijd achteraf berekeningen op de messages loslaten (zoals ghosts..) maar dus ook een veld aanmerken als 'toBeUpdated' en daarbij checken of dat vled moet worden geupdate of niet
+                            });
+                        }
+                    }
+                    
+                    //TODO: 
+                    // 4. on send/receive message.. add message to/update dataRecord?
+                    // 5. on switch person in messagelist; switch settings of the above?
+                }else{
+                    // 2.a if chat new person (recognize chat new person or not) (and record does not exist yet); add new record?
+                    //todo: nice-to-have; prompt user to add this unknown person or not?
+                    // dataRecord = new DataRecord();
+                    // dataRecord.addDataToDataFields([{ label: "System-no", value: currentMatchid}]);
+
+                    //todo: gather person data by ui (but this time; via chat interface!) OR; get data by api?
+                }
+
+            }else{
+                console.error('Invalid matchId.');
+            }
+
+
+        }
 
         if(currentScreen === ScreenNavStateCombo.Swipe){
 
@@ -670,6 +728,22 @@ export class TinderController implements datingAppController {
 
         //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
     }
+    public getCurrentMatchIdFromChatScreen(): string {
+        const messageListItemDOMNode = $('div.messageList > a.Bdendc\\(\\$c-pink\\)--ml').first()[0] as HTMLAnchorElement;
+        if(messageListItemDOMNode){
+            if(messageListItemDOMNode.href){
+                return this.getMatchIdFromMessageHrefSDtring(messageListItemDOMNode.href);
+            }
+        }else{
+            console.error(`Message List Item DOM Element not found. Please check & update the selector.`);
+        }
+        return '';
+    }
+
+    private getMatchIdFromMessageHrefSDtring(href: string): string {
+        return href.substring(href.lastIndexOf('/') + 1);
+    }
+    
     public getIsVerifiedFromUI(): boolean {
         const isVerifiedDOMNode:HTMLElement = $('div[aria-hidden="false"] title:contains(Geverifieerd!)').first()[0];
         return isVerifiedDOMNode && isVerifiedDOMNode.textContent && isVerifiedDOMNode.textContent === 'Geverifieerd!' ? true : false;
