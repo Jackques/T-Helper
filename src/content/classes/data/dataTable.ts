@@ -11,10 +11,19 @@ export class dataTable {
         return this.dataRecords[index].getDataFieldTypes(true);
     }
 
+    //todo: refactor to get record directly? 
     public getRecordIndexBySystemId(systemId: string, appType: string):number {
         return this.dataRecords.findIndex((dataRecord: DataRecord)=>{
             return dataRecord.getRecordPersonSystemId(appType) === systemId;
         });
+    }
+
+    public getRecordByRecordIndex(index: number): DataRecord | null {
+        if(index >= 0 && index <= this.dataRecords.length){
+            return this.dataRecords[index];
+        }
+        console.error('Data record not found. Please use a different number');
+        return null;
     }
 
     public addNewDataRecord(dataRecord: DataRecord): boolean {
