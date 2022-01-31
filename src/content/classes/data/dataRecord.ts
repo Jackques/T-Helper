@@ -142,6 +142,14 @@ export class DataRecord {
         
     }
 
+    public getDataRecordDataFields(): DataField[] | null {
+        return this.usedDataFields.length > 0 ? this.usedDataFields : null;
+    }
+
+    public setUpdateMessages(isToBeUpdated: boolean): void {
+        this.needsToBeUpdated = isToBeUpdated;
+    }
+
     /**
      * Checks wether all data record values array provided in the param exist in the data record
      * @param {DataRecordValues[]} dataRecordValueList
