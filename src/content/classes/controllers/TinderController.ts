@@ -115,6 +115,8 @@ export class TinderController implements datingAppController {
                         // (e.g. add icon/color to match who hasn't replied in a week)
                         // export retrieved data to csv/json?
                         this.setSwipeHelperOnScreen();
+
+                        this.setMessageWatcherOnScreen();
                     });
 
                     // HINT: In order to scroll to the very bottom of the messageList in tinder;
@@ -137,6 +139,15 @@ export class TinderController implements datingAppController {
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
         }
 
+    }
+    setMessageWatcherOnScreen() {
+        console.info('setMessageWatcherOnScreen has not yet been inplemented!');
+        // messageList
+
+        /*
+        Please inplement this as soon as when i have a match which actually talks back to me.. because then i can test this properly..
+        this is supposed to (other than hitting the send button) set a record to 'not-updated' thus needing to reupdate the messages list
+        */
     }
 
     private parseMatchDataToDataRecordValues(match: ParsedResultMatch, allowedFields: DataFieldTypes[]): DataRecordValues[] {
