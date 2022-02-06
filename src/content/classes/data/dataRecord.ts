@@ -206,10 +206,8 @@ export class DataRecord {
 
 
 
-//todo: why not simply return the list above as is? instead of only trying to return the checkDataMethod. 
-//todo: maybe it would be better to put all the check logic inside the DataField classes and subclasses anyway?
-    
-    public getDataFieldTypes(allowedFieldsOnly?: boolean, requiredUIFieldsOnly?: boolean, requiredUiScreen?: UIRequired): DataFieldTypes[] {
+        //todo: maybe it would be better to put all the check logic inside the DataField classes and subclasses anyway?
+        public getDataFields(allowedFieldsOnly?: boolean, requiredUIFieldsOnly?: boolean, requiredUiScreen?: UIRequired): DataField[] {
         return this.usedDataFields.filter((dataField: DataField) => {
             if(allowedFieldsOnly){
                 if(dataField.updateValueAllowed()){
@@ -233,9 +231,7 @@ export class DataRecord {
             }
             // default returns all data fields
             return true;
-        }).map((dataField: DataField) => {
-            return { 'label': dataField.title, 'dataType': dataField.dataLogic.baseType, 'requiredFieldType': dataField.UISetting.UIrequiredType,'checkDataMethod': dataField.isDataEntryValid };
-        });
+        })
     }
 
 }

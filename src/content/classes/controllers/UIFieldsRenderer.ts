@@ -1,7 +1,7 @@
 import { TemplateSetting } from "src/content/interfaces/controllers/templateSetting.interface";
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
-import { UIRequiredType } from "../data/dataField";
+import { DataField, UIRequiredType } from "../data/dataField";
 import { SubmitType } from "../../../SubmitType";
 import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 
@@ -231,13 +231,13 @@ export class UIFieldsRenderer {
 
     }
 
-    public renderFieldsFromDataFieldTypes(dataFieldTypes: DataFieldTypes[], valuesCallback: (value: DataRecordValues) => void, submitCallback: (submitType: SubmitType) => void){
+    public renderFieldsFromDataFields(dataField: DataField[], valuesCallback: (value: DataRecordValues) => void, submitCallback: (submitType: SubmitType) => void){
         if(!$('body').find('#uiHelperFieldsContainer').first()[0]){
             console.error(`Could not place helper fields because helper container with id ${'uiHelperFieldsContainer'} does not exist.`);
         }
 
-        if(!dataFieldTypes.every(dataFieldType => dataFieldType.requiredFieldType !== null)){
-            console.error(`Provided datafields do not have a requiredFieldType: ${dataFieldTypes}`);
+        if(!dataField.every(dataFieldType => dataFieldType.UISetting.UIrequiredType !== null)){
+            console.error(`Provided datafields do not have a requiredFieldType: ${dataField}`);
         }
 
         if(!valuesCallback || !submitCallback){
@@ -247,9 +247,9 @@ export class UIFieldsRenderer {
         this.valuesCallback = valuesCallback;
         this.submitCallback = submitCallback;
 
-        dataFieldTypes.forEach((dataFieldType, index) => {
-            const requiredTemplateIndex = this.templatesList.findIndex(template => template.label === dataFieldType.requiredFieldType);
-            $('body').find('#uiHelperFieldsContainer').first().append(this.templatesList[requiredTemplateIndex].template(`datafieldUI_${index}`, dataFieldType.label, dataFieldType.dataType));
+        dataField.forEach((dataFieldType, index) => {
+            const requiredTemplateIndex = this.templatesList.findIndex(template => template.label === dataFieldType.UISetting.UIrequiredType);
+            $('body').find('#uiHelperFieldsContainer').first().append(this.templatesList[requiredTemplateIndex].template(`datafieldUI_${index}`, dataFieldType.title, dataFieldType.dataLogic.baseType));
         });
     }
 

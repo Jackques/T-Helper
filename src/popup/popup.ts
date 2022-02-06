@@ -5,6 +5,7 @@ import { PropertiesChecker } from "../content/classes/util/PropertiesChecker";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
+import { DataField } from "src/content/classes/data/dataField";
 
 document.addEventListener('DOMContentLoaded', function () {
     const reader = new FileReader();
@@ -12,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const propertiesChecker:PropertiesChecker = new PropertiesChecker();
 
     // eslint-disable-next-line @typescript-eslint/ban-types
-    const dataFieldTypes:DataFieldTypes[] = new DataRecord().getDataFieldTypes();
-    const requiredHeadersList: string[] = dataFieldTypes.map((header) => header.label);
+    const dataFields:DataField[] = new DataRecord().getDataFields();
+    const requiredHeadersList: string[] = dataFields.map((header) => header.title);
 
     // let inputData: Record<string, string | number | boolean | null | Record<string, string | number | boolean>> = null;
     let inputDataList: DataRecordValues[][] | null = null;
@@ -260,9 +261,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function _hasValidLabels(record:Record<string, unknown>){
-        return dataFieldTypes.every((dataFieldType)=>{
-            if(!Object.keys(record).includes(dataFieldType.label)){
-                console.error(`A record is missing one or more labels. Missing label: ${ dataFieldType.label }, record: ${ record.toString().substr(0, 25) }`);
+        return dataFields.every((dataField)=>{
+            if(!Object.keys(record).includes(dataField.title)){
+                console.error(`A record is missing one or more labels. Missing label: ${ dataField.title }, record: ${ record.toString().substr(0, 25) }`);
                 console.log(record)
                 return false;
             }
@@ -271,14 +272,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function _hasValidValues(record:Record<string, unknown>){
-        return dataFieldTypes.every((dataFieldType)=>{
+        return dataFields.every((dataField)=>{
             const recordWithPropertyDescriptors = Object.getOwnPropertyDescriptors(record);
             const uncheckedListKeys = Object.keys(recordWithPropertyDescriptors);
             let result = false;
 
-            result = dataFieldType.checkDataMethod(recordWithPropertyDescriptors[dataFieldType.label].value);
+            result = dataField.isDataEntryValid(recordWithPropertyDescriptors[dataField.title].value);
             if(result){
-                uncheckedListKeys.filter((value) => value !== dataFieldType.label);
+                uncheckedListKeys.filter((value) => value !== dataField.title);
             }
             
             return result;

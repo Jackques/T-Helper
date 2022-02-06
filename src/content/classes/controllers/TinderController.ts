@@ -71,7 +71,7 @@ export class TinderController implements datingAppController {
                             const matchRecordIndex: number = dataTable.getRecordIndexBySystemId(match.match.id, this.nameController);
                             
                             let tinderMatchDataRecordValues: DataRecordValues[];
-                            let allowedFields: DataFieldTypes[];
+                            let dataFields: DataField[];
 
                             // eslint-disable-next-line no-debugger
                             // debugger;
@@ -82,8 +82,8 @@ export class TinderController implements datingAppController {
                                 //TODO: if match doesnt exist, create new data record, fill new record with all data needed
                                 // console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
                                 const newDataRecord = new DataRecord();
-                                allowedFields = newDataRecord.getDataFieldTypes();
-                                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, allowedFields);
+                                dataFields = newDataRecord.getDataFields();
+                                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
                                 
                                 const dataAddedSuccessfully:boolean = newDataRecord.addDataToDataFields(tinderMatchDataRecordValues);
                                 if(dataAddedSuccessfully){
@@ -94,8 +94,8 @@ export class TinderController implements datingAppController {
                                 
                             }else{
                                 // console.log(`Going to UPDATE data record for: ${match.match.person.name}`);
-                                allowedFields = dataTable.getAllowedFieldsByRecordIndex(matchRecordIndex);
-                                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, allowedFields);
+                                dataFields = dataTable.getDataFieldsByRecordIndex(matchRecordIndex);
+                                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
                                 dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
 
                                 //TODO: do all of the below in the dataField class where it belongs? Maybe create 1 'getUpdatebleData method' to tell the datingappcontrller which data may be updated thus can be sent over
@@ -150,11 +150,12 @@ export class TinderController implements datingAppController {
         */
     }
 
-    private parseMatchDataToDataRecordValues(match: ParsedResultMatch, allowedFields: DataFieldTypes[]): DataRecordValues[] {
+    private parseMatchDataToDataRecordValues(match: ParsedResultMatch, dataFields: DataField[]): DataRecordValues[] { 
+        //TODO TODO TODO: refactor code to use dataFields directly instead of creating & adding fields to the seperate list below
         const dataRecordValuesList: DataRecordValues[] = [];
 
-        allowedFields.forEach((allowedField)=>{
-            switch (allowedField.label) {
+        dataFields.forEach((dataField)=>{
+            switch (dataField.title) {
                 case 'System-no':
                     dataRecordValuesList.push({ 'label': 'System-no', 'value': { 
                         'appType': 'tinder', 
@@ -574,12 +575,12 @@ export class TinderController implements datingAppController {
                         this.uiRenderer.renderFieldsContainerForScreen(currentScreen, () => {
                             $('[aria-label="Gespreksgeschiedenis"]').css('width', '730px');
                         });
-                        let uiRequiredDataFieldTypes: DataFieldTypes[];
+                        let uiRequiredDataFields: DataField[];
 
                         if(dataFields && dataFields.length > 0){
-                            uiRequiredDataFieldTypes = dataRecord.getDataFieldTypes(false, true, UIRequired.CHAT_ONLY);
+                            uiRequiredDataFields = dataRecord.getDataFields(false, true, UIRequired.CHAT_ONLY);
 
-                            this.uiRenderer.renderFieldsFromDataFieldTypes(uiRequiredDataFieldTypes, 
+                            this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields, 
                                 (value: DataRecordValues) => {
                                     //TODO: TODO: TODO: figure out how to set value on the ui fields and update.. thats all
                             }, (submitType: SubmitType) => {
@@ -618,7 +619,7 @@ export class TinderController implements datingAppController {
 
                 this.uiRenderer.renderFieldsContainerForScreen(currentScreen);
                 
-                const uiRequiredDataFieldTypes:DataFieldTypes[] = newDataRecord.getDataFieldTypes(false, true, UIRequired.SELECT_ONLY);
+                const uiRequiredDataFields:DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
 
                 newDataRecord.addDataToDataFields([
                     // set initial value 
@@ -654,7 +655,7 @@ export class TinderController implements datingAppController {
                 ]);
 
                 // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
-                this.uiRenderer.renderFieldsFromDataFieldTypes(uiRequiredDataFieldTypes, (value: DataRecordValues) => {
+                this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields, (value: DataRecordValues) => {
                     console.log(`Added value to new data record; label: ${value.label}, value: ${value.value}`);
                     newDataRecord.addDataToDataFields([value]);
                     console.log(`Updated dataRecord: `);
@@ -672,7 +673,7 @@ export class TinderController implements datingAppController {
                         setTimeout(()=>{
                             console.log('so.. is dataStore set?');
                             console.log(this.dataStorage);
-                            const submitAction:SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
+                            const submitAction: SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
                             console.log(submitAction);
 
                             if(submitAction !== undefined){

@@ -1,5 +1,5 @@
-import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
+import { DataField } from "./dataField";
 import { DataRecord } from "./dataRecord";
 
 export class dataTable {
@@ -7,8 +7,8 @@ export class dataTable {
     private dataRecords: DataRecord[] = [];
     private dataRecordAmount = 0;
 
-    public getAllowedFieldsByRecordIndex(index: number): DataFieldTypes[] {
-        return this.dataRecords[index].getDataFieldTypes(true);
+    public getDataFieldsByRecordIndex(index: number): DataField[] {
+        return this.dataRecords[index].getDataFields(true);
     }
 
     //todo: refactor to get record directly? 
