@@ -192,7 +192,6 @@ export class DataRecord {
     'seemsFake', // e.g. IG-modellike profiles with whom no man ever matches? Or do (some) men match with them?
     'emptyProfiles', // e.g. how many empty profiles i encounter?
 
-    'conversation', // HIGHLY recommended to simply save the entire conversation history. Why not? I can ALWAYS preform any kindoff logic on it to extract data from it.
     'Woonplaats', // because maybe I want to keep track of the distance between me and my (potential) match so I can take that variabele into account if many matches ghost e.g. because they may be too far away (tinder/happn happens to show me the distance, if not availble I can get the city at least (or ask the person myself) thus use this to calculate the distance from me: https://www.distance24.org/api.xhtml)
 
     //todo: TEST: the 'likes you' count (in the matches panel, which takes you to 'see who likes you'); does the api response (found in; https://api.gotinder.com/v2/fast-match/teaser?locale=nl&type=recently-active) tell you an exact number past what is shown (if you have more than 100 likes, 100+ is shown)? or does it stop at 100 despite you have more like than 100 (100+)? IF an exact number is gtiven past 100 if you have more than 100 likes.. then this info could be pretty valueble to log as well.. especially with a log list e.g; [{date, likescount}, {date, likescount}, {date, likescount} etc.]
