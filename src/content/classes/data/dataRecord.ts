@@ -57,7 +57,7 @@ export class DataRecord {
         new DataFieldSystemNo('System-no', 'The number the system of the datingapp assigned this person to', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckSystemId()}),
         new DataField('No', 'The number of the person for my app internaly', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, true, true, true, {baseType: 'number', customCheckClass: null}),
 
-        new DataFieldMessages('Messages', 'The messages sent between me and my match', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'list', customCheckClass: new dataCheckMessage()}),
+        new DataFieldMessages('Messages', 'The messages sent between me and my match', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'list', customCheckClass: new dataCheckMessage()}),
         new DataField('Last-updated', 'The datetime this record has been last updated (including messages)', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         
         // need to keep track of this myself, but since I'M swiping/liking this will not be a problem 
