@@ -1,4 +1,3 @@
-import { DataFieldMessage } from "src/content/interfaces/data/dataFieldMessage.interface";
 import { baseTypes, logicContainer } from "src/content/interfaces/logicContainer.interface";
 import { uniqueEntryChecker } from "../util/uniqueEntryChecker";
 import { GhostStatus } from "./dataItems/dataItemGhost";
@@ -14,7 +13,7 @@ export interface UISetting {
 export class DataField {
     public title: string;
     public description: string;
-    public emptyAllowed: boolean;
+    public emptyFieldAllowed: boolean;
     public UISetting: UISetting;
     public multipleDataEntry: boolean;
     public mustBeUnique: boolean;
@@ -27,10 +26,10 @@ export class DataField {
 
     private _uniqueIdentifier:uniqueEntryChecker = new uniqueEntryChecker();
 
-    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+    constructor(title:string, description:string, emptyFieldAllowed:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
         this.title = title;
         this.description = description;
-        this.emptyAllowed = requiredField;// why did i need this again? What the difference between this setting and the UISetting setting? Don;t i only need the UISetting setting? Idea; refactor this to a specific string keyword mentioning the required ui element needed e.g. 'radio'
+        this.emptyFieldAllowed = emptyFieldAllowed;// why did i need this again? What the difference between this setting and the UISetting setting? Don;t i only need the UISetting setting? Idea; refactor this to a specific string keyword mentioning the required ui element needed e.g. 'radio'
         this.UISetting = UISetting; //determines if the fields is visible in UI
         this.multipleDataEntry = multipleDataEntry;
         this.mustBeUnique = mustBeUnique;
@@ -44,12 +43,30 @@ export class DataField {
         }
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
-        console.log('uses getBaseValue from datafield');
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null {
+        // console.log('uses getBaseValue from datafield');
+
+        if(!this.hasValue()){
+            return null;
+        }
+
         if(this.dataEntryList.length > 0){
-            return this.dataEntryList;
+            console.error(`getValue method called on ${this.title} has not yet been inplemented. Please inplement this logic first`);
+            return null;
         }else{
-            return this.dataEntry;
+            switch (this.dataLogic.baseType) {
+                case 'string': 
+                    return this.dataEntry as string;
+             
+                case 'number': 
+                    return this.dataEntry as number;
+
+                case 'boolean': 
+                    return this.dataEntry as boolean;
+
+                default:
+                    return null;
+             }
         }
     }
 
@@ -117,8 +134,8 @@ export class DataField {
         }
 
         // if the data entry is allowed to be empty, and IS empty
-        if(this.emptyAllowed && !this._isDataEntryNotEmpty(dataEntry)){
-            // return true because undefined/null is an acceptable value
+        if(this.emptyFieldAllowed && this._isDataEntryEmpty(dataEntry)){
+            // return true because undefined/null/empty string is an acceptable value if empty field allowed is true
             return true;
         }
 
@@ -126,7 +143,7 @@ export class DataField {
         // continue with the check
 
         // if the data entry IS NOT allowed to be empty, but data entry IS empty
-        if(!this.emptyAllowed && !this._isDataEntryNotEmpty(dataEntry)){
+        if(!this.emptyFieldAllowed && this._isDataEntryEmpty(dataEntry)){
             console.error(`The data entry for  ${this.title} cannot be empty or of a falsy value. Value: (${dataEntry}).`);
             return false;
         }
@@ -184,11 +201,39 @@ export class DataField {
         return true;
     }
 
-    private _isDataEntryNotEmpty(dataEntry: unknown){
-        if(dataEntry === undefined || dataEntry === null || dataEntry === ""){
-            return false;
+    private _isDataEntryEmpty(dataEntry: unknown){
+        //todo: should refactor this to 1. convert unknown to a known type and 2. use a enum instead of true/false cause this aint working..
+
+        if(this.dataLogic.baseType === 'list' && dataEntry instanceof Array){
+            return dataEntry.every((dataEntryItem)=>{
+                if(typeof dataEntryItem === 'object'){
+                    return this._isObjectEntryEmpty(dataEntryItem as Record<string, unknown>);
+                }else{
+                    return this._isEntryEmpty(dataEntry);
+                }
+            });
         }
-        return true;
+        
+        if(typeof dataEntry === 'object' && dataEntry !== null){
+            return this._isObjectEntryEmpty(dataEntry as Record<string, unknown>);
+        }
+        
+        return this._isEntryEmpty(dataEntry);
+    }
+
+    private _isEntryEmpty(dataEntry: unknown){
+        if(dataEntry === undefined || dataEntry === null || dataEntry === ""){
+            return true;
+        }
+        return false;
+    }
+
+    private _isObjectEntryEmpty(dataEntry: Record<string, unknown>){
+        const objectValues: unknown[] = Object.values(<Record<string, unknown>>dataEntry);
+        if(objectValues.every(objectValue => objectValue === undefined || objectValue === null || objectValue === "")){
+            return true;
+        }
+        return false;
     }
 
     private _isDataEntryUnique(identifier: string, dataEntry: unknown):boolean {
@@ -260,12 +305,12 @@ export class DataFieldSystemNo extends DataField {
         super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | null {
         const appType: string | null = optionalArgumentsObject?.hasOwnProperty('appType') ? optionalArgumentsObject.appType as string : null;
         const valueObject: Record<string, string> = this.dataEntry as Record<string, string>;
 
         if(Object.prototype.hasOwnProperty.call(valueObject, 'appType') && valueObject['appType'] === appType){
-            return this.dataEntry;
+            return this.dataEntry as string;
         }else{
             return null;
         }
@@ -289,12 +334,9 @@ export class DataFieldMessages extends DataField {
         super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
-        if(this.dataEntryList.length > 0){
-            return this.dataEntryList;
-        } else {
-            return this.dataEntry;
-        }
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null {
+        console.error(`getValue method called on DataFieldMessages has not yet been inplemented. Please inplement this logic first`);
+        return null;
     }
 
     public getLastMessage(): Record<string, unknown> | null {
@@ -309,12 +351,9 @@ export class DataFieldReactionSpeedList extends DataField {
         super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
-        if(this.dataEntryList.length > 0){
-            return this.dataEntryList;
-        } else {
-            return this.dataEntry;
-        }
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null {
+        console.error(`getValue method called on DataFieldReminderList has not yet been inplemented. Please inplement this logic first`);
+        return null;
     }
 }
 
@@ -324,12 +363,9 @@ export class DataFieldReminderList extends DataField {
         super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
-        if(this.dataEntryList.length > 0){
-            return this.dataEntryList;
-        } else {
-            return this.dataEntry;
-        }
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null {
+        console.error(`getValue method called on DataFieldReminderList has not yet been inplemented. Please inplement this logic first`);
+        return null;
     }
 }
 
@@ -339,8 +375,10 @@ export class DataFieldGhostsList extends DataField {
         super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): unknown | null {
-        return this.dataEntry;
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null {
+        //todo: Inplement getValue for complex data objects (e.g. DataFieldGhosts, DataFieldReminder etc.) when needed. For now returning null suffices since these fields do not need to return their respective values.
+        console.error(`getValue method called on DataFieldGhostsList has not yet been inplemented. Please inplement this logic first`);
+        return null;
     }
 
     public updateMoment(updatedTime: string, updatedStatus: GhostStatus):void {
