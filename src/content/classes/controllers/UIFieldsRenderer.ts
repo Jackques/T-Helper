@@ -17,10 +17,12 @@ export class UIFieldsRenderer {
                 }
                 console.error(`Event target nog set`);
             },
-            template: (id:string, label:string, dataType:string) => `
+            template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null): string => {
+                defaultValue = defaultValue === null ? '' : defaultValue;
+                return `
                 <div class="fieldContainer fieldContainer--slider">
                     <label for="${id}" class="form-label">${label}</label>
-                    <input type="range" class="form-range" min="1" max="10" step="1" id="${id}" data-type="${dataType}" data-templatename="sliderBootstrap" data-recordref="${label}">
+                    <input type="range" class="form-range" min="1" max="10" step="1" id="${id}" value="${defaultValue}" data-type="${dataType}" data-templatename="sliderBootstrap" data-recordref="${label}">
                     <div class="rangeNumberDisplayContainer">
                         <div class="rangeNumberDisplay">1</div>
                         <div class="rangeNumberDisplay">2</div>
@@ -33,7 +35,8 @@ export class UIFieldsRenderer {
                         <div class="rangeNumberDisplay">9</div>
                         <div class="rangeNumberDisplay">10</div>
                     </div>
-                </div>`,
+                </div>`
+            },
         },
         {
             name: 'switchBootstrap',
@@ -44,13 +47,15 @@ export class UIFieldsRenderer {
                 }
                 console.error(`Event target nog set`);
             },
-            template: (id:string, label:string, dataType:string) => `
-            <div class="fieldContainer fieldContainer--switch">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch" id="${id}" data-type="${dataType}" data-templatename="switchBootstrap" data-recordref="${label}">
-                    <label class="form-check-label" for="flexSwitchCheckDefault">${label}</label>
-                </div>
-            </div>`
+            template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null):string => { 
+                defaultValue = defaultValue === null ? false : defaultValue;
+                return `
+                <div class="fieldContainer fieldContainer--switch">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="${id}" ${defaultValue ? 'checked' : ''} data-type="${dataType}" data-templatename="switchBootstrap" data-recordref="${label}">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">${label}</label>
+                    </div>
+                </div>`}
         },
         {
             name: 'inputBootstrap',
@@ -61,12 +66,14 @@ export class UIFieldsRenderer {
                 }
                 console.error(`Event target nog set`);
             },
-            template: (id:string, label:string, dataType:string) => `
-            <div class="fieldContainer fieldContainer--input">
-                <div class="input-group mb-12">
-                    <input id="${id}" data-type="${dataType}" data-templatename="inputBootstrap" type="text" class="form-control" placeholder="${label}" aria-recordref="${label}" data-recordref="${label}" aria-describedby="basic-addon1">
-                </div>
-            </div>`
+            template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null):string => {
+                defaultValue = defaultValue === null ? '' : defaultValue; 
+                return `
+                <div class="fieldContainer fieldContainer--input">
+                    <div class="input-group mb-12">
+                        <input id="${id}" value="${defaultValue}" data-type="${dataType}" data-templatename="inputBootstrap" type="text" class="form-control" placeholder="${label}" aria-recordref="${label}" data-recordref="${label}" aria-describedby="basic-addon1">
+                    </div>
+                </div>`}
         },
         {
             name: 'textareaBootstrap',
@@ -77,13 +84,15 @@ export class UIFieldsRenderer {
                 }
                 console.error(`Event target nog set`);
             },
-            template: (id:string, label:string, dataType:string) => `
-            <div class="fieldContainer fieldContainer--textarea">
-                <div class="form-floating">
-                    <textarea id="${id}" data-type="${dataType}" data-templatename="textareaBootstrap" data-recordref="${label}" class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea>
-                    <label for="floatingTextarea">${label}</label>
-                </div>
-            </div>`
+            template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null): string => { 
+                defaultValue = defaultValue === null ? '' : defaultValue; 
+                return `
+                <div class="fieldContainer fieldContainer--textarea">
+                    <div class="form-floating">
+                        <textarea id="${id}" data-type="${dataType}" data-templatename="textareaBootstrap" data-recordref="${label}" class="form-control" placeholder="Leave a comment here" id="floatingTextarea">${defaultValue}</textarea>
+                        <label for="floatingTextarea">${label}</label>
+                    </div>
+                </div>`}
         }
     ];
     private valuesCallback: ((value: DataRecordValues) => void) | undefined;
@@ -231,13 +240,13 @@ export class UIFieldsRenderer {
 
     }
 
-    public renderFieldsFromDataFields(dataField: DataField[], valuesCallback: (value: DataRecordValues) => void, submitCallback: (submitType: SubmitType) => void){
+    public renderFieldsFromDataFields(dataFields: DataField[], valuesCallback: (value: DataRecordValues) => void, submitCallback: (submitType: SubmitType) => void){
         if(!$('body').find('#uiHelperFieldsContainer').first()[0]){
             console.error(`Could not place helper fields because helper container with id ${'uiHelperFieldsContainer'} does not exist.`);
         }
 
-        if(!dataField.every(dataFieldType => dataFieldType.UISetting.UIrequiredType !== null)){
-            console.error(`Provided datafields do not have a requiredFieldType: ${dataField}`);
+        if(!dataFields.every(dataFieldType => dataFieldType.UISetting.UIrequiredType !== null)){
+            console.error(`Provided datafields do not have a requiredFieldType: ${dataFields}`);
         }
 
         if(!valuesCallback || !submitCallback){
@@ -247,9 +256,11 @@ export class UIFieldsRenderer {
         this.valuesCallback = valuesCallback;
         this.submitCallback = submitCallback;
 
-        dataField.forEach((dataFieldType, index) => {
-            const requiredTemplateIndex = this.templatesList.findIndex(template => template.label === dataFieldType.UISetting.UIrequiredType);
-            $('body').find('#uiHelperFieldsContainer').first().append(this.templatesList[requiredTemplateIndex].template(`datafieldUI_${index}`, dataFieldType.title, dataFieldType.dataLogic.baseType));
+        dataFields.forEach((dataField, index) => {
+            const requiredTemplateIndex = this.templatesList.findIndex(template => template.label === dataField.UISetting.UIrequiredType);
+            const dataFieldValue: string | number | boolean | null = dataField.getValue();
+            // console.log(`RENDERING UI FIELD. DEFAULT VALUE FOR ${dataField.title} SHOULD BE: ${dataField.getValue()}`);
+            $('body').find('#uiHelperFieldsContainer').first().append(this.templatesList[requiredTemplateIndex].template(`datafieldUI_${index}`, dataField.title, dataField.dataLogic.baseType, dataFieldValue));
         });
     }
 
