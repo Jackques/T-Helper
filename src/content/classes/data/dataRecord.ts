@@ -124,12 +124,12 @@ export class DataRecord {
         return '';
     }
 
-    public getNoDataRecord(): number | undefined {
+    public getNoDataRecord(): number | null {
         const currentRecordNumberValue: unknown = this.getValueOfDataFieldByTitle('No');
         if(typeof currentRecordNumberValue === 'number'){
             return currentRecordNumberValue as number;
         }else{
-            return undefined;
+            return null;
         }
     }
 
