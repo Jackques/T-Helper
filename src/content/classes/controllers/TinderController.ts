@@ -730,18 +730,27 @@ export class TinderController implements datingAppController {
         //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
     }
     public getCurrentMatchIdFromChatScreen(): string {
-        const messageListItemDOMNode = $('div.messageList > a.Bdendc\\(\\$c-pink\\)--ml').first()[0] as HTMLAnchorElement;
-        if(messageListItemDOMNode){
-            if(messageListItemDOMNode.href){
-                return this.getMatchIdFromMessageHrefSDtring(messageListItemDOMNode.href);
-            }
+        const matchIdFromUrl: string | null = this.getCurrentMatchIdFromUrl();
+        if(matchIdFromUrl){
+            return matchIdFromUrl;
         }else{
             console.error(`Message List Item DOM Element not found. Please check & update the selector.`);
         }
         return '';
     }
 
+    private getCurrentMatchIdFromUrl(): string | null {
+        const indexLastSlash:number = window.location.href.lastIndexOf('/');
+        if(indexLastSlash >= 0){
+            return window.location.href.substring(indexLastSlash+1);
+        }else{
+            console.error(`Url does not seem to contain a slash?`);
+            return null;
+        }
+    }
+
     private getMatchIdFromMessageHrefSDtring(href: string): string {
+        //todo: refactored this from getCurrentMatchIdFromChatScreen because this did not work for new matches. This should now work for both new matches and matches with existing conversation
         return href.substring(href.lastIndexOf('/') + 1);
     }
     
