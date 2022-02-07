@@ -10,7 +10,7 @@ export class dataCheckSystemId implements validEntrySimple {
 
         if(typeof value === 'object'){
             const allowedObject:Record<string, unknown> = <Record<string, unknown>>value;
-            isAllowedObject = Object.entries(allowedObject).length === 2 ? true : false;
+            isAllowedObject = Object.entries(allowedObject).length === 2 || Object.entries(allowedObject).length === 3 ? true : false;
 
             if(Object.prototype.hasOwnProperty.call(value, 'appType') && Object.prototype.hasOwnProperty.call(value, 'id') || Object.prototype.hasOwnProperty.call(value, 'tempId')){
 
