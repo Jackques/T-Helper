@@ -3,7 +3,7 @@ import { ParsedResultMatch } from "src/content/interfaces/controllers/ParsedResu
 import { Message, ParsedResultMessages } from "src/content/interfaces/http-requests/MessagesListTinder.interface";
 import { Badges, Match, MatchListTinderAPI } from "src/content/interfaces/http-requests/MatchesListTinder.interface";
 import { matchMockTwo } from "../mocks/matchesMock";
-import { dataTable } from '../data/dataTable';
+import { DataTable } from '../data/dataTable';
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataRecord } from "../data/dataRecord";
 import { SubmitType } from "../../../SubmitType";
@@ -30,13 +30,13 @@ export class TinderController implements datingAppController {
     private xAuthToken = '';
     private requestHandler!: RequestHandlerTinder; // 'definite assignment assertion proerty (!) added here, is this a good practice?'
     public matches: Person[] = [];
-    private dataTable: dataTable;
+    private dataTable: DataTable;
     private dataStorage: dataStorage;
 
     private currentScreenTimeoutId:number | null = null;
     private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
 
-    constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: dataTable, dataStorage: dataStorage) {
+    constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: dataStorage) {
 
         this.dataRetrievalMethod = dataRetrievalMethod;
         this.dataTable = dataTable;

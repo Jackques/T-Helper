@@ -4,7 +4,7 @@ import { parse } from 'tldts';
 import { TinderController } from './classes/controllers/TinderController';
 import { DataRecord } from './classes/data/dataRecord';
 import { dataStorage } from './classes/data/dataStorage';
-import { dataTable } from './classes/data/dataTable';
+import { DataTable } from './classes/data/dataTable';
 import { DataRecordValues } from './interfaces/data/dataRecordValues.interface';
 import { PortMessage } from './interfaces/portMessage.interface';
 
@@ -12,7 +12,7 @@ export class Main {
     private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
     private datingAppType = '';
 
-    private dataTable: dataTable = new dataTable();
+    private dataTable: DataTable = new DataTable();
     private dataStorage = new dataStorage();
     
     constructor() {
@@ -70,7 +70,7 @@ export class Main {
         }
     }
 
-    private initAppController(appType: string, dataTable: dataTable, dataStorage: dataStorage){
+    private initAppController(appType: string, dataTable: DataTable, dataStorage: dataStorage){
         switch(appType){
             case "tinder":
                 return new TinderController('api', dataTable, dataStorage);

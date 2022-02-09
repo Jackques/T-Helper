@@ -2,7 +2,7 @@ import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.i
 import { DataField } from "./dataField";
 import { DataRecord } from "./dataRecord";
 
-export class dataTable {
+export class DataTable {
 
     private dataRecords: DataRecord[] = [];
     private dataRecordAmount = 0;
