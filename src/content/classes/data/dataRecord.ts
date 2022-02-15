@@ -19,6 +19,7 @@ import {dataCheckSystemId} from "./dataCheckLogic/dataCheckSystemId";
 import {DataFieldTypes} from "src/content/interfaces/data/dataFieldTypes.interface";
 import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 import { dataCheckMessage } from "./dataCheckLogic/dataCheckMessage";
+import { Message } from "src/content/interfaces/data/message.interface";
 
 export class DataRecord {
         
@@ -53,11 +54,11 @@ export class DataRecord {
 
     //todo: to ensure proper nesting without errors; ensure the datafield labels / headers ONLY contain alphanumeric characters AND dashes.. nothing else
     //todo: maybe needs a systemNo or something? Just like No but specifically for the system
-    private usedDataFields:DataField[] = [
+    public usedDataFields:DataField[] = [
         new DataFieldSystemNo('System-no', 'The number the system of the datingapp assigned this person to', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckSystemId()}),
         new DataField('No', 'The number of the person for my app internaly', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, true, true, true, {baseType: 'number', customCheckClass: null}),
 
-        new DataFieldMessages('Messages', 'The messages sent between me and my match', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'list', customCheckClass: new dataCheckMessage()}),
+        new DataFieldMessages('Messages', 'The messages sent between me and my match', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckMessage()}),
         new DataField('Last-updated', 'The datetime this record has been last updated (including messages)', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         
         // need to keep track of this myself, but since I'M swiping/liking this will not be a problem 
@@ -115,7 +116,10 @@ export class DataRecord {
         const valueDataField:unknown | null = this.getValueOfDataFieldByTitle(labelPersonSystemid, {'appType': appType});
         if(valueDataField !== null && typeof valueDataField === 'object'){
             for(const [key, value] of Object.entries(valueDataField)){
-                if(key === 'id'){
+                if(key === 'tempId' && value){
+                    return value as string;
+                }
+                if(key === 'id' && value){
                     return value as string;
                 }
             }
@@ -157,6 +161,17 @@ export class DataRecord {
         this.needsToBeUpdated = isToBeUpdated;
     }
 
+    public getLatestMessage(): Message | null {
+        const dataFieldMessages = this.usedDataFields[this.getIndexOfDataFieldByTitle('Messages')] as DataFieldMessages;
+        const lastMessage = dataFieldMessages.getLastMessage();
+        return lastMessage && lastMessage ? lastMessage : null;
+    }
+    
+    public hasMessages(): boolean {
+        const dataFieldMessages = this.usedDataFields[this.getIndexOfDataFieldByTitle('Messages')] as DataFieldMessages;
+        return dataFieldMessages.hasMessages();
+    }
+
     /**
      * Checks wether all data record values array provided in the param exist in the data record
      * @param {DataRecordValues[]} dataRecordValueList
@@ -188,16 +203,15 @@ export class DataRecord {
     }
 
     /*  ZET HIER WELKE TAGS IK MOMENTEEL WEL GA ONDERSTEUNEN EN WELKE NIET! BEGIN KLEIN!
-    'IsFake', // e.g. obvious catfishes, because maybe I want to keep track of how many (OBVIOUSLY) fake profiles I encounter on any given app
-    'seemsFake', // e.g. IG-modellike profiles with whom no man ever matches? Or do (some) men match with them?
+    'IsFake', // e.g. obvious catfishes, because maybe I want to keep track of how many (OBVIOUSLY) fake profiles I encounter on any given app (very few of these exist tho..)
+    'seemsFake', // e.g. IG-modellike profiles with whom no man ever matches? Or do (some) men match with them? (the obvious insta-model girls.. tinder seems to prioritize these girls at the first recs of the list of recs with the property 'is_superlike_upsell' but unfortunatelly i cannot read the recs data..)
     'emptyProfiles', // e.g. how many empty profiles i encounter?
-
-    'Woonplaats', // because maybe I want to keep track of the distance between me and my (potential) match so I can take that variabele into account if many matches ghost e.g. because they may be too far away (tinder/happn happens to show me the distance, if not availble I can get the city at least (or ask the person myself) thus use this to calculate the distance from me: https://www.distance24.org/api.xhtml)
 
     //todo: TEST: the 'likes you' count (in the matches panel, which takes you to 'see who likes you'); does the api response (found in; https://api.gotinder.com/v2/fast-match/teaser?locale=nl&type=recently-active) tell you an exact number past what is shown (if you have more than 100 likes, 100+ is shown)? or does it stop at 100 despite you have more like than 100 (100+)? IF an exact number is gtiven past 100 if you have more than 100 likes.. then this info could be pretty valueble to log as well.. especially with a log list e.g; [{date, likescount}, {date, likescount}, {date, likescount} etc.]
 
-    'type-of-match' //OPTIONAL tag; tells me the type of match e.g.; boost, super-like, normal etc.
+    'type-of-match-tags' //OPTIONAL tag; tells me the type of match e.g.; boost, super-like, normal etc.
     'show-average-number-matches-to-go' // maybe handy tool, not for logging data, but for comparing how many potential matches i can get with 1 profile (as done by my own research) and thus how many 'to-go' for my region etc. This 'visual indicator' might just help me get more of a grasp on how large/small my 'potential datingpool' really is.. which is exactly what i need (cause; abundance mindset)
+
     'how-many-times-i-ghosted' // because i get slacky and dont redspond?
     'gaf-mij-compliment', // because maybe I want to keep track of how many compliments (physical? or about the personality?) this profile gets..
     'vibe-tags', // because I want to keep track of the characteristics // vibe i get from this person; religious, professional, posh, trashy, into-sports, outdoorsy, nerdy, dominant, submissive, sexual, etc.

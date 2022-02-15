@@ -1,3 +1,4 @@
+import { Message } from "src/content/interfaces/data/message.interface";
 import { baseTypes, logicContainer } from "src/content/interfaces/logicContainer.interface";
 import { uniqueEntryChecker } from "../util/uniqueEntryChecker";
 import { GhostStatus } from "./dataItems/dataItemGhost";
@@ -339,9 +340,14 @@ export class DataFieldMessages extends DataField {
         return null;
     }
 
-    public getLastMessage(): Record<string, unknown> | null {
+    public getLastMessage(): Message | null {
         const messagesListLength: number = this.dataEntryList.length;
-        return messagesListLength > 0 ? this.dataEntryList[messagesListLength - 1] : null;
+        //todo: figure out how to do this nicely; inheriting property from base class with a different type
+        return messagesListLength > 0 ? this.dataEntryList[messagesListLength - 1] as unknown as Message : null;
+    }
+
+    public hasMessages(): boolean {
+        return this.dataEntryList.length > 0 ? true : false;
     }
 }
 
