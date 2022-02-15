@@ -7,7 +7,7 @@ export class dataAttractiveness extends dataCheckSimple implements validEntrySim
         if(!Number.isInteger(score)){
             return false;
         }
-        return score > 1 && score <= 10 ? true : false;
+        return score >= 1 && score <= 10 ? true : false;
         //todo: test if it accepts 8.5, 7.5 etc.
     }
 
