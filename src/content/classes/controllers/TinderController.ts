@@ -359,7 +359,7 @@ export class TinderController implements datingAppController {
                     dataRecordValuesList.push({ 'label': 'No', 'value': undefined});
                     break;
                 case 'Messages':
-                        dataRecordValuesList.push({ 'label': 'Messages', 'value': match.matchMessages ? this._convertTinderMessagesForDataRecord(match.matchMessages, match.match.person._id) : []});
+                        dataRecordValuesList.push({ 'label': 'Messages', 'value': match.matchMessages ? this._convertTinderMessagesForDataRecord(match.matchMessages, match.match.id) : []});
                         break;
                 case 'Last-updated':
                         dataRecordValuesList.push({ 'label': 'Last-updated', 'value': new Date().toISOString()});
