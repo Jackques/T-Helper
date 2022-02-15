@@ -144,6 +144,8 @@ export class UIFieldsRenderer {
                 return SubmitType.SUPERLIKED;
             case currentTarget.id.replace('submitAction_', '') === 'passed':
                 return SubmitType.PASSED;
+            case currentTarget.id.replace('submitAction_', '') === 'sendMessage':
+                return SubmitType.SENDMESSAGE;
             default:
               return undefined
           }
@@ -197,7 +199,6 @@ export class UIFieldsRenderer {
                     </form>
                 </div>
             `);
-            this._setSubmitEventHandlers();
         }
 
         if(screen === ScreenNavStateCombo.Chat){
@@ -216,13 +217,16 @@ export class UIFieldsRenderer {
         `);
         }
 
+        this._setSubmitEventHandlers(screen);
+
         if(additionalScreenAdjustmentCommands){
             additionalScreenAdjustmentCommands();
         }
         
     }
 
-    private _setSubmitEventHandlers(): void {
+    private _setSubmitEventHandlers(screen: ScreenNavStateCombo): void {
+        if(screen === ScreenNavStateCombo.Swipe){
             const submitButtonDOMType_pass = $(".recsCardboard__cards span:contains('Nee bedankt')").first();
             if(submitButtonDOMType_pass[0]){
                 submitButtonDOMType_pass.parent('button').attr('id', 'submitAction_passed');
@@ -237,6 +241,13 @@ export class UIFieldsRenderer {
             if(submitButtonDOMType_like[0]){
                 submitButtonDOMType_like.parent('button').attr('id', 'submitAction_liked');
             }
+        }
+        if(screen === ScreenNavStateCombo.Chat){
+            const submitButtonDOMType_sendMessage = $("div.BdT > form > button[type='submit']").first();
+            if(submitButtonDOMType_sendMessage[0]){
+                submitButtonDOMType_sendMessage.attr('id', 'submitAction_sendMessage');
+            }
+        }
 
     }
 
