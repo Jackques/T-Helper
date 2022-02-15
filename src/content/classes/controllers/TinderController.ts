@@ -77,7 +77,7 @@ export class TinderController implements datingAppController {
                             // debugger;
                             
 
-                            if(matchRecordIndex < 0){
+                            if(matchRecordIndex  === -1){
                                 //TODO: if match doesnt exist, create new data record, fill new record with all data needed
                                 // console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
                                 const newDataRecord = new DataRecord();
