@@ -464,7 +464,9 @@ export class TinderController implements datingAppController {
                     dataRecordValuesList.push({ 'label': 'Notes', 'value': dataField.getValue() !== null ? dataField.getValue() : 'this note should appear for everyone.. right?'});
                     break
                 default:
-                    console.warn(`DataField: ${dataField.title} does not have an inplementation in TinderController thus could not be resolved`);
+                    if(!dataField.emptyFieldAllowed){
+                        console.warn(`DataField: ${dataField.title} does not have an inplementation in TinderController thus could not be resolved`);
+                    }
                     break;
             }
         });
