@@ -35,6 +35,7 @@ export class TinderController implements datingAppController {
 
     private currentScreenTimeoutId:number | null = null;
     private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
+    private currentMatchIdByUrlChat: string | null = null;
 
     constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: dataStorage) {
 
@@ -114,7 +115,8 @@ export class TinderController implements datingAppController {
                         // export retrieved data to csv/json?
                         this.setSwipeHelperOnScreen();
 
-                        this.setMessageWatcherOnScreen();
+                        this.setScreenWatcher();
+                        this.setMessageListWatcherOnScreen();
                     });
 
                     // HINT: In order to scroll to the very bottom of the messageList in tinder;
@@ -138,18 +140,210 @@ export class TinderController implements datingAppController {
         }
 
     }
-    setMessageWatcherOnScreen() {
-        console.info('setMessageWatcherOnScreen has not yet been inplemented!');
-        // messageList
+    private setScreenWatcher() {
 
-        /*
-        Please inplement this as soon as when i have a match which actually talks back to me.. because then i can test this properly..
-        this is supposed to (other than hitting the send button) set a record to 'not-updated' thus needing to reupdate the messages list
-        */
+        // main & aside container (with this class) is always present as far as i know, so should always work.
+        const swipeOrChatContainerIdentifier = '.App__body > .desktop > main.BdStart';
+
+        const $SOCcontainer = $('body').find(swipeOrChatContainerIdentifier).first()[0];
+        
+        if(!$SOCcontainer){
+            console.error(`Element with identifier not found: ${swipeOrChatContainerIdentifier}. Please update identifiers.`);
+            return;
+        }
+
+        // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
+        // Thus I can always apply DOM manipulations on them when needed!
+        new MutationObserver((mutations: MutationRecord[]) =>{
+
+            if(this.currentScreenTimeoutId !== null){
+                // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
+                return;
+            }
+
+            if(this.currentScreen === ScreenNavStateCombo.Chat){
+                const newMatchIdFromUrl = this.getMatchIdFromMessageHrefSDtring(window.location.href);
+                if(this.currentMatchIdByUrlChat === null || this.currentMatchIdByUrlChat !== newMatchIdFromUrl){
+                    console.log(`%c Switched CHAT from match with id ${this.currentMatchIdByUrlChat} to match with id: ${newMatchIdFromUrl}`, "color: green");
+                    this.currentMatchIdByUrlChat = newMatchIdFromUrl;
+                }else{
+                    return;
+                }
+            } else if(this.currentScreen === this.getCurrentScreenByDOM()){
+                return;
+            }
+
+            this.uiRenderer.setLoadingOverlay('switchScreen', true);
+
+            this.uiRenderer.removeAllUIHelpers();
+
+            this.currentScreenTimeoutId = setTimeout(()=>{
+                this.currentScreen = this.getCurrentScreenByDOM();
+                console.log(`Current screen: ${this.currentScreen}`);
+
+                this.uiRenderer.setLoadingOverlay('switchScreen', false);
+                this.currentScreenTimeoutId = null;
+
+                console.log(`execute add UI helpers for screen: ${this.currentScreen}`);
+                this.addUIHelpers(this.currentScreen);
+            },500);
+        }).observe($SOCcontainer, {
+            childList: true, // observe direct children
+            subtree: true, // lower descendants too
+            characterDataOldValue: true, // pass old data to callback
+        });
+    }
+
+    private setMessageListWatcherOnScreen() {
+        console.info('setMessageWatcherOnScreen has not yet been inplemented!');
+
+        const messageListIdentifier = '.messageList';
+        const $MessageListContainer = $('body').find(messageListIdentifier).first()[0];
+        
+        if(!$MessageListContainer){
+            console.error(`Element with identifier not found: ${messageListIdentifier}. Please update identifiers.`);
+            return;
+        }
+
+        new MutationObserver((mutations: MutationRecord[]) => {
+
+            // if(this.hasAllMutationsTargetsContainMessageListIdentifierItself(mutations, messageListIdentifier)){
+            //     return;
+            // }
+            const mutationsOnMessageItem = mutations.filter((mutation)=>{ 
+                const mutatedElement = mutation.target as HTMLElement;
+                if(mutatedElement.nodeName === "DIV"){
+                    if(!mutatedElement.classList.contains('messageList')){
+                        return mutatedElement;
+                    }
+                }else{
+                    return mutatedElement;
+                }
+            });
+            if(mutationsOnMessageItem.length === 0){
+                return;
+            }
+
+
+            // check if mutation are from receiving a new message, if so update the dataRecord to set 'needsTobeUpdated' to true
+            const matchId: string | null = this.getMatchIdFromMutations(mutationsOnMessageItem);
+
+            //THIS IS PRONE TO FALSE POSITIVES IT SEEMS!
+            //REFACTOR THIS TO; SIMPLY EXECUTE METHOD TO CHECK IF ANY MESSAGELISTITEM HAS NEW MESSAGE ICON. IF SO; GET DATARECORD FOR THIS PROFILE & SET IT TO NEEDSTOBEUPDATED!
+            // is it that this is kinda flaky and produces a false positive a problem? I mean.. the biggest consequence is just one extra person who gets added to the list to get their messages renewed
+            // 'bug 1'; profile Aniek last message was a ANIMATED GIF sent to her.. this shows up as a hyperlink in the messages.. thus the last message ('You sent a GIF..') does INDEED NOT EQUAL the last message known by the dataRecord (the hyperlink to the gif)
+
+            //TODO TODO TODO;
+            // 1. there is another known bug it seems; when i scroll down a match will be undefined (or the last message?) thus resulting in yet another error?
+                // found the cause; it's because i did not import the messages from these matches in my mock (only imported 25..) so these matches INDEED have no prior messages set in the dataTable!
+                // SOLUTION: Maybe simply; if no messages exist in dataTable prior.. then this should not be an error?
+            if(matchId !== null){
+                const dataRecord = this.dataTable.getRecordByRecordIndex(this.dataTable.getRecordIndexBySystemId(matchId, 'tinder'));
+
+                if(dataRecord === null){
+                    console.error(`Observed last message from unknown match. Please check match in mutations: ${mutationsOnMessageItem} and check the datatable manually`);
+                    return;
+                }
+
+                if(this.hasReceivedNewMessagesFromMatch(mutationsOnMessageItem, dataRecord)){
+                    // eslint-disable-next-line no-debugger
+                    // debugger;
+                    dataRecord.setUpdateMessages(true);
+                    console.log(`%c ${console.count()} (2)I just set profile: ${dataRecord.usedDataFields[5].getValue()} with id: ${matchId} with recordIndex: ${dataRecord.usedDataFields[0].getValue()} to true.. for this person sent me a new message thus my messages list for her should be reviewed`, "color: orange");
+                    return;
+                }
+            }
+            // if not, then mutations are from switching match conversation
+        }).observe($MessageListContainer, {
+            childList: true, // observe direct children
+            subtree: true, // lower descendants too
+            characterDataOldValue: false, // pass old data to callback
+        });
+    }
+
+    private getLatestMessageFromMutations(mutations: MutationRecord[]): string | null {
+        let latestMessageFromUI: string | null = null;
+
+        mutations.forEach((mutation) => {
+            if(mutation.target){
+                const element$: JQuery<Node> = $(mutation.target).hasClass('messageListItem') ? $(mutation.target).first() : $(mutation.target).parents('.messageListItem').first();
+                if(element$.length > 0){
+                    latestMessageFromUI = element$.find('.messageListItem__message').text();
+                }else{
+                    console.error(`Jquery node not found with class "messageListItem__message"`);
+                    return null;
+                } 
+            }
+        });
+        return latestMessageFromUI;
+    }
+
+    private getMatchIdFromMutations(mutations: MutationRecord[]): string | null {
+        let matchId: string | null = null;
+
+        mutations.forEach((mutation) => {
+            if($(mutation.target).hasClass('messageList')){
+                return;
+            }
+
+            const element$: JQuery<Node> = $(mutation.target).hasClass('messageListItem') ? $(mutation.target).first() : $(mutation.target).parents('.messageListItem').first();
+
+            if(element$.length > 0){
+                matchId = this.getMatchIdFromMessageListItem(element$[0] as HTMLElement);
+            }else{
+                console.error(`Jquery node not found with class "messageListItem__message"`);
+                return null;
+            } 
+            
+        });
+
+        return matchId;
+    }
+
+    private hasReceivedNewMessagesFromMatch(mutations: MutationRecord[], dataRecord: DataRecord): boolean {
+        const latestMessageFromUI: string | null = this.getLatestMessageFromMutations(mutations);
+        let latestMessageFromMatchInDataTable: string | null | undefined;
+        if(dataRecord.hasMessages()){
+            latestMessageFromMatchInDataTable = dataRecord.getLatestMessage() ? dataRecord.getLatestMessage()?.message : null;
+        }else{
+            latestMessageFromMatchInDataTable = "";
+        }
+
+        if(!latestMessageFromUI){
+            console.error(`Unable to get new message from match. The value for from the UI is: "${latestMessageFromUI}". Please update the selectors.`);
+            return false;
+        }
+
+        if(latestMessageFromUI !== latestMessageFromMatchInDataTable){
+            return true;
+        }else{
+            return false;
+        }
+        
+    }
+
+    private getMatchIdFromMessageListItem(latestMessageElement: HTMLElement): string | null {
+        
+        if(!$(latestMessageElement).hasClass('messageListItem')){
+            console.error(`latestMessageElement received is  not a messageListItem element. Please update the selectors.`);
+            return null;
+        }
+        
+        const matchIdHref: string | undefined = $(latestMessageElement).attr('href');
+        let matchId: string;
+
+        if(matchIdHref && matchIdHref.length > 0){
+            matchId = matchIdHref.substring(matchIdHref.lastIndexOf('/') + 1);
+            if(matchId && matchId.length > 0){
+                return matchId;
+            }
+        }
+        console.error(`Unable to get match id from message list item. Please update the DOM selectors.`);
+        return null;
     }
 
     private parseMatchDataToDataRecordValues(match: ParsedResultMatch, dataFields: DataField[]): DataRecordValues[] { 
-        //TODO TODO TODO: refactor code to use dataFields directly instead of creating & adding fields to the seperate list below
+        //todo: refactor code to use dataFields directly instead of creating & adding fields to the seperate list below
         const dataRecordValuesList: DataRecordValues[] = [];
 
         dataFields.forEach((dataField)=>{
@@ -490,76 +684,9 @@ export class TinderController implements datingAppController {
     }
 
     public setSwipeHelperOnScreen(): void {
-
-        // V 1. set up mutation observer for swipe, chat etc. to execute methods if DOM changes (switch screen, receive message etc.)
-        // V 2. recognize which screen we are on (swipe, chat or other?)
-        // V 3. Listen for screen navigatie changes (can do this inside of the callback)
-        // V 4. IF swipe; show swipe helpers (fields which require UI derived from dataTable)
-        // 5. IF chat; show chat helpers (which require UI) with current value (get current record)
-        // 5.b IF chat; update fields which have autogather set to true
-        
-        // main & aside container (with this class) is always present as far as i know, so should always work.
-        const swipeOrChatContainerIdentifier = '.App__body > .desktop > main.BdStart';
-
-        const $SOCcontainer = $('body').find(swipeOrChatContainerIdentifier).first()[0];
-
-        if(!$SOCcontainer){
-            console.error(`Element with identifier not found: ${swipeOrChatContainerIdentifier}. Please update identifiers.`);
-            return;
-        }
-
         this.currentScreen = this.getCurrentScreenByDOM();
         this.addUIHelpers(this.currentScreen);
-
-        // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
-        // Thus I can always apply DOM manipulations on them when needed!
-        new MutationObserver((mutations: MutationRecord[]) =>{
-
-            if(this.currentScreenTimeoutId !== null){
-                // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
-                return;
-            }
-
-            if(this.currentScreen === this.getCurrentScreenByDOM()){
-                return;
-            }
-
-            this.uiRenderer.setLoadingOverlay('switchScreen', true);
-
-            this.uiRenderer.removeAllUIHelpers();
-
-            this.currentScreenTimeoutId = setTimeout(()=>{
-                this.currentScreen = this.getCurrentScreenByDOM();
-                console.log(`Current screen: ${this.currentScreen}`);
-                this.uiRenderer.setLoadingOverlay('switchScreen', false);
-                this.currentScreenTimeoutId = null;
-
-                console.log(`execute add UI helpers for screen: ${this.currentScreen}`);
-                this.addUIHelpers(this.currentScreen);
-            },500);
-        }).observe($SOCcontainer, {
-            childList: true, // observe direct children
-            subtree: true, // lower descendants too
-            characterDataOldValue: true, // pass old data to callback
-        });
     }
-
-    // while the method below does work perfectly and might be pretty relialble;
-    // setting this up will be quite time consuming as i need to account for all the variations of different screens and not by getting their final status, but getting the dom element which are brought to the screen
-    // thus for now; it's not worth it to inplement, especially not since the other method is working fine.
-    // public getCurrentScreenByMutations(mutations: MutationRecord[]): ScreenNavStateCombo {
-    //     mutations.forEach((mutation)=>{ 
-    //         mutation.addedNodes?.forEach((node)=>{
-    //             $(node).find("span").each(function(element){
-    //                 if(this.textContent === "Terug"){
-    //                     console.warn('Terugbutton found!');
-    //                     console.warn(this);
-    //                 }
-    //             });
-    //         });
-    //     });
-    //     return ScreenNavStateCombo.UnknownScreen;
-    // }
 
     public addUIHelpers(currentScreen: ScreenNavStateCombo, forceRefresh?: boolean): void {
         if(currentScreen === ScreenNavStateCombo.Chat){
