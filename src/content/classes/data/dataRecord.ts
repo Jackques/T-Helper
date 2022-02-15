@@ -65,6 +65,11 @@ export class DataRecord {
         new DataField('Date-liked-or-passed', 'The datetime when I gave the like/sent my first message/disliked/counsiously ignored this potential person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         new DataField('Name', 'The name of the person', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: null}),
         new DataField('Age', 'The age of the person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'number', customCheckClass: null}), // preferably getting this by birthdate otherwise just the age number is fine too
+        
+        new DataField('City', 'The city this person lives in claimed by themself or tinder', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.ALPHANUMERIC_INPUT }, false, false, true, false, {baseType: 'string', customCheckClass: null}),
+        new DataField('Job', 'The claimed job title this person holds', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.ALPHANUMERIC_INPUT }, false, false, true, false, {baseType: 'string', customCheckClass: null}),
+
+
         // in match.bio
         new DataField('Has-profiletext', 'Wether or not this person has some text on the profile', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Has-usefull-profiletext', 'Wether or not this person has some usefull text on the profile', true, { UIrequired: UIRequired.SELECT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
