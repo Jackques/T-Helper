@@ -721,19 +721,19 @@ export class TinderController implements datingAppController {
                         if(dataFields && dataFields.length > 0){
                             uiRequiredDataFields = dataRecord.getDataFields(false, true, UIRequired.CHAT_ONLY);
 
+                            // 4. on send/receive message.. add message to/update dataRecord? (check; messageListObserver)
+                            // 5. on switch person in messagelist; switch settings of the above? (check screenWatcher (Observer))
                             this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields, 
                                 (value: DataRecordValues) => {
-                                    //TODO: TODO: TODO: figure out how to set value on the ui fields and update.. thats all
+                                    console.log(`Updated value to existing data record; label: ${value.label}, value: ${value.value}`);
+                                    dataRecord?.addDataToDataFields([value]);
+                                    console.log(`Updated dataRecord: `);
+                                    console.dir(dataRecord);
                             }, (submitType: SubmitType) => {
                                 dataRecord?.setUpdateMessages(true);
-                                //TODO: TODO: TODO: ik was bezig om the ontvangen messages ook toe te voegen in de Messages dataField en last-updated in de respectievelijke data field. dat is gelukt, komt door de popup checker heen, nu nog alleen bij parse matches ook de juiste data vullen (zal makkelijk zijn!) en dan houd ik niet alleen de lijst met messages bij voor future use maar kan ik dus altijd zien wanneer een record voor het laatst is geupdate EN altijd achteraf berekeningen op de messages loslaten (zoals ghosts..) maar dus ook een veld aanmerken als 'toBeUpdated' en daarbij checken of dat vled moet worden geupdate of niet
                             });
                         }
                     }
-                    
-                    //TODO: 
-                    // 4. on send/receive message.. add message to/update dataRecord?
-                    // 5. on switch person in messagelist; switch settings of the above?
                 }else{
                     //todo: needs inplementation on what to do if recordid is not found? This should not happen tho.. wait.. yes it should! What if i get a new match after i imported everything and started chatting with match!?
                     console.error('Current match id not found');
@@ -893,7 +893,6 @@ export class TinderController implements datingAppController {
     }
 
     private getMatchIdFromMessageHrefSDtring(href: string): string {
-        //todo: refactored this from getCurrentMatchIdFromChatScreen because this did not work for new matches. This should now work for both new matches and matches with existing conversation
         return href.substring(href.lastIndexOf('/') + 1);
     }
     
