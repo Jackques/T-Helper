@@ -44,6 +44,11 @@
   width: 100%;
 }
 
+/* additional styling for tinder to help with screen adjustments after helpers appear */
+.emoji-picker__wrapper {
+  left: -135px;
+}
+
 /* field helpers additional styling */
 .fieldContainer {
   margin-bottom: 15px;
