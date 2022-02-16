@@ -52,8 +52,6 @@ export class TinderController implements datingAppController {
                     //todo: test to see if auth token works by using a simple request first?
                     this.requestHandler = new RequestHandlerTinder();
 
-                    //TODO: For each match (with the corresponding datingapp property in systemId), I should first get THEIR MATCHDATA & MATCHMESSAGES! Loop over it& update the data!
-
                     // Gather data (by api's OR (less preferably) DOM)
                     this.getDataByAPI(this.requestHandler, true).then((matches: ParsedResultMatch[] | undefined)=>{
                         
@@ -79,7 +77,7 @@ export class TinderController implements datingAppController {
                             
 
                             if(matchRecordIndex  === -1){
-                                //TODO: if match doesnt exist, create new data record, fill new record with all data needed
+                                // if match doesnt exist, create new data record, fill new record with all data needed
                                 // console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
                                 const newDataRecord = new DataRecord();
                                 dataFields = newDataRecord.getDataFields();
@@ -196,7 +194,6 @@ export class TinderController implements datingAppController {
     }
 
     private setMessageListWatcherOnScreen() {
-        console.info('setMessageWatcherOnScreen has not yet been inplemented!');
 
         const messageListIdentifier = '.messageList';
         const $MessageListContainer = $('body').find(messageListIdentifier).first()[0];
@@ -208,9 +205,7 @@ export class TinderController implements datingAppController {
 
         new MutationObserver((mutations: MutationRecord[]) => {
 
-            // if(this.hasAllMutationsTargetsContainMessageListIdentifierItself(mutations, messageListIdentifier)){
-            //     return;
-            // }
+            // ensures that only descandt nodes of the (div) node with class 'messageList' will be passed
             const mutationsOnMessageItem = mutations.filter((mutation)=>{ 
                 const mutatedElement = mutation.target as HTMLElement;
                 if(mutatedElement.nodeName === "DIV"){
@@ -225,19 +220,11 @@ export class TinderController implements datingAppController {
                 return;
             }
 
-
             // check if mutation are from receiving a new message, if so update the dataRecord to set 'needsTobeUpdated' to true
             const matchId: string | null = this.getMatchIdFromMutations(mutationsOnMessageItem);
 
-            //THIS IS PRONE TO FALSE POSITIVES IT SEEMS!
-            //REFACTOR THIS TO; SIMPLY EXECUTE METHOD TO CHECK IF ANY MESSAGELISTITEM HAS NEW MESSAGE ICON. IF SO; GET DATARECORD FOR THIS PROFILE & SET IT TO NEEDSTOBEUPDATED!
-            // is it that this is kinda flaky and produces a false positive a problem? I mean.. the biggest consequence is just one extra person who gets added to the list to get their messages renewed
+            //Known flase positives (but does not matter, since all it does will be refetching the messages anyway);
             // 'bug 1'; profile Aniek last message was a ANIMATED GIF sent to her.. this shows up as a hyperlink in the messages.. thus the last message ('You sent a GIF..') does INDEED NOT EQUAL the last message known by the dataRecord (the hyperlink to the gif)
-
-            //TODO TODO TODO;
-            // 1. there is another known bug it seems; when i scroll down a match will be undefined (or the last message?) thus resulting in yet another error?
-                // found the cause; it's because i did not import the messages from these matches in my mock (only imported 25..) so these matches INDEED have no prior messages set in the dataTable!
-                // SOLUTION: Maybe simply; if no messages exist in dataTable prior.. then this should not be an error?
             if(matchId !== null){
                 const dataRecord = this.dataTable.getRecordByRecordIndex(this.dataTable.getRecordIndexBySystemId(matchId, 'tinder'));
 
