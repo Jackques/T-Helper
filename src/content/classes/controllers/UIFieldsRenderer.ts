@@ -12,11 +12,12 @@ export class UIFieldsRenderer {
         {
             name: 'sliderBootstrap',
             label: UIRequiredType.SLIDER,
-            getValueMethod: (htmlElement:HTMLInputElement) => {
+            getValueMethod: (htmlElement:HTMLInputElement): number => {
                 if(htmlElement){
                     return htmlElement.valueAsNumber;
                 }
                 console.error(`Event target nog set`);
+                return NaN;
             },
             template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null): string => {
                 defaultValue = defaultValue === null ? '' : defaultValue;
@@ -42,11 +43,12 @@ export class UIFieldsRenderer {
         {
             name: 'switchBootstrap',
             label: UIRequiredType.SWITCH,
-            getValueMethod: (htmlElement:HTMLInputElement) => {
+            getValueMethod: (htmlElement:HTMLInputElement): boolean => {
                 if(htmlElement){
                     return htmlElement.checked ? true : false;
                 }
                 console.error(`Event target nog set`);
+                return false;
             },
             template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null):string => { 
                 defaultValue = defaultValue === null ? false : defaultValue;
@@ -61,11 +63,12 @@ export class UIFieldsRenderer {
         {
             name: 'inputBootstrap',
             label: UIRequiredType.ALPHANUMERIC_INPUT,
-            getValueMethod: (htmlElement:HTMLInputElement) => {
+            getValueMethod: (htmlElement:HTMLInputElement): string => {
                 if(htmlElement){
                     return htmlElement.value;
                 }
                 console.error(`Event target nog set`);
+                return '';
             },
             template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null):string => {
                 defaultValue = defaultValue === null ? '' : defaultValue; 
@@ -79,11 +82,12 @@ export class UIFieldsRenderer {
         {
             name: 'textareaBootstrap',
             label: UIRequiredType.TEXTAREA,
-            getValueMethod: (htmlElement:HTMLInputElement) => {
+            getValueMethod: (htmlElement:HTMLInputElement): string => {
                 if(htmlElement){
                     return htmlElement.value;
                 }
                 console.error(`Event target nog set`);
+                return '';
             },
             template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null): string => { 
                 defaultValue = defaultValue === null ? '' : defaultValue; 
