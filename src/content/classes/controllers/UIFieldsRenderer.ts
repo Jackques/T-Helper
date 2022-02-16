@@ -4,6 +4,7 @@ import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.i
 import { DataField, UIRequiredType } from "../data/dataField";
 import { SubmitType } from "../../../SubmitType";
 import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
+import { DOMHelper } from "../util/DOMHelper";
 
 export class UIFieldsRenderer {
     
@@ -222,30 +223,45 @@ export class UIFieldsRenderer {
         if(additionalScreenAdjustmentCommands){
             additionalScreenAdjustmentCommands();
         }
-        
+
+        $(`body`).on("blur", '#uiHelperFieldsContainer [id^="datafieldUI_"]', this.valuesEventHandler);
+        $(`body`).on("click", '[id^="submitAction_"]', this.submitEventHandler);
     }
 
     private _setSubmitEventHandlers(screen: ScreenNavStateCombo): void {
         if(screen === ScreenNavStateCombo.Swipe){
-            const submitButtonDOMType_pass = $(".recsCardboard__cards span:contains('Nee bedankt')").first();
-            if(submitButtonDOMType_pass[0]){
-                submitButtonDOMType_pass.parent('button').attr('id', 'submitAction_passed');
+            // const submitButtonDOMType_pass = $(".recsCardboard__cards div[class*=c-pink] button").first();
+            const submitButtonDOMType_pass = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*=c-pink] button");
+            if(submitButtonDOMType_pass !== null){
+                $(submitButtonDOMType_pass).attr('id', 'submitAction_passed');
+            }else{
+                console.error(`submitAction_passed could not be set! submit button not found. Please update the selector.`);
             }
 
-            const submitButtonDOMType_superlike = $(".recsCardboard__cards span:contains('Super Like')").first();
-            if(submitButtonDOMType_superlike[0]){
-                submitButtonDOMType_superlike.parent('button').attr('id', 'submitAction_superliked');
+            // const submitButtonDOMType_superlike = $(".recsCardboard__cards div[class*=c-superlike-blue] button").first();
+            const submitButtonDOMType_superlike = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*=c-superlike-blue] button");
+            if(submitButtonDOMType_superlike !== null){
+                $(submitButtonDOMType_superlike).attr('id', 'submitAction_superliked');
+            }else{
+                console.error(`submitAction_superliked could not be set! submit button not found. Please update the selector.`);
             }
 
-            const submitButtonDOMType_like = $(".recsCardboard__cards span:contains('Leuk')").first();
-            if(submitButtonDOMType_like[0]){
-                submitButtonDOMType_like.parent('button').attr('id', 'submitAction_liked');
+            // const submitButtonDOMType_like = $(".recsCardboard__cards div[class*=c-like-green] button").first();
+            const submitButtonDOMType_like = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*=c-like-green] button");
+            if(submitButtonDOMType_like !== null){
+                $(submitButtonDOMType_like).attr('id', 'submitAction_liked');
+            }else{
+                console.error(`submitAction_pass could not be set! submit button not found. Please update the selector.`);
             }
         }
+
         if(screen === ScreenNavStateCombo.Chat){
-            const submitButtonDOMType_sendMessage = $("div.BdT > form > button[type='submit']").first();
-            if(submitButtonDOMType_sendMessage[0]){
-                submitButtonDOMType_sendMessage.attr('id', 'submitAction_sendMessage');
+            // const submitButtonDOMType_sendMessage = $("div.BdT > form > button[type='submit']").first();
+            const submitButtonDOMType_sendMessage = DOMHelper.getFirstDOMNodeByJquerySelector("div.BdT > form > button[type='submit']");
+            if(submitButtonDOMType_sendMessage !== null){
+                $(submitButtonDOMType_sendMessage).attr('id', 'submitAction_sendMessage');
+            }else{
+                console.error(`submitAction_sendMessage could not be set! submit button not found. Please update the selector.`);
             }
         }
 
