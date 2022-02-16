@@ -702,7 +702,15 @@ export class TinderController implements datingAppController {
 
                         // 3. show helpers for chat (all?), make space above messagebox, put helper container there?
                         this.uiRenderer.renderFieldsContainerForScreen(currentScreen, () => {
-                            $('[aria-label="Gespreksgeschiedenis"]').css('width', '730px');
+                            // $('div[id*="SC.chat"]').first().css('width', '730px');
+                            const chatContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div[id*="SC.chat"]');
+                            if(chatContainerDOM !== null){
+                                $(chatContainerDOM).css('width', '730px');
+                            }else{
+                                console.error(`Cannot find chat container DOM element. Please update the selectors.`);
+                                return;
+                            }
+                            
                         });
                         let uiRequiredDataFields: DataField[];
 
@@ -885,8 +893,8 @@ export class TinderController implements datingAppController {
     }
     
     public getIsVerifiedFromUI(): boolean {
-        const isVerifiedDOMNode:HTMLElement = $('div[aria-hidden="false"] title:contains(Geverifieerd!)').first()[0];
-        return isVerifiedDOMNode && isVerifiedDOMNode.textContent && isVerifiedDOMNode.textContent === 'Geverifieerd!' ? true : false;
+        const isVerifiedDOMNode:HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div.recsPage div[aria-hidden="false"] path[fill="#1786ff"]');
+        return isVerifiedDOMNode ? true : false;
     }
 
     public getHasProfileTextFromUI(): boolean {
