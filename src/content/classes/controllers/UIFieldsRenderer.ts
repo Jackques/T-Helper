@@ -103,42 +103,41 @@ export class UIFieldsRenderer {
     private valuesCallback: ((value: DataRecordValues) => void) | undefined;
     private submitCallback: ((submitType: SubmitType) => void) | undefined;
 
+    private valuesEventHandler = (event:Event) => {
+        const dataType = this._getDataType(<HTMLInputElement>event.currentTarget);
+        const templateName = this._getTemplateName(<HTMLInputElement>event.currentTarget);
+        const UIRecordRef = this._getUIRecordRef(<HTMLInputElement>event.currentTarget);
+        if(dataType && templateName && UIRecordRef){
+            const value = this._getValueByTemplateName(templateName, <HTMLInputElement>event.currentTarget); //todo: use label instead of dataType for getting the value?
+            const newDataRecordValue: DataRecordValues = {
+                'label': UIRecordRef,
+                'value': value
+            }
+            if(this.valuesCallback){
+                this.valuesCallback(newDataRecordValue);
+            }else{
+                console.error(`Callback method was not set`);
+            }
+            
+        }else{
+            console.error(`Could not get data type. Please ensure it is set.`);
+        }
+    };
+
+    private submitEventHandler = (event:Event) => {
+        const submitType:SubmitType | undefined = this._getSubmitType(<HTMLInputElement>event.currentTarget);
+        if(this.submitCallback && submitType){
+            this.submitCallback(submitType);
+        }else{
+            console.error(`Could not submit type. Please ensure it is set.`);
+        }
+    };
+
     constructor(){
         console.log(`UIRenderer init`);
 
         //todo: can this be a class method as well?
-        const valuesEventHandler = (event:Event) => {
-            const dataType = this._getDataType(<HTMLInputElement>event.currentTarget);
-            const templateName = this._getTemplateName(<HTMLInputElement>event.currentTarget);
-            const UIRecordRef = this._getUIRecordRef(<HTMLInputElement>event.currentTarget);
-            if(dataType && templateName && UIRecordRef){
-                const value = this._getValueByTemplateName(templateName, <HTMLInputElement>event.currentTarget); //todo: use label instead of dataType for getting the value?
-                const newDataRecordValue: DataRecordValues = {
-                    'label': UIRecordRef,
-                    'value': value
-                }
-                if(this.valuesCallback){
-                    this.valuesCallback(newDataRecordValue);
-                }else{
-                    console.error(`Callback method was not set`);
-                }
-                
-            }else{
-                console.error(`Could not get data type. Please ensure it is set.`);
-            }
-        };
 
-        const submitEventHandler = (event:Event) => {
-            const submitType:SubmitType | undefined = this._getSubmitType(<HTMLInputElement>event.currentTarget);
-            if(this.submitCallback && submitType){
-                this.submitCallback(submitType);
-            }else{
-                console.error(`Could not submit type. Please ensure it is set.`);
-            }
-        };
-
-        $(`body`).on("blur", '#uiHelperFieldsContainer [id^="datafieldUI_"]', valuesEventHandler);
-        $(`body`).on("click", '[id^="submitAction_"]', submitEventHandler);
     }
     
     private _getSubmitType(currentTarget: HTMLInputElement): SubmitType | undefined {
