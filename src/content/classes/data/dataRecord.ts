@@ -214,6 +214,10 @@ export class DataRecord {
 
     //todo: TEST: the 'likes you' count (in the matches panel, which takes you to 'see who likes you'); does the api response (found in; https://api.gotinder.com/v2/fast-match/teaser?locale=nl&type=recently-active) tell you an exact number past what is shown (if you have more than 100 likes, 100+ is shown)? or does it stop at 100 despite you have more like than 100 (100+)? IF an exact number is gtiven past 100 if you have more than 100 likes.. then this info could be pretty valueble to log as well.. especially with a log list e.g; [{date, likescount}, {date, likescount}, {date, likescount} etc.]
 
+    'date-of-unmatch' // is likely the same as lastUpdated, but attempts to get the datetime of if she unmatches me, could be usefull
+    'gender' // if i ever would want to make a female profile (or bisexual one for that matter)
+    'did-i-unmatch' // track if i unmatched the person, or if the person unmatched me ( cause i should do it too, to clean up my matches in hopes of increasing ELO)
+
     'type-of-match-tags' //OPTIONAL tag; tells me the type of match e.g.; boost, super-like, normal etc.
     'show-average-number-matches-to-go' // maybe handy tool, not for logging data, but for comparing how many potential matches i can get with 1 profile (as done by my own research) and thus how many 'to-go' for my region etc. This 'visual indicator' might just help me get more of a grasp on how large/small my 'potential datingpool' really is.. which is exactly what i need (cause; abundance mindset)
 
