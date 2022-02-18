@@ -56,7 +56,7 @@ export class TinderController implements datingAppController {
                     this.requestHandler = new RequestHandlerTinder();
 
                     // Gather data (by api's OR (less preferably) DOM)
-                    this.getDataByAPI(this.requestHandler, true).then((matches: ParsedResultMatch[] | undefined)=>{
+                    this.getDataByAPI(this.requestHandler, true)?.then((matches: ParsedResultMatch[] | undefined)=>{
                         
                         if(matches === undefined){
                             console.error(`Could not retrieve matches`);
@@ -143,6 +143,7 @@ export class TinderController implements datingAppController {
         }
 
     }
+
     private setScreenWatcher() {
 
         // main & aside container (with this class) is always present as far as i know, so should always work.
@@ -1014,7 +1015,7 @@ export class TinderController implements datingAppController {
         return currentPage;
     }
 
-    public getDataByAPI(requestHandler: RequestHandlerTinder, useMock: boolean):Promise<ParsedResultMatch[] | undefined> {
+    public getDataByAPI(requestHandler: RequestHandlerTinder, useMock: boolean):Promise<ParsedResultMatch[] | undefined> | null {
         //todo: make seperate out logic in different methods because whilst 'getData' may be generic, getting it will differ for each supported app.
         console.log(`Getting tinder data`);
 
