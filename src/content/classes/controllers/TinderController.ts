@@ -38,6 +38,9 @@ export class TinderController implements datingAppController {
     private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
     private currentMatchIdByUrlChat: string | null = null;
 
+    private amountOfUnmessagedMatches = 0;
+    private matchesListTimeoutId: number | null = null;
+
     constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: dataStorage) {
 
         this.dataRetrievalMethod = dataRetrievalMethod;
@@ -116,6 +119,7 @@ export class TinderController implements datingAppController {
 
                         this.setScreenWatcher();
                         this.setMessageListWatcherOnScreen();
+                        this.setMatchesListWatcher();
                     });
 
                     // HINT: In order to scroll to the very bottom of the messageList in tinder;
@@ -247,6 +251,67 @@ export class TinderController implements datingAppController {
             subtree: true, // lower descendants too
             characterDataOldValue: false, // pass old data to callback
         });
+    }
+
+    private setMatchesListWatcher(): void {
+        const matchesListIdentifier = 'a.matchListItem';
+        const matchesListElement: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector(matchesListIdentifier);
+        let matchesListContainer: null | HTMLElement = null;
+
+        if(matchesListElement !== null){
+            matchesListContainer = $(matchesListElement).parents('[role="tabpanel"]').first()[0] ? $(matchesListElement).parents('[role="tabpanel"]').first()[0] : null;
+            if(matchesListContainer !== null){
+                this.amountOfUnmessagedMatches = this.getUnmessagedMatchesAmount(matchesListContainer);
+
+                new MutationObserver((mutations: MutationRecord[]) => {
+                    if(matchesListContainer !== null){
+                        const currentUnmessagedMatchesAmount: number = this.getUnmessagedMatchesAmount(matchesListContainer);
+                        console.log(`Did the UI get updated so I can NOW get the number of unmessaged matches after one or more has been added/deleted?`);
+                        console.log(`Old number: ${this.amountOfUnmessagedMatches}, current/new number: ${currentUnmessagedMatchesAmount}`);
+
+                        if(this.amountOfUnmessagedMatches !== currentUnmessagedMatchesAmount){
+                            this.amountOfUnmessagedMatches = currentUnmessagedMatchesAmount;
+
+                            if(this.matchesListTimeoutId === null){
+                                this.matchesListTimeoutId = setTimeout(()=>{
+                                    this.matchesListTimeoutId = null;
+
+                                    console.log(`%c Got some added/deleted unmessaged matches! Let's update those matches!`,  "color: purple");
+                                    //todo: update dataTable with matches!
+                                    debugger;
+                                }, 500);
+                            }
+                            
+                        }
+                    }else{
+                        console.error(`Could not find matchesListContainer. Please update the identifier.`);
+                        return;
+                    }
+                    
+                }).observe(matchesListContainer, {
+                    childList: true, // observe direct children
+                    subtree: true, // lower descendants too
+                    characterDataOldValue: false, // pass old data to callback
+                });
+            }else{
+                console.error(`Could not find matchesListContainer. Please update the identifier.`);
+                return;
+            }
+        }else{
+            console.error(`Could not find matchesListElement. Please update the identifier.`);
+            return;
+        }
+    }
+    private getUnmessagedMatchesAmount(matchesListContainerElement: HTMLElement): number {
+        const matchListItemsAmount = $(matchesListContainerElement).find('a.matchListItem').length;
+
+        // I assume the 'likes you' and 'sent-likes' will always be present, thus accounting for at least 2 elements with class matchListItem
+        if(matchListItemsAmount >= 1){
+            return matchListItemsAmount;
+        }else{
+            console.error(`Unable to find matchListItems. Please update selectors.`);
+            return 0;
+        }
     }
 
     private getLatestMessageFromMutations(mutations: MutationRecord[]): string | null {
@@ -1066,7 +1131,7 @@ export class TinderController implements datingAppController {
 
         }else{
             console.error(`The requestHandler was not set`);
-            return;
+            return null;
         }
     }
 
