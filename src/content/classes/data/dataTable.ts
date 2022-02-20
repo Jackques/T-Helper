@@ -8,7 +8,11 @@ export class DataTable {
     private dataRecordAmount = 0;
 
     public getDataFieldsByRecordIndex(index: number): DataField[] {
-        return this.dataRecords[index].getDataFields(true);
+        // fixed 'bug' that some fields were not returned for updating a record, this was due to the fact i tried to inplement a sortoff
+        // update or not allowed to update system. However the logic for this is a bit fuzzy and should be for a future date.
+
+        //todo: determine if i want to update or not certain fields, and set logic for this CORRECTLY
+        return this.dataRecords[index].getDataFields();
     }
 
     //todo: refactor to get record directly? 
