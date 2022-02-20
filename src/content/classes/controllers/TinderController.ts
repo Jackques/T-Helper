@@ -232,12 +232,11 @@ export class TinderController implements datingAppController {
                             this.amountOfUnmessagedMatches = currentUnmessagedMatchesAmount;
 
                             if (this.matchesListTimeoutId === null) {
+                                this.uiRenderer.setLoadingOverlay('loadingMatches', true);
                                 this.matchesListTimeoutId = setTimeout(() => {
                                     this.matchesListTimeoutId = null;
 
                                     console.log(`%c Got some added/deleted unmessaged matches! Let's update those matches!`, "color: purple");
-
-                                    debugger;
 
                                     this.getMatches()?.then((matches: ParsedResultMatch[] | null) => {
                                         if (matches && matches.length > 0) {
@@ -246,6 +245,8 @@ export class TinderController implements datingAppController {
                                         } else {
                                             console.error(`Matches received from getMatches were null. Please check the logs.`);
                                         }
+
+                                        this.uiRenderer.setLoadingOverlay('loadingMatches', false);
 
                                     });
 
