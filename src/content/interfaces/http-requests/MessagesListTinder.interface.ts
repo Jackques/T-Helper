@@ -3,13 +3,14 @@ export interface ParsedResultMessages {
           "status": number
         },
         "data": {
-          "messages": Message[],
-          "next_page_token": string
+          "messages": TinderMessage[],
+          "next_page_token"?: string
         }
 }
-export interface Message {
+export interface TinderMessage {
     "_id": string,
     "match_id": string,
+    "is_liked"?: boolean,
     "sent_date": string,
     "message": string,
     "to": string,
