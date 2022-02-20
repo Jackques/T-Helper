@@ -22,6 +22,9 @@ export abstract class dataCheck implements validEntry {
 
     public argumentTypeChecker(requiredPropertiesList:requiredProperty[], listEntry: Record<string, unknown>):boolean {
         return requiredPropertiesList.every((property: requiredProperty)=> {
+            if(!listEntry[property.label]){
+                return true;
+            }
             if(typeof listEntry[property.label] === property.type){
                 return true;
             }
