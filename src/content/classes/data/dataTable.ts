@@ -60,4 +60,9 @@ export class DataTable {
     public updateDataRecordByIndex(index: number, dataRecord: DataRecordValues[]): void {
         this.dataRecords[index].addDataToDataFields(dataRecord);
     }
+
+    public getAllDataRecords(){
+        return this.dataRecords;
+    }
+
 }

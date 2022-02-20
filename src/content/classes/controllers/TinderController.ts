@@ -62,10 +62,11 @@ export class TinderController implements datingAppController {
                         
                         if(matches === undefined){
                             console.error(`Could not retrieve matches`);
+                            return;
                         }
 
                         //Extract data & add it to dataRecords
-                        matches?.forEach((match: ParsedResultMatch)=>{
+                        matches.forEach((match: ParsedResultMatch)=>{
 
                             // Since Tinder sends the messages in the order from last to first, we must first reverse the messages to first to last
                             // since the .reverse() is applied to the array 'in place' instead of 'on output' applying it once will produce the array in desired format anywhere
@@ -100,23 +101,15 @@ export class TinderController implements datingAppController {
                                 dataFields = dataTable.getDataFieldsByRecordIndex(matchRecordIndex);
                                 tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
                                 dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
-
-                                //TODO: do all of the below in the dataField class where it belongs? Maybe create 1 'getUpdatebleData method' to tell the datingappcontrller which data may be updated thus can be sent over
-                                //TODO: (seperate method) if match does exist, add data to existing record by retrieved index
-                                //TODO: get from record for each data field;
-                                // if: multipleDataEntry (if yes, then i can add multiple values)
-                                // if: autoGather (if yes, then new data should be added if data does not already exist)
-                                // if: onlyGatherOnce (if yes, if no current data available,.. add data)
-                                // if: mustBeUnique (keep track of all values entered for this field name and check if the same value is not added twice (e.g. id))
                             }
-
                         });
+
+                        this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
+
                         console.log(`And here is my data table:`);
                         console.dir(dataTable);
 
-                        //TODO: 4 Inplement add tinder UI support overlay 
-                        // (e.g. add icon/color to match who hasn't replied in a week)
-                        // export retrieved data to csv/json?
+                        //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
                         this.setSwipeHelperOnScreen();
 
                         this.setScreenWatcher();
@@ -1172,9 +1165,6 @@ export class TinderController implements datingAppController {
     }
 
     public updateDataTable(matches: ParsedResultMatch[]): void{
-                    
-                                const test: string[] = this.getListStemNoFromMatches(matches);
-                                debugger;
 
                                 matches?.forEach((match: ParsedResultMatch)=>{
 
@@ -1207,46 +1197,30 @@ export class TinderController implements datingAppController {
                                         dataFields = this.dataTable.getDataFieldsByRecordIndex(matchRecordIndex);
                                         tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
                                         this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
-        
-                                        //TODO: do all of the below in the dataField class where it belongs? Maybe create 1 'getUpdatebleData method' to tell the datingappcontrller which data may be updated thus can be sent over
-                                        //TODO: (seperate method) if match does exist, add data to existing record by retrieved index
-                                        //TODO: get from record for each data field;
-                                        // if: multipleDataEntry (if yes, then i can add multiple values)
-                                        // if: autoGather (if yes, then new data should be added if data does not already exist)
-                                        // if: onlyGatherOnce (if yes, if no current data available,.. add data)
-                                        // if: mustBeUnique (keep track of all values entered for this field name and check if the same value is not added twice (e.g. id))
                                     }
         
                                 });
 
+                                this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
                                 
-
-
-
-
-
-
-
-
-                    
-                    //2. if a match is missing from dataRecord, add it by the parseMatchesResult method?
-                        // 2.1 check if every match exists in dataTable by SystemId
-                            // V if a match does not exist in dataTable; add it 
-                            // V if a datarecord exists AND match does also; update it
-                                // NOTE!
-                                    // MESSAGES & EVERY MESSAGES RELATED FIELD (GHHOSTS) MIGHT BE INCORRECTLY UPDATED
-                                        // prevent this by checking is current messages are greater than received message(s) & if received message(s) are present. 
-                                            // if so. do not overwrite (and set toBeUpdated to true)
-                                            // if so, but received messages are not present in current messages, throw error!?
-                                            // if not, overwrite messages
-                            // if a datarecord exists AND match does not; and datarecord is not DEAD (blocked or no contact); set blocked-or-no-contact to true (with datetime of unmatch the current datetime? WHEN this field is finally inplemented!)\
-                                // -> create a new method on dataTable.checkAllDataRecordsExistence()
-                    //3. refactor logic in constructor to now use this updateDataTable method
     }
 
-    public getListStemNoFromMatches(matches: ParsedResultMatch[]): string[] {
-        return matches.map((match)=>{
-            return match.match.id;
+    private setUnupdatedMatchesToBlocked(matches: ParsedResultMatch[], dataTable: DataTable) {
+        const unupdatedMatchesList: DataRecord[] = dataTable.getAllDataRecords().filter((dataRecord)=>{
+            const doesDataRecordHaveMatchListed = matches.findIndex((match)=>{
+                return match.match.id === dataRecord.getRecordPersonSystemId('tinder') || match.match.person._id === dataRecord.getRecordPersonSystemId('tinder');
+            });
+
+            return doesDataRecordHaveMatchListed === -1 ? true : false;
+        });
+
+        unupdatedMatchesList.forEach((unupdatedMatch)=>{
+            unupdatedMatch.addDataToDataFields([
+                {
+                    label: 'Blocked-or-no-contact',
+                    value: true
+                }
+            ]);
         });
     }
 
