@@ -5,6 +5,7 @@ import { TinderController } from './classes/controllers/TinderController';
 import { DataRecord } from './classes/data/dataRecord';
 import { dataStorage } from './classes/data/dataStorage';
 import { DataTable } from './classes/data/dataTable';
+import { RequestHandlerTinder } from './classes/http-requests/requestHandlerTinder';
 import { DataRecordValues } from './interfaces/data/dataRecordValues.interface';
 import { PortMessage } from './interfaces/portMessage.interface';
 
@@ -12,7 +13,7 @@ export class Main {
     private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
     private datingAppType = '';
 
-    private dataTable: DataTable = new DataTable();
+    private dataTable: DataTable | null = null;
     private dataStorage = new dataStorage();
     
     constructor() {
@@ -28,6 +29,7 @@ export class Main {
                     //todo: Move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
                     this.datingAppType = this.checkDatingApp();
                     if(this.datingAppType.length > 0){
+                        this.dataTable = new DataTable();
 
                         //for every entry i the list received in payload
                         //todo: CURRENTLY; i ASSUME the dataTable will be empty (which it most likely is), but maybe i would want to check here if prior data already exists, thus updating data rather than creating new records
@@ -35,7 +37,7 @@ export class Main {
                             const newDataRecord = new DataRecord();
                             
                             const isDataAddedSuccesfully: boolean = newDataRecord.addDataToDataFields(msg);
-                            if(isDataAddedSuccesfully){
+                            if(isDataAddedSuccesfully && this.dataTable !== null){
                                 this.dataTable.addNewDataRecord(newDataRecord);
                             }else{
                                 console.error(`Error adding data from import. Please check data fields from import and error log.`);
