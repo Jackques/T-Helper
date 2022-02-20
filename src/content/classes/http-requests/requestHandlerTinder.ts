@@ -26,7 +26,7 @@ export class RequestHandlerTinder implements RequestHandler {
             // note 2: "message=0" if no messages have been exchanged yet, "message=1" if messages have been exchanged yet
             const ms = Math.floor(Math.random() * 100)+100;
             setTimeout(() => {
-                console.log(`I delayed at: ${ms}`);
+                // console.log(`I delayed at: ${ms}`); //todo: figure out why i cannot call the this.getRandomCoupleHunderdMS method here
                 fetch(`https://api.gotinder.com/v2/matches?locale=nl&count=100${next_page_token}`, {
                     method: 'GET',    
                     credentials: 'include',
@@ -63,7 +63,7 @@ export class RequestHandlerTinder implements RequestHandler {
         const getMatchMessages = new Promise<string>((resolve, reject) => {
             const ms = Math.floor(Math.random() * 100)+100;
             setTimeout(() => {
-                console.log(`I delayed at: ${ms}`);
+                // console.log(`I delayed at: ${ms}`); //todo: figure out why i cannot call the this.getRandomCoupleHunderdMS method here
                 //https://api.gotinder.com/v2/matches/528ce2770640a14b0f00007c601a943026064201006f6133/messages?locale=nl&count=100&page_token=MjAyMS0wNi0wNlQxOTo0Nzo0Ni4xMzJa
                 fetch(`https://api.gotinder.com/v2/matches/${match_id}/messages?locale=nl&count=100${next_page_token}`, {
                     method: 'GET',    
