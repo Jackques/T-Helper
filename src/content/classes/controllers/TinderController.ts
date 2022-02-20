@@ -1125,7 +1125,8 @@ export class TinderController implements datingAppController {
                 async function getMessagesPerMatchesAsynchronously(){
                     
                     // used a standard for loop to ensure synchronous looping
-                    for (let i = 0; i < matchList.length; i+1) {
+                    for (let i = 0; i < matchList.length; i = i+1) {
+                        console.log(`GETTING MESSAGES now for: ${i} - ${matchList[i].match.id}`);
                         matchList[i].matchMessages = await getMatchesMessages(requestHandler.getMessagesFromMatch, matchList[i].match.id)
                         
                         //NOTE: Set limit to get messages from the first 25 matches ONLY! This is done to reduce time to load
