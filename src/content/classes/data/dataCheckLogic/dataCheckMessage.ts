@@ -36,12 +36,19 @@ export class dataCheckMessage extends dataCheck implements validEntry {
     }
 
     public argumentChecker(requiredPropertiesList: requiredProperty[], listEntry: Record<string, unknown>): boolean {
+        if(listEntry[requiredPropertiesList[0].label] === "" && listEntry[requiredPropertiesList[1].label] === "" && listEntry[requiredPropertiesList[2].label] === ""){
+            // if all are undefined it means the message is empty/non-existant. No need to check this.
+            return true;
+        }
         const isMessage = typeof listEntry[requiredPropertiesList[0].label] === 'string' ? true : false;
         const hasTimestamp = typeof listEntry[requiredPropertiesList[1].label] === 'number' ? true : false;
         const hasAuthor = this._hasAuthor(<string>listEntry[requiredPropertiesList[2].label]);
         return isMessage && hasTimestamp && hasAuthor;
     }
     private _hasAuthor(value: unknown): boolean {
+        if(value === ""){
+            return true;
+        }
         if(typeof value === 'string'){
             if(value === 'me' || value === 'match'){
                 return true;
