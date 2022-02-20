@@ -64,45 +64,8 @@ export class TinderController implements datingAppController {
                             console.error(`Could not retrieve matches`);
                             return;
                         }
-
-                        //Extract data & add it to dataRecords
-                        matches.forEach((match: ParsedResultMatch)=>{
-
-                            // Since Tinder sends the messages in the order from last to first, we must first reverse the messages to first to last
-                            // since the .reverse() is applied to the array 'in place' instead of 'on output' applying it once will produce the array in desired format anywhere
-                            match.matchMessages.reverse();
-
-                            // get record index by systemid for each match
-                            const matchRecordIndex: number = dataTable.getRecordIndexBySystemId(match.match.id, this.nameController);
-                            
-                            let tinderMatchDataRecordValues: DataRecordValues[];
-                            let dataFields: DataField[];
-
-                            // eslint-disable-next-line no-debugger
-                            // debugger;
-                            
-
-                            if(matchRecordIndex  === -1){
-                                // if match doesnt exist, create new data record, fill new record with all data needed
-                                // console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
-                                const newDataRecord = new DataRecord();
-                                dataFields = newDataRecord.getDataFields();
-                                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
-                                
-                                const dataAddedSuccessfully:boolean = newDataRecord.addDataToDataFields(tinderMatchDataRecordValues);
-                                if(dataAddedSuccessfully){
-                                    this.dataTable.addNewDataRecord(newDataRecord);
-                                }else{
-                                    console.error(`Error adding data from retrieved match. Please check match retrieved and error log.`);
-                                }
-                                
-                            }else{
-                                // console.log(`Going to UPDATE data record for: ${match.match.person.name}`);
-                                dataFields = dataTable.getDataFieldsByRecordIndex(matchRecordIndex);
-                                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
-                                dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
-                            }
-                        });
+                        
+                        this.updateDataTable(matches);
 
                         this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
 
@@ -279,6 +242,7 @@ export class TinderController implements datingAppController {
                                     this.getMatches()?.then((matches: ParsedResultMatch[] | null)=>{
                                         if(matches && matches.length > 0){
                                             this.updateDataTable(matches);
+                                            this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
                                         }else{
                                             console.error(`Matches received from getMatches were null. Please check the logs.`);
                                         }
@@ -1200,12 +1164,10 @@ export class TinderController implements datingAppController {
                                     }
         
                                 });
-
-                                this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
                                 
     }
 
-    private setUnupdatedMatchesToBlocked(matches: ParsedResultMatch[], dataTable: DataTable) {
+    private setUnupdatedMatchesToBlocked(matches: ParsedResultMatch[], dataTable: DataTable): void {
         const unupdatedMatchesList: DataRecord[] = dataTable.getAllDataRecords().filter((dataRecord)=>{
             const doesDataRecordHaveMatchListed = matches.findIndex((match)=>{
                 return match.match.id === dataRecord.getRecordPersonSystemId('tinder') || match.match.person._id === dataRecord.getRecordPersonSystemId('tinder');
