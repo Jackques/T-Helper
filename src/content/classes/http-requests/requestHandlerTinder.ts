@@ -6,7 +6,13 @@ import { Matches } from  '../../interfaces/tinder_api/matches.interface';
 
 export class RequestHandlerTinder implements RequestHandler {
 
-    private getRandomCoupleHunderdMS():number{
+    private xAuthToken: string;
+
+    constructor(xAuthToken: string){
+      	this.xAuthToken = xAuthToken;
+    }
+
+    private getRandomCoupleHunderdMS(): number {
         // for some reason,.. private classes dont work?
         return Math.floor(Math.random() * 100)+100;
     }
