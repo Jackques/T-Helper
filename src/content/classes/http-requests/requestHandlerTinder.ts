@@ -1,8 +1,9 @@
 import { data } from 'jquery';
 import { ParsedResultMessages } from 'src/content/interfaces/http-requests/MessagesListTinder.interface';
-import { MatchListTinderAPI } from 'src/content/interfaces/http-requests/MatchesListTinder.interface';
+import { Match, MatchListTinderAPI } from 'src/content/interfaces/http-requests/MatchesListTinder.interface';
 import { RequestHandler } from 'src/content/interfaces/http-requests/RequestHandler.interface';
 import { Matches } from  '../../interfaces/tinder_api/matches.interface';
+import { ParsedResultMatch } from 'src/content/interfaces/controllers/ParsedResultMatch.interface';
 
 export class RequestHandlerTinder implements RequestHandler {
 
@@ -114,10 +115,54 @@ export class RequestHandlerTinder implements RequestHandler {
         // }
     }
 
+        //todo: code below gets the conversation with one of my old matches i had of which deleted me as a match, but apparantly the conversation is still there!
+    // this means that the conversation still exists even if a match is no longer valid, thus i really need to check the data retrieved by my api's to ensure no false positives (like a 'ongoing'-conversation with a non-existing match)
+
+
     // NOTE like/not like user:
     // https://api.gotinder.com/like/61aa9d0aa4ea490100ca143a?locale=nl
     // this sends a like to the user by that id
 
-    //todo: code below gets the conversation with one of my old matches i had of which deleted me as a match, but apparantly the conversation is still there!
-    // this means that the conversation still exists even if a match is no longer valid, thus i really need to check the data retrieved by my api's to ensure no false positives (like a 'ongoing'-conversation with a non-existing match)
+    // private getMatchesStart = (fn:(Function)):Promise<ParsedResultMatch[]> => {
+    public getMatchesStart():Promise<ParsedResultMatch[]> {
+
+        return new Promise<ParsedResultMatch[]>((resolve, reject) =>{
+            const results:ParsedResultMatch[] = [];
+
+            const attempt = (next_page_token?:string) => {
+                next_page_token = next_page_token ? next_page_token : '';
+
+                    this.getMatches(this.xAuthToken, next_page_token)
+                    .then((parsedResult: MatchListTinderAPI)=>{
+                        if(parsedResult?.data?.matches){
+
+                            parsedResult?.data?.matches.forEach((match: Match)=>{
+                                results.push(
+                                    {
+                                    match: match,
+                                    matchMessages: []
+                                }
+                                );
+                            });
+                        }
+                        
+                        if(parsedResult.data.next_page_token){
+                            attempt(parsedResult.data.next_page_token);
+                        }else{
+                            console.log(`Finished getting results:`);
+                            console.dir(results);
+                            resolve(results);
+                        }
+                    })
+                    .catch(function(e:Error){
+                            console.log(`Error retrieving matches:`);
+                            console.dir(e);
+                            const error = e;
+                            reject(error);
+                        });
+                
+            };
+            attempt();
+        })
+    }
 }
