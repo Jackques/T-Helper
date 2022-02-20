@@ -58,13 +58,13 @@ export class TinderController implements datingAppController {
                     this.requestHandler = new RequestHandlerTinder(this.xAuthToken);
 
                     // Gather data (by api's OR (less preferably) DOM)
-                    this.getMatchesAndMatchMessagesByAPI(this.requestHandler, false)?.then((matches: ParsedResultMatch[] | undefined)=>{
-                        
-                        if(matches === undefined){
+                    this.getMatchesAndMatchMessagesByAPI(this.requestHandler, false)?.then((matches: ParsedResultMatch[] | undefined) => {
+
+                        if (matches === undefined) {
                             console.error(`Could not retrieve matches`);
                             return;
                         }
-                        
+
                         this.updateDataTable(matches);
 
                         this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
@@ -88,7 +88,7 @@ export class TinderController implements datingAppController {
                     $0.scrollIntoView()
                     .. and repeat again, again and again untill you have the full list
                     */
-                    
+
                 } else {
                     console.error(`Could not get credentials for tinder`);
                 }
@@ -96,7 +96,7 @@ export class TinderController implements datingAppController {
             if (this.dataRetrievalMethod === 'dom') {
                 console.error(`Data retrieveMethod DOM is not yet supported`);
             }
-        }else{
+        } else {
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
         }
 
@@ -108,30 +108,30 @@ export class TinderController implements datingAppController {
         const swipeOrChatContainerIdentifier = '.App__body > .desktop > main.BdStart';
 
         const $SOCcontainer = $('body').find(swipeOrChatContainerIdentifier).first()[0];
-        
-        if(!$SOCcontainer){
+
+        if (!$SOCcontainer) {
             console.error(`Element with identifier not found: ${swipeOrChatContainerIdentifier}. Please update identifiers.`);
             return;
         }
 
         // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
         // Thus I can always apply DOM manipulations on them when needed!
-        new MutationObserver((mutations: MutationRecord[]) =>{
+        new MutationObserver((mutations: MutationRecord[]) => {
 
-            if(this.currentScreenTimeoutId !== null){
+            if (this.currentScreenTimeoutId !== null) {
                 // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
                 return;
             }
 
-            if(this.currentScreen === ScreenNavStateCombo.Chat){
+            if (this.currentScreen === ScreenNavStateCombo.Chat) {
                 const newMatchIdFromUrl = this.getMatchIdFromMessageHrefSDtring(window.location.href);
-                if(this.currentMatchIdByUrlChat === null || this.currentMatchIdByUrlChat !== newMatchIdFromUrl){
+                if (this.currentMatchIdByUrlChat === null || this.currentMatchIdByUrlChat !== newMatchIdFromUrl) {
                     console.log(`%c Switched CHAT from match with id ${this.currentMatchIdByUrlChat} to match with id: ${newMatchIdFromUrl}`, "color: green");
                     this.currentMatchIdByUrlChat = newMatchIdFromUrl;
-                }else{
+                } else {
                     return;
                 }
-            } else if(this.currentScreen === this.getCurrentScreenByDOM()){
+            } else if (this.currentScreen === this.getCurrentScreenByDOM()) {
                 return;
             }
 
@@ -139,7 +139,7 @@ export class TinderController implements datingAppController {
 
             this.uiRenderer.removeAllUIHelpers();
 
-            this.currentScreenTimeoutId = setTimeout(()=>{
+            this.currentScreenTimeoutId = setTimeout(() => {
                 this.currentScreen = this.getCurrentScreenByDOM();
                 console.log(`Current screen: ${this.currentScreen}`);
 
@@ -148,7 +148,7 @@ export class TinderController implements datingAppController {
 
                 console.log(`execute add UI helpers for screen: ${this.currentScreen}`);
                 this.addUIHelpers(this.currentScreen);
-            },500);
+            }, 500);
         }).observe($SOCcontainer, {
             childList: true, // observe direct children
             subtree: true, // lower descendants too
@@ -160,8 +160,8 @@ export class TinderController implements datingAppController {
 
         const messageListIdentifier = '.messageList';
         const $MessageListContainer = $('body').find(messageListIdentifier).first()[0];
-        
-        if(!$MessageListContainer){
+
+        if (!$MessageListContainer) {
             console.error(`Element with identifier not found: ${messageListIdentifier}. Please update identifiers.`);
             return;
         }
@@ -169,17 +169,17 @@ export class TinderController implements datingAppController {
         new MutationObserver((mutations: MutationRecord[]) => {
 
             // ensures that only descandt nodes of the (div) node with class 'messageList' will be passed
-            const mutationsOnMessageItem = mutations.filter((mutation)=>{ 
+            const mutationsOnMessageItem = mutations.filter((mutation) => {
                 const mutatedElement = mutation.target as HTMLElement;
-                if(mutatedElement.nodeName === "DIV"){
-                    if(!mutatedElement.classList.contains('messageList')){
+                if (mutatedElement.nodeName === "DIV") {
+                    if (!mutatedElement.classList.contains('messageList')) {
                         return mutatedElement;
                     }
-                }else{
+                } else {
                     return mutatedElement;
                 }
             });
-            if(mutationsOnMessageItem.length === 0){
+            if (mutationsOnMessageItem.length === 0) {
                 return;
             }
 
@@ -188,15 +188,15 @@ export class TinderController implements datingAppController {
 
             //Known flase positives (but does not matter, since all it does will be refetching the messages anyway);
             // 'bug 1'; profile Aniek last message was a ANIMATED GIF sent to her.. this shows up as a hyperlink in the messages.. thus the last message ('You sent a GIF..') does INDEED NOT EQUAL the last message known by the dataRecord (the hyperlink to the gif)
-            if(matchId !== null){
+            if (matchId !== null) {
                 const dataRecord = this.dataTable.getRecordByRecordIndex(this.dataTable.getRecordIndexBySystemId(matchId, 'tinder'));
 
-                if(dataRecord === null){
+                if (dataRecord === null) {
                     console.error(`Observed last message from unknown match. Please check match in mutations: ${mutationsOnMessageItem} and check the datatable manually`);
                     return;
                 }
 
-                if(this.hasReceivedNewMessagesFromMatch(mutationsOnMessageItem, dataRecord)){
+                if (this.hasReceivedNewMessagesFromMatch(mutationsOnMessageItem, dataRecord)) {
                     // eslint-disable-next-line no-debugger
                     // debugger;
                     dataRecord.setUpdateMessages(true);
@@ -217,57 +217,57 @@ export class TinderController implements datingAppController {
         const matchesListElement: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector(matchesListIdentifier);
         let matchesListContainer: null | HTMLElement = null;
 
-        if(matchesListElement !== null){
+        if (matchesListElement !== null) {
             matchesListContainer = $(matchesListElement).parents('[role="tabpanel"]').first()[0] ? $(matchesListElement).parents('[role="tabpanel"]').first()[0] : null;
-            if(matchesListContainer !== null){
+            if (matchesListContainer !== null) {
                 this.amountOfUnmessagedMatches = this.getUnmessagedMatchesAmount(matchesListContainer);
 
                 new MutationObserver((mutations: MutationRecord[]) => {
-                    if(matchesListContainer !== null){
+                    if (matchesListContainer !== null) {
                         const currentUnmessagedMatchesAmount: number = this.getUnmessagedMatchesAmount(matchesListContainer);
                         console.log(`Did the UI get updated so I can NOW get the number of unmessaged matches after one or more has been added/deleted?`);
                         console.log(`Old number: ${this.amountOfUnmessagedMatches}, current/new number: ${currentUnmessagedMatchesAmount}`);
 
-                        if(this.amountOfUnmessagedMatches !== currentUnmessagedMatchesAmount){
+                        if (this.amountOfUnmessagedMatches !== currentUnmessagedMatchesAmount) {
                             this.amountOfUnmessagedMatches = currentUnmessagedMatchesAmount;
 
-                            if(this.matchesListTimeoutId === null){
-                                this.matchesListTimeoutId = setTimeout(()=>{
+                            if (this.matchesListTimeoutId === null) {
+                                this.matchesListTimeoutId = setTimeout(() => {
                                     this.matchesListTimeoutId = null;
 
-                                    console.log(`%c Got some added/deleted unmessaged matches! Let's update those matches!`,  "color: purple");
-                                    
+                                    console.log(`%c Got some added/deleted unmessaged matches! Let's update those matches!`, "color: purple");
+
                                     debugger;
 
-                                    this.getMatches()?.then((matches: ParsedResultMatch[] | null)=>{
-                                        if(matches && matches.length > 0){
+                                    this.getMatches()?.then((matches: ParsedResultMatch[] | null) => {
+                                        if (matches && matches.length > 0) {
                                             this.updateDataTable(matches);
                                             this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
-                                        }else{
+                                        } else {
                                             console.error(`Matches received from getMatches were null. Please check the logs.`);
                                         }
-                                        
+
                                     });
 
                                 }, 500);
                             }
-                            
+
                         }
-                    }else{
+                    } else {
                         console.error(`Could not find matchesListContainer. Please update the identifier.`);
                         return;
                     }
-                    
+
                 }).observe(matchesListContainer, {
                     childList: true, // observe direct children
                     subtree: true, // lower descendants too
                     characterDataOldValue: false, // pass old data to callback
                 });
-            }else{
+            } else {
                 console.error(`Could not find matchesListContainer. Please update the identifier.`);
                 return;
             }
-        }else{
+        } else {
             console.error(`Could not find matchesListElement. Please update the identifier.`);
             return;
         }
@@ -276,9 +276,9 @@ export class TinderController implements datingAppController {
         const matchListItemsAmount = $(matchesListContainerElement).find('a.matchListItem').length;
 
         // I assume the 'likes you' and 'sent-likes' will always be present, thus accounting for at least 2 elements with class matchListItem
-        if(matchListItemsAmount >= 1){
+        if (matchListItemsAmount >= 1) {
             return matchListItemsAmount;
-        }else{
+        } else {
             console.error(`Unable to find matchListItems. Please update selectors.`);
             return 0;
         }
@@ -288,14 +288,14 @@ export class TinderController implements datingAppController {
         let latestMessageFromUI: string | null = null;
 
         mutations.forEach((mutation) => {
-            if(mutation.target){
+            if (mutation.target) {
                 const element$: JQuery<Node> = $(mutation.target).hasClass('messageListItem') ? $(mutation.target).first() : $(mutation.target).parents('.messageListItem').first();
-                if(element$.length > 0){
+                if (element$.length > 0) {
                     latestMessageFromUI = element$.find('.messageListItem__message').text();
-                }else{
+                } else {
                     console.error(`Jquery node not found with class "messageListItem__message"`);
                     return null;
-                } 
+                }
             }
         });
         return latestMessageFromUI;
@@ -305,19 +305,19 @@ export class TinderController implements datingAppController {
         let matchId: string | null = null;
 
         mutations.forEach((mutation) => {
-            if($(mutation.target).hasClass('messageList')){
+            if ($(mutation.target).hasClass('messageList')) {
                 return;
             }
 
             const element$: JQuery<Node> = $(mutation.target).hasClass('messageListItem') ? $(mutation.target).first() : $(mutation.target).parents('.messageListItem').first();
 
-            if(element$.length > 0){
+            if (element$.length > 0) {
                 matchId = this.getMatchIdFromMessageListItem(element$[0] as HTMLElement);
-            }else{
+            } else {
                 console.error(`Jquery node not found with class "messageListItem__message"`);
                 return null;
-            } 
-            
+            }
+
         });
 
         return matchId;
@@ -326,38 +326,38 @@ export class TinderController implements datingAppController {
     private hasReceivedNewMessagesFromMatch(mutations: MutationRecord[], dataRecord: DataRecord): boolean {
         const latestMessageFromUI: string | null = this.getLatestMessageFromMutations(mutations);
         let latestMessageFromMatchInDataTable: string | null | undefined;
-        if(dataRecord.hasMessages()){
+        if (dataRecord.hasMessages()) {
             latestMessageFromMatchInDataTable = dataRecord.getLatestMessage() ? dataRecord.getLatestMessage()?.message : null;
-        }else{
+        } else {
             latestMessageFromMatchInDataTable = "";
         }
 
-        if(!latestMessageFromUI){
+        if (!latestMessageFromUI) {
             console.error(`Unable to get new message from match. The value for from the UI is: "${latestMessageFromUI}". Please update the selectors.`);
             return false;
         }
 
-        if(latestMessageFromUI !== latestMessageFromMatchInDataTable){
+        if (latestMessageFromUI !== latestMessageFromMatchInDataTable) {
             return true;
-        }else{
+        } else {
             return false;
         }
-        
+
     }
 
     private getMatchIdFromMessageListItem(latestMessageElement: HTMLElement): string | null {
-        
-        if(!$(latestMessageElement).hasClass('messageListItem')){
+
+        if (!$(latestMessageElement).hasClass('messageListItem')) {
             console.error(`latestMessageElement received is  not a messageListItem element. Please update the selectors.`);
             return null;
         }
-        
+
         const matchIdHref: string | undefined = $(latestMessageElement).attr('href');
         let matchId: string;
 
-        if(matchIdHref && matchIdHref.length > 0){
+        if (matchIdHref && matchIdHref.length > 0) {
             matchId = matchIdHref.substring(matchIdHref.lastIndexOf('/') + 1);
-            if(matchId && matchId.length > 0){
+            if (matchId && matchId.length > 0) {
                 return matchId;
             }
         }
@@ -365,125 +365,127 @@ export class TinderController implements datingAppController {
         return null;
     }
 
-    private parseMatchDataToDataRecordValues(match: ParsedResultMatch, dataFields: DataField[] | DataFieldMessages[]): DataRecordValues[] { 
+    private parseMatchDataToDataRecordValues(match: ParsedResultMatch, dataFields: DataField[] | DataFieldMessages[]): DataRecordValues[] {
         //todo: refactor code to use dataFields directly (similair to dataFieldMessages) instead of creating & adding fields to the seperate list below
         const dataRecordValuesList: DataRecordValues[] = [];
 
         // todo: refactor this to nicely get dataRecord, and from dataRecord (write a method to?) retrieve messages DataField
         const messagesDataField = dataFields[2] as DataFieldMessages;
-        messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(match.matchMessages, match.match.person._id)) 
+        messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(match.matchMessages, match.match.person._id))
 
-        dataFields.forEach((dataField)=>{
+        dataFields.forEach((dataField) => {
             switch (dataField.title) {
                 case 'System-no':
-                    dataRecordValuesList.push({ 'label': 'System-no', 'value': { 
-                        'appType': 'tinder', 
-                        'id': match.match.id
-                    }});
+                    dataRecordValuesList.push({
+                        'label': 'System-no', 'value': {
+                            'appType': 'tinder',
+                            'id': match.match.id
+                        }
+                    });
                     break;
                 case 'No':
                     //todo: ensure providing null increments the number in dataTable instead of throwing error
-                    dataRecordValuesList.push({ 'label': 'No', 'value': undefined});
+                    dataRecordValuesList.push({ 'label': 'No', 'value': undefined });
                     break;
                 case 'Last-updated':
-                    dataRecordValuesList.push({ 'label': 'Last-updated', 'value': new Date().toISOString()});
+                    dataRecordValuesList.push({ 'label': 'Last-updated', 'value': new Date().toISOString() });
                     break
                 case 'Date-liked-or-passed':
                     // does not get logged by tinder, thus can only be logged by me, thus should be undefined
-                    dataRecordValuesList.push({ 'label': 'Date-liked-or-passed', 'value': dataField.getValue()});
+                    dataRecordValuesList.push({ 'label': 'Date-liked-or-passed', 'value': dataField.getValue() });
                     break;
                 case 'Name':
-                    dataRecordValuesList.push({ 'label': 'Name', 'value': match.match.person.name});
+                    dataRecordValuesList.push({ 'label': 'Name', 'value': match.match.person.name });
                     break;
                 case 'Age':
-                    dataRecordValuesList.push({ 'label': 'Age', 'value': DateHelper.getAgeFromBirthDate(match.match.person.birth_date)});
+                    dataRecordValuesList.push({ 'label': 'Age', 'value': DateHelper.getAgeFromBirthDate(match.match.person.birth_date) });
                     break;
                 case 'Has-profiletext': {
                     // ensure that if Has-profiletext has been set once, it will not be overwritten again. 
                     // todo: Maybe make a field setting for this?
                     let value = dataField.getValue();
-                    if(value === null){
+                    if (value === null) {
                         value = match.match.person.bio && match.match.person.bio.length > 0 ? true : false
                     }
-                    dataRecordValuesList.push({ 'label': 'Has-profiletext', 'value': value});
+                    dataRecordValuesList.push({ 'label': 'Has-profiletext', 'value': value });
                     break;
                 }
                 case 'Has-usefull-profiletext':
-                    dataRecordValuesList.push({ 'label': 'Has-usefull-profiletext', 'value': dataField.getValue()});
+                    dataRecordValuesList.push({ 'label': 'Has-usefull-profiletext', 'value': dataField.getValue() });
                     break;
                 case 'Is-verified': {
                     // ensure that if Is-verified has been set once, it will not be overwritten again. 
                     // todo: Maybe make a field setting for this?
                     let value = dataField.getValue();
-                    if(value === null){
+                    if (value === null) {
                         value = match.match.person.badges ? this._isVerifiedMatch(match.match.person.badges) : false;
                     }
-                    dataRecordValuesList.push({ 'label': 'Is-verified', 'value': value});
+                    dataRecordValuesList.push({ 'label': 'Is-verified', 'value': value });
                     break;
                 }
                 case 'Attractiveness-score':
-                    dataRecordValuesList.push({ 'label': 'Attractiveness-score', 'value': dataField.getValue()});
+                    dataRecordValuesList.push({ 'label': 'Attractiveness-score', 'value': dataField.getValue() });
                     break;
                 case 'Did-i-like':
-                    dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': dataField.getValue()});
+                    dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': dataField.getValue() });
                     break;
                 case 'Is-match':
-                    dataRecordValuesList.push({ 'label': 'Is-match', 'value': dataField.getValue()});
+                    dataRecordValuesList.push({ 'label': 'Is-match', 'value': dataField.getValue() });
                     break;
                 case 'Date-match':
-                    dataRecordValuesList.push({ 'label': 'Date-match', 'value': match.match.created_date});
+                    dataRecordValuesList.push({ 'label': 'Date-match', 'value': match.match.created_date });
                     break;
                 case 'Match-sent-first-message': {
-                    dataRecordValuesList.push({ 'label': 'Match-sent-first-message', 'value': messagesDataField.hasMessages() ? this._hasMatchSentFirstMessage(messagesDataField.getAllMessages()) : undefined});
+                    dataRecordValuesList.push({ 'label': 'Match-sent-first-message', 'value': messagesDataField.hasMessages() ? this._hasMatchSentFirstMessage(messagesDataField.getAllMessages()) : undefined });
                     break;
                 }
                 case 'Match-responded':
-                    dataRecordValuesList.push({ 'label': 'Match-responded', 'value': messagesDataField.hasMessages() ? this._hasMatchGivenResponse(messagesDataField.getAllMessages()) : undefined});
+                    dataRecordValuesList.push({ 'label': 'Match-responded', 'value': messagesDataField.hasMessages() ? this._hasMatchGivenResponse(messagesDataField.getAllMessages()) : undefined });
                     break;
                 case 'Conversation-exists':
-                    dataRecordValuesList.push({ 'label': 'Conversation-exists', 'value': messagesDataField.hasMessages() ? this._hasConversation(messagesDataField.getAllMessages()) : undefined});
+                    dataRecordValuesList.push({ 'label': 'Conversation-exists', 'value': messagesDataField.hasMessages() ? this._hasConversation(messagesDataField.getAllMessages()) : undefined });
                     break;
                 case 'Vibe-conversation':
-                    dataRecordValuesList.push({ 'label': 'Vibe-conversation', 'value': dataField.getValue()});
+                    dataRecordValuesList.push({ 'label': 'Vibe-conversation', 'value': dataField.getValue() });
                     break;
                 case 'How-many-ghosts':
-                    dataRecordValuesList.push({ 
-                        'label': 'How-many-ghosts', 
+                    dataRecordValuesList.push({
+                        'label': 'How-many-ghosts',
                         'value': messagesDataField.hasMessages() ? this._getNumberOfGhosting(messagesDataField.getAllMessages(), match.match) : []
                     });
                     break;
                 case 'Acquired-number':
-                    dataRecordValuesList.push({ 'label': 'Acquired-number', 'value': dataField.getValue()});
+                    dataRecordValuesList.push({ 'label': 'Acquired-number', 'value': dataField.getValue() });
                     break
                 case 'Response-speed':
                     dataRecordValuesList.push(
-                        { 
-                            'label': 'Response-speed', 
+                        {
+                            'label': 'Response-speed',
                             'value': messagesDataField.hasMessages() ? this._getResponseSpeedMoments(messagesDataField.getAllMessages()) : []
                         });
                     break;
                 case 'Reminders-amount':
                     dataRecordValuesList.push(
-                        { 
-                            'label': 'Reminders-amount', 
+                        {
+                            'label': 'Reminders-amount',
                             'value': messagesDataField.hasMessages() ? this._getReminderAmount(messagesDataField.getAllMessages()) : []
                         });
                     break;
                 case 'Blocked-or-no-contact':
                     //todo: for deleted convo's by matches; does is there a property in the api response?
-                    dataRecordValuesList.push({ 'label': 'Blocked-or-no-contact', 'value': dataField.getValue()});
+                    dataRecordValuesList.push({ 'label': 'Blocked-or-no-contact', 'value': dataField.getValue() });
                     break
                 case 'Interested-in-sex':
-                    dataRecordValuesList.push({ 'label': 'Interested-in-sex', 'value': dataField.getValue()});
+                    dataRecordValuesList.push({ 'label': 'Interested-in-sex', 'value': dataField.getValue() });
                     break
                 case 'Potential-click':
-                    dataRecordValuesList.push({ 'label': 'Potential-click', 'value': dataField.getValue()});
+                    dataRecordValuesList.push({ 'label': 'Potential-click', 'value': dataField.getValue() });
                     break
                 case 'Notes':
-                    dataRecordValuesList.push({ 'label': 'Notes', 'value': dataField.getValue() !== null ? dataField.getValue() : 'this note should appear for everyone.. right?'});
+                    dataRecordValuesList.push({ 'label': 'Notes', 'value': dataField.getValue() !== null ? dataField.getValue() : 'this note should appear for everyone.. right?' });
                     break
                 default:
-                    if(!dataField.emptyFieldAllowed){
+                    if (!dataField.emptyFieldAllowed) {
                         console.warn(`DataField: ${dataField.title} does not have an inplementation in TinderController thus could not be resolved`);
                     }
                     break;
@@ -507,14 +509,14 @@ export class TinderController implements datingAppController {
     }
 
     private _getReminderAmount(matchMessages: Message[]): any[] {
-        const reminderAmountList:any = [];
+        const reminderAmountList: any = [];
         let reminderAmount = 0;
 
-        matchMessages.reduce((messagePrevious, messageNext, currentIndex, messageList)=>{
+        matchMessages.reduce((messagePrevious, messageNext, currentIndex, messageList) => {
 
             // 1. is there 2 days or more in between my last message and my other message? AND my match sent no message in between? = ghost moment
-            if(messagePrevious.author !== MessageAuthorEnum.Match && messageNext.author !== MessageAuthorEnum.Match){
-                if(DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(messagePrevious.timestamp, messageNext.timestamp, 2)){
+            if (messagePrevious.author !== MessageAuthorEnum.Match && messageNext.author !== MessageAuthorEnum.Match) {
+                if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(messagePrevious.timestamp, messageNext.timestamp, 2)) {
 
                     reminderAmountList.push({
                         number: reminderAmount,
@@ -533,14 +535,14 @@ export class TinderController implements datingAppController {
     }
 
     private _getResponseSpeedMoments(matchMessages: Message[]): any[] {
-        const responseSpeedMoments:any = [];
+        const responseSpeedMoments: any = [];
 
         // if there are no messages from the other person at all, return 0
-        if(!matchMessages.some(message => message.author === MessageAuthorEnum.Match)){
+        if (!matchMessages.some(message => message.author === MessageAuthorEnum.Match)) {
             return responseSpeedMoments;
         }
-        
-        matchMessages.forEach((currentMessage:Message, index:number, messagesList:Message[])=>{
+
+        matchMessages.forEach((currentMessage: Message, index: number, messagesList: Message[]) => {
             const nextMessage: Message | undefined = (index + 1) < (messagesList.length - 1) ? messagesList[index + 1] : undefined;
             // if the first message is from me, and the second message is from the other person
 
@@ -548,13 +550,13 @@ export class TinderController implements datingAppController {
             // if 88, index + 1 = 89, messageList (90)-1 = 89 = gets the 89th message
             // if 89 (last item) + 1 = 90, messageList is (90)-1 = 89, item is NOT less than messageList, thus undefined
 
-            if(!nextMessage){
+            if (!nextMessage) {
                 return;
             }
 
-            if(currentMessage.author !== MessageAuthorEnum.Match && nextMessage.author === MessageAuthorEnum.Match){
+            if (currentMessage.author !== MessageAuthorEnum.Match && nextMessage.author === MessageAuthorEnum.Match) {
                 // get the difference between these two moments in datetime
-                
+
                 // add this datetime to the list
                 responseSpeedMoments.push({
                     datetimeMyLastMessage: new Date(currentMessage.timestamp).toISOString(),
@@ -569,38 +571,38 @@ export class TinderController implements datingAppController {
 
         return responseSpeedMoments;
     }
-    private _getNumberOfGhosting(matchMessages: Message[], match:Match): any[] {
+    private _getNumberOfGhosting(matchMessages: Message[], match: Match): any[] {
 
         let amountOfGhosts = 0;
-        const ghostsList:any[] = [];
+        const ghostsList: any[] = [];
 
         // if there are no messages from the other person at all, return 0
-        if(!matchMessages.some(message => message.author === MessageAuthorEnum.Match)){
+        if (!matchMessages.some(message => message.author === MessageAuthorEnum.Match)) {
             return ghostsList;
         }
 
-        matchMessages.reduce((myMessage, matchMessageReply)=>{
+        matchMessages.reduce((myMessage, matchMessageReply) => {
 
             // 1. is there 2 days or more in between my last message and her reply message? = ghost moment
             // if(myMessage.from !== matchPersonId && matchMessageReply.from === matchPersonId){
-                const isGhostMoment = DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(myMessage.timestamp, matchMessageReply.timestamp, 2);
-                if(isGhostMoment){
-                    ghostsList.push(
-                        {
-                            number: amountOfGhosts,
-                            timeSinceLastMessageMS: matchMessageReply.timestamp - myMessage.timestamp,
-                            status: matchMessageReply.author === MessageAuthorEnum.Match ? GhostStatus.REPLIED : GhostStatus.NOT_REPLIED_TO_REMINDER
-                        }
-                    );
-                    amountOfGhosts = amountOfGhosts+1;
-                }
+            const isGhostMoment = DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(myMessage.timestamp, matchMessageReply.timestamp, 2);
+            if (isGhostMoment) {
+                ghostsList.push(
+                    {
+                        number: amountOfGhosts,
+                        timeSinceLastMessageMS: matchMessageReply.timestamp - myMessage.timestamp,
+                        status: matchMessageReply.author === MessageAuthorEnum.Match ? GhostStatus.REPLIED : GhostStatus.NOT_REPLIED_TO_REMINDER
+                    }
+                );
+                amountOfGhosts = amountOfGhosts + 1;
+            }
             // }
             return matchMessageReply;
         });
 
         // 2. is the last message sent from me AND is it older or equal than 2 days?  = ghost moment
-        const lastMessage: Message = matchMessages[matchMessages.length-1];
-        if(lastMessage.author !== MessageAuthorEnum.Match && DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(lastMessage.timestamp, new Date().getTime(), 2)){
+        const lastMessage: Message = matchMessages[matchMessages.length - 1];
+        if (lastMessage.author !== MessageAuthorEnum.Match && DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(lastMessage.timestamp, new Date().getTime(), 2)) {
             ghostsList.push(
                 {
                     number: amountOfGhosts,
@@ -608,14 +610,14 @@ export class TinderController implements datingAppController {
                     status: GhostStatus.NOT_REPLIED
                 }
             );
-            amountOfGhosts = amountOfGhosts+1;
+            amountOfGhosts = amountOfGhosts + 1;
         }
 
         //TODO TODO TODO: TEST THIS WITH BLOCKED MATCH! (TIP: J. is now a blocked match as of 3-1-2022?)
         // 1. DOES THE 'DEAD' PROPERTY IN THE API RESPONSE REPRESENT A BLOCKED/REMOVED MATCH & THUS MESSAGES?
         // 2. DOES THE 'LAST ACTIVITY DATE' REPRESENT WHEN THE MATCH BLOCKED/REMOVED THE CHAT?
         // 3. IF I HAVE GOTTEN HER NUMBER, THIS DOES NOT COUNT AS A GHOST
-        if(match.dead){
+        if (match.dead) {
             const lastGhostMoment = ghostsList.pop();
             lastGhostMoment.status = GhostStatus.BLOCKED;
             ghostsList.push(lastGhostMoment);
@@ -642,42 +644,42 @@ export class TinderController implements datingAppController {
         do the same untill you reach (a.3) and (b.3).
         If result is a.3 && b.3 return true, otherwise return false
         */
-       let amountMessagesSentByMe = 0;
-       let amountMessagesSentByOther = 0;
+        let amountMessagesSentByMe = 0;
+        let amountMessagesSentByOther = 0;
 
-       let lastRespondent: MessageAuthorEnum;
+        let lastRespondent: MessageAuthorEnum;
 
-       matchMessages.forEach((message, index)=>{
+        matchMessages.forEach((message, index) => {
             // determine the sender of the first message
-            if(index === 0){
-                if(message.author === MessageAuthorEnum.Match){
+            if (index === 0) {
+                if (message.author === MessageAuthorEnum.Match) {
                     amountMessagesSentByOther = amountMessagesSentByOther + 1;
-                }else{
+                } else {
                     amountMessagesSentByMe = amountMessagesSentByMe + 1;
                 }
                 lastRespondent = message.author;
             }
 
             // determine if the next message after the first is from different sender
-            if(index !== 0 && message.author !== lastRespondent){
-                if(message.author === MessageAuthorEnum.Match){
+            if (index !== 0 && message.author !== lastRespondent) {
+                if (message.author === MessageAuthorEnum.Match) {
                     amountMessagesSentByOther = amountMessagesSentByOther + 1;
-                }else{
+                } else {
                     amountMessagesSentByMe = amountMessagesSentByMe + 1;
                 }
                 lastRespondent = message.author;
             }
 
         });
-        if(amountMessagesSentByMe >= 3 && amountMessagesSentByOther >= 3){
+        if (amountMessagesSentByMe >= 3 && amountMessagesSentByOther >= 3) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 
     private _hasMatchGivenResponse(matchMessages: Message[]): boolean {
-        return matchMessages.some((matchMessage)=>{
+        return matchMessages.some((matchMessage) => {
             return matchMessage.author === MessageAuthorEnum.Match;
         });
     }
@@ -686,12 +688,12 @@ export class TinderController implements datingAppController {
         return matchMessages[0].author === MessageAuthorEnum.Match ? true : false;
     }
 
-    private _isVerifiedMatch(badgesList: Badges[]):boolean{
-        if(badgesList.length > 0){
-            return badgesList.some((badge)=>{
+    private _isVerifiedMatch(badgesList: Badges[]): boolean {
+        if (badgesList.length > 0) {
+            return badgesList.some((badge) => {
                 return badge.type === "selfie_verified";
             });
-        }else{
+        } else {
             return false;
         }
     }
@@ -711,58 +713,58 @@ export class TinderController implements datingAppController {
     }
 
     public addUIHelpers(currentScreen: ScreenNavStateCombo, forceRefresh?: boolean): void {
-        if(currentScreen === ScreenNavStateCombo.Chat){
+        if (currentScreen === ScreenNavStateCombo.Chat) {
 
-            if(forceRefresh){
+            if (forceRefresh) {
                 this.uiRenderer.removeAllUIHelpers();
             }
 
             // 1. get current messageListItemPerson
-            const currentMatchid:string = this.getCurrentMatchIdFromChatScreen();
+            const currentMatchid: string = this.getCurrentMatchIdFromChatScreen();
             let dataRecord: DataRecord | null = null;
             let dataFields: DataField[] | undefined | null = undefined;
-                
+
             // 2. get record in table for this person
-            if(currentMatchid.length > 0){
+            if (currentMatchid.length > 0) {
                 const recordIndexId = this.dataTable.getRecordIndexBySystemId(currentMatchid, 'tinder');
-                if(recordIndexId !== -1){
+                if (recordIndexId !== -1) {
                     // todo: so i need to get the data first BEFORE i update the record? or just change this entirely?
                     // todo: why do i need to include undefined here while at no point in the assignment of this variabele does it ever get undefined assigned to it?
                     dataRecord = this.dataTable.getRecordByRecordIndex(recordIndexId);
-                    if(dataRecord !== null){
+                    if (dataRecord !== null) {
                         dataFields = dataRecord.getDataRecordDataFields();
 
                         // 3. show helpers for chat (all?), make space above messagebox, put helper container there?
                         this.uiRenderer.renderFieldsContainerForScreen(currentScreen, () => {
                             // $('div[id*="SC.chat"]').first().css('width', '730px');
                             const chatContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div[id*="SC.chat"]');
-                            if(chatContainerDOM !== null){
+                            if (chatContainerDOM !== null) {
                                 $(chatContainerDOM).css('width', '730px');
-                            }else{
+                            } else {
                                 console.error(`Cannot find chat container DOM element. Please update the selectors.`);
                                 return;
                             }
-                            
+
                         });
                         let uiRequiredDataFields: DataField[];
 
-                        if(dataFields && dataFields.length > 0){
+                        if (dataFields && dataFields.length > 0) {
                             uiRequiredDataFields = dataRecord.getDataFields(false, true, UIRequired.CHAT_ONLY);
 
                             // 4. on send/receive message.. add message to/update dataRecord? (check; messageListObserver)
                             // 5. on switch person in messagelist; switch settings of the above? (check screenWatcher (Observer))
-                            this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields, 
+                            this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields,
                                 (value: DataRecordValues) => {
                                     console.log(`Updated value to existing data record; label: ${value.label}, value: ${value.value}`);
                                     dataRecord?.addDataToDataFields([value]);
                                     console.log(`Updated dataRecord: `);
                                     console.dir(dataRecord);
-                            }, (submitType: SubmitType) => {
-                                dataRecord?.setUpdateMessages(true);
-                            });
+                                }, (submitType: SubmitType) => {
+                                    dataRecord?.setUpdateMessages(true);
+                                });
                         }
                     }
-                }else{
+                } else {
                     //todo: needs inplementation on what to do if recordid is not found? This should not happen tho.. wait.. yes it should! What if i get a new match after i imported everything and started chatting with match!?
                     console.error('Current match id not found');
                     // 2.a if chat new person (recognize chat new person or not) (and record does not exist yet); add new record?
@@ -773,27 +775,27 @@ export class TinderController implements datingAppController {
                     //todo: gather person data by ui (but this time; via chat interface!) OR; get data by api?
                 }
 
-            }else{
+            } else {
                 console.error('Invalid matchId.');
             }
 
 
         }
 
-        if(currentScreen === ScreenNavStateCombo.Swipe){
+        if (currentScreen === ScreenNavStateCombo.Swipe) {
 
-                if(forceRefresh){
-                    this.uiRenderer.removeAllUIHelpers();
-                }
+            if (forceRefresh) {
+                this.uiRenderer.removeAllUIHelpers();
+            }
 
-                const newDataRecord:DataRecord = new DataRecord();
+            const newDataRecord: DataRecord = new DataRecord();
 
-                this.uiRenderer.renderFieldsContainerForScreen(currentScreen);
-                
-                const uiRequiredDataFields:DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
+            this.uiRenderer.renderFieldsContainerForScreen(currentScreen);
 
-                newDataRecord.addDataToDataFields([
-                    // set initial value 
+            const uiRequiredDataFields: DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
+
+            newDataRecord.addDataToDataFields([
+                // set initial value 
                 {
                     label: 'Date-liked-or-passed',
                     value: new Date().toISOString()
@@ -814,7 +816,7 @@ export class TinderController implements datingAppController {
                     label: 'Is-verified',
                     value: this.getIsVerifiedFromUI()
                 },
-                    // set initial value to later be adjusted by ui control
+                // set initial value to later be adjusted by ui control
                 {
                     label: 'Has-usefull-profiletext',
                     value: false
@@ -823,68 +825,68 @@ export class TinderController implements datingAppController {
                     label: 'Attractiveness-score',
                     value: 6
                 }
-                ]);
+            ]);
 
-                // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
-                this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields, (value: DataRecordValues) => {
-                    console.log(`Added value to new data record; label: ${value.label}, value: ${value.value}`);
-                    newDataRecord.addDataToDataFields([value]);
-                    console.log(`Updated dataRecord: `);
-                    console.dir(newDataRecord);
+            // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
+            this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields, (value: DataRecordValues) => {
+                console.log(`Added value to new data record; label: ${value.label}, value: ${value.value}`);
+                newDataRecord.addDataToDataFields([value]);
+                console.log(`Updated dataRecord: `);
+                console.dir(newDataRecord);
 
-                }, (submitType: SubmitType) => {
-                    console.log('Callback received a submit type!');
-                    this.uiRenderer.setLoadingOverlay('loadingSwipeAction', true);
-                    console.log(submitType);
+            }, (submitType: SubmitType) => {
+                console.log('Callback received a submit type!');
+                this.uiRenderer.setLoadingOverlay('loadingSwipeAction', true);
+                console.log(submitType);
 
+                console.log(this.dataStorage);
+                console.assert(this.dataStorage.popLastActionFromDataStore() === undefined);
+
+                // get (request) personid from backgroundscript (get response), after 3 sec
+                setTimeout(() => {
+                    console.log('so.. is dataStore set?');
                     console.log(this.dataStorage);
-                    console.assert(this.dataStorage.popLastActionFromDataStore() === undefined);
+                    const submitAction: SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
+                    console.log(submitAction);
 
-                        // get (request) personid from backgroundscript (get response), after 3 sec
-                        setTimeout(()=>{
-                            console.log('so.. is dataStore set?');
-                            console.log(this.dataStorage);
-                            const submitAction: SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
-                            console.log(submitAction);
+                    if (submitAction !== undefined) {
+                        let personActionStatus: boolean | undefined = undefined;
+                        if (submitAction.submitType === PersonAction.LIKED_PERSON) {
+                            personActionStatus = true;
+                        }
+                        if (submitAction.submitType === PersonAction.SUPER_LIKED_PERSON) {
+                            personActionStatus = true;
+                        }
+                        if (submitAction.submitType === PersonAction.PASSED_PERSON) {
+                            personActionStatus = false;
+                        }
 
-                            if(submitAction !== undefined){
-                                let personActionStatus: boolean | undefined = undefined;
-                                if(submitAction.submitType === PersonAction.LIKED_PERSON){
-                                    personActionStatus = true;
-                                }
-                                if(submitAction.submitType === PersonAction.SUPER_LIKED_PERSON){
-                                    personActionStatus = true;
-                                }
-                                if(submitAction.submitType === PersonAction.PASSED_PERSON){
-                                    personActionStatus = false;
-                                }
+                        if (personActionStatus === undefined) {
+                            return;
+                        }
 
-                                if(personActionStatus === undefined){
-                                    return;
-                                }
-
-                                //TODO: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
-                                newDataRecord.addDataToDataFields([{
-                                    label: 'System-no',
-                                    value: {
-                                        appType: 'tinder', 
-                                        tempId: submitAction.personId
-                                    }
-                                },{
-                                    label: 'Did-i-like',
-                                    value: personActionStatus
-                                }]);
-
-                                this.dataTable.addNewDataRecord(newDataRecord);
-
-                                this.addUIHelpers(currentScreen, true);
+                        //TODO: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
+                        newDataRecord.addDataToDataFields([{
+                            label: 'System-no',
+                            value: {
+                                appType: 'tinder',
+                                tempId: submitAction.personId
                             }
-    
-                            this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
+                        }, {
+                            label: 'Did-i-like',
+                            value: personActionStatus
+                        }]);
 
-                        }, 1000);
+                        this.dataTable.addNewDataRecord(newDataRecord);
 
-                });
+                        this.addUIHelpers(currentScreen, true);
+                    }
+
+                    this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
+
+                }, 1000);
+
+            });
 
         }
 
@@ -902,19 +904,19 @@ export class TinderController implements datingAppController {
     }
     public getCurrentMatchIdFromChatScreen(): string {
         const matchIdFromUrl: string | null = this.getCurrentMatchIdFromUrl();
-        if(matchIdFromUrl){
+        if (matchIdFromUrl) {
             return matchIdFromUrl;
-        }else{
+        } else {
             console.error(`Message List Item DOM Element not found. Please check & update the selector.`);
         }
         return '';
     }
 
     private getCurrentMatchIdFromUrl(): string | null {
-        const indexLastSlash:number = window.location.href.lastIndexOf('/');
-        if(indexLastSlash >= 0){
-            return window.location.href.substring(indexLastSlash+1);
-        }else{
+        const indexLastSlash: number = window.location.href.lastIndexOf('/');
+        if (indexLastSlash >= 0) {
+            return window.location.href.substring(indexLastSlash + 1);
+        } else {
             console.error(`Url does not seem to contain a slash?`);
             return null;
         }
@@ -923,39 +925,39 @@ export class TinderController implements datingAppController {
     private getMatchIdFromMessageHrefSDtring(href: string): string {
         return href.substring(href.lastIndexOf('/') + 1);
     }
-    
+
     public getIsVerifiedFromUI(): boolean {
-        const isVerifiedDOMNode:HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div.recsPage div[aria-hidden="false"] path[fill="#1786ff"]');
+        const isVerifiedDOMNode: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div.recsPage div[aria-hidden="false"] path[fill="#1786ff"]');
         return isVerifiedDOMNode ? true : false;
     }
 
     public getHasProfileTextFromUI(): boolean {
-        const profileTextDOMNode:HTMLElement = $('div[aria-hidden="false"] div.BreakWord').first()[0];
+        const profileTextDOMNode: HTMLElement = $('div[aria-hidden="false"] div.BreakWord').first()[0];
         return profileTextDOMNode && profileTextDOMNode.textContent && profileTextDOMNode.textContent.length > 0 ? true : false;
     }
 
     public getPersonAgeFromUI(): number | null {
-        const ageDOMNode:HTMLElement = $('div[aria-hidden="false"] span[itemprop="age"]').first()[0];
-        if(ageDOMNode && ageDOMNode.textContent){
+        const ageDOMNode: HTMLElement = $('div[aria-hidden="false"] span[itemprop="age"]').first()[0];
+        if (ageDOMNode && ageDOMNode.textContent) {
             return parseInt(ageDOMNode.textContent);
-        }else{
+        } else {
             console.error(`Could not get age property. Please check the DOM settings`);
             return null;
         }
     }
 
     public getPersonNameFromUI(): string | null {
-        const nameDOMNode:HTMLElement = $('div[aria-hidden="false"] span[itemprop="name"]').first()[0];
-        if(nameDOMNode){
+        const nameDOMNode: HTMLElement = $('div[aria-hidden="false"] span[itemprop="name"]').first()[0];
+        if (nameDOMNode) {
             return nameDOMNode.textContent;
-        }else{
+        } else {
             console.error(`Could not get name property. Please check the DOM settings`);
             return null;
         }
     }
 
     public getCurrentScreenByDOM(): ScreenNavStateCombo {
-        const swipeIdentifier = '.recsToolbar'; 
+        const swipeIdentifier = '.recsToolbar';
         const chatIdentifier = '.chat';
         const chatProfileIdentifier = '.chatProfile';
 
@@ -964,29 +966,29 @@ export class TinderController implements datingAppController {
         let currentPage: ScreenNavStateCombo;
 
         switch (true) {
-                case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length === 0 ? true : false:
-                  currentPage = ScreenNavStateCombo.Swipe;
-                  break;
-                case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length > 0 ? true : false:
-                  currentPage = ScreenNavStateCombo.SwipeProfile;
-                  break;
-                case $(chatIdentifier).length > 0 && $(chatProfileIdentifier).length > 0 ? true : false:
-                  currentPage = ScreenNavStateCombo.Chat;
-                  break;
-                default:
-                    currentPage = ScreenNavStateCombo.UnknownScreen;
-                    break;
+            case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length === 0 ? true : false:
+                currentPage = ScreenNavStateCombo.Swipe;
+                break;
+            case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length > 0 ? true : false:
+                currentPage = ScreenNavStateCombo.SwipeProfile;
+                break;
+            case $(chatIdentifier).length > 0 && $(chatProfileIdentifier).length > 0 ? true : false:
+                currentPage = ScreenNavStateCombo.Chat;
+                break;
+            default:
+                currentPage = ScreenNavStateCombo.UnknownScreen;
+                break;
         }
         console.log(`You are on page: ${currentPage}`);
         return currentPage;
     }
 
-    public getMatchesAndMatchMessagesByAPI(requestHandler: RequestHandlerTinder, useMock: boolean):Promise<ParsedResultMatch[] | undefined> | null {
+    public getMatchesAndMatchMessagesByAPI(requestHandler: RequestHandlerTinder, useMock: boolean): Promise<ParsedResultMatch[] | undefined> | null {
         //todo: make seperate out logic in different methods because whilst 'getData' may be generic, getting it will differ for each supported app.
         console.log(`Getting tinder data`);
 
-        if(useMock){
-            return new Promise<ParsedResultMatch[]>((resolve, reject)=>{
+        if (useMock) {
+            return new Promise<ParsedResultMatch[]>((resolve, reject) => {
                 const test: ParsedResultMatch[] = <ParsedResultMatch[]><unknown>matchMockTwo;
                 console.log(`Mock data (matches & messages):`);
                 console.log(matchMockTwo);
@@ -996,98 +998,98 @@ export class TinderController implements datingAppController {
 
         if (requestHandler) {
             // eslint-disable-next-line @typescript-eslint/ban-types
-            const getMatches = (fn:Function) => {
+            const getMatches = (fn: Function) => {
 
-                return new Promise<ParsedResultMatch[]>((resolve, reject) =>{
-                    const results:ParsedResultMatch[] = [];
+                return new Promise<ParsedResultMatch[]>((resolve, reject) => {
+                    const results: ParsedResultMatch[] = [];
 
-                    const attempt = (next_page_token?:string) => {
+                    const attempt = (next_page_token?: string) => {
                         next_page_token = next_page_token ? next_page_token : '';
 
-                            fn(this.xAuthToken, next_page_token)
-                            .then((parsedResult: MatchListTinderAPI)=>{
-                                if(parsedResult?.data?.matches){
+                        fn(this.xAuthToken, next_page_token)
+                            .then((parsedResult: MatchListTinderAPI) => {
+                                if (parsedResult?.data?.matches) {
                                     // results = [...results, ...parsedResult.data.matches];
 
-                                    parsedResult?.data?.matches.forEach((match: Match)=>{
+                                    parsedResult?.data?.matches.forEach((match: Match) => {
                                         results.push(
                                             {
-                                            match: match,
-                                            matchMessages: []
-                                        }
+                                                match: match,
+                                                matchMessages: []
+                                            }
                                         );
                                     });
                                 }
-                                
-                                if(parsedResult.data.next_page_token){
+
+                                if (parsedResult.data.next_page_token) {
                                     attempt(parsedResult.data.next_page_token);
-                                }else{
+                                } else {
                                     console.log(`Finished getting results:`);
                                     console.dir(results);
                                     resolve(results);
                                 }
                             })
-                            .catch(function(e:Error){
-                                    console.log(`Error retrieving matches:`);
-                                    console.dir(e);
-                                    const error = e;
-                                    reject(error);
-                                });
-                        
+                            .catch(function (e: Error) {
+                                console.log(`Error retrieving matches:`);
+                                console.dir(e);
+                                const error = e;
+                                reject(error);
+                            });
+
                     };
                     attempt();
                 })
             };
-            return getMatches(requestHandler.getMatches).then((matchList:ParsedResultMatch[])=>{
+            return getMatches(requestHandler.getMatches).then((matchList: ParsedResultMatch[]) => {
 
                 // eslint-disable-next-line @typescript-eslint/ban-types
-                const getMatchesMessages = async (fn:Function, id:string) => {
+                const getMatchesMessages = async (fn: Function, id: string) => {
                     console.log(`STARTED - GETTING MESSAGES FOR: ${id}`);
 
-                    return await new Promise<TinderMessage[]>((resolve, reject) =>{
+                    return await new Promise<TinderMessage[]>((resolve, reject) => {
                         console.log(2);
-                        let resultsMessages:TinderMessage[] = [];
-                        const attempt = async (next_page_token?:string) => {
+                        let resultsMessages: TinderMessage[] = [];
+                        const attempt = async (next_page_token?: string) => {
                             next_page_token = next_page_token ? next_page_token : '';
-                            
-                            await fn(this.xAuthToken, id, next_page_token)
-                            .then(async (messages: ParsedResultMessages)=>{
-                                console.log(3);
-                                //todo: add messages to the matchMessages for this person
-                                // return resolve('duck');
 
-                                resultsMessages = [...resultsMessages, ...messages.data.messages]
-                                if(messages.data.next_page_token && messages.data.next_page_token?.length > 0){
-                                    console.log(`START CONTINUE: Got a page token so need to get more messages for ${id}`);
-                                    await attempt(messages.data.next_page_token);
-                                }else{
-                                    console.log(`ENDED - Getting MESSAGES FOR: ${id} && i got a next_page_token: ${next_page_token}`);
-                                    return resolve(resultsMessages);
-                                }
-                            })
-                            .catch((e: Error)=>{
-                                console.log(4);
-                                console.log(`ENDED (ERROR) - Getting MESSAGES FOR: ${id}`);
-                                return resolve([]);
-                                console.log(`Error retrieving match messages:`);
-                                console.dir(e);
-                                const error = e;
-                                reject(error);
-                            })
+                            await fn(this.xAuthToken, id, next_page_token)
+                                .then(async (messages: ParsedResultMessages) => {
+                                    console.log(3);
+                                    //todo: add messages to the matchMessages for this person
+                                    // return resolve('duck');
+
+                                    resultsMessages = [...resultsMessages, ...messages.data.messages]
+                                    if (messages.data.next_page_token && messages.data.next_page_token?.length > 0) {
+                                        console.log(`START CONTINUE: Got a page token so need to get more messages for ${id}`);
+                                        await attempt(messages.data.next_page_token);
+                                    } else {
+                                        console.log(`ENDED - Getting MESSAGES FOR: ${id} && i got a next_page_token: ${next_page_token}`);
+                                        return resolve(resultsMessages);
+                                    }
+                                })
+                                .catch((e: Error) => {
+                                    console.log(4);
+                                    console.log(`ENDED (ERROR) - Getting MESSAGES FOR: ${id}`);
+                                    return resolve([]);
+                                    console.log(`Error retrieving match messages:`);
+                                    console.dir(e);
+                                    const error = e;
+                                    reject(error);
+                                })
                         };
                         attempt();
                     });
 
                 };
-                async function getMessagesPerMatchesAsynchronously(){
-                    
+                async function getMessagesPerMatchesAsynchronously() {
+
                     // used a standard for loop to ensure synchronous looping
-                    for (let i = 0; i < matchList.length; i = i+1) {
+                    for (let i = 0; i < matchList.length; i = i + 1) {
                         console.log(`GETTING MESSAGES now for: ${i} - ${matchList[i].match.id}`);
                         matchList[i].matchMessages = await getMatchesMessages(requestHandler.getMessagesFromMatch, matchList[i].match.id)
-                        
+
                         //NOTE: Set limit to get messages from the first 25 matches ONLY! This is done to reduce time to load
-                        if(i > 25){
+                        if (i > 25) {
                             console.log('CONGRATZ you reached the end!');
                             // eslint-disable-next-line no-debugger
                             // debugger;
@@ -1099,7 +1101,7 @@ export class TinderController implements datingAppController {
                 return getMessagesPerMatchesAsynchronously()
             });
 
-        }else{
+        } else {
             console.error(`The requestHandler was not set`);
             return null;
         }
@@ -1107,80 +1109,80 @@ export class TinderController implements datingAppController {
 
 
     // Jack: refactored getMatchesToRequestHandler
-    public getMatches():Promise<ParsedResultMatch[] | null> | null {
-        if(this.requestHandler !== null){
-            return new Promise<ParsedResultMatch[] | null>((resolve, reject) =>{
-                this.requestHandler.getMatchesStart().then((matches: ParsedResultMatch[] | undefined)=>{
+    public getMatches(): Promise<ParsedResultMatch[] | null> | null {
+        if (this.requestHandler !== null) {
+            return new Promise<ParsedResultMatch[] | null>((resolve, reject) => {
+                this.requestHandler.getMatchesStart().then((matches: ParsedResultMatch[] | undefined) => {
                     console.log(`Matches:`);
                     console.dir(matches);
 
                     debugger;
-                    if(matches && matches.length > 0){
+                    if (matches && matches.length > 0) {
                         resolve(matches);
-                    }else{
+                    } else {
                         reject(null);
                     }
                 });
             });
-        }else{
+        } else {
             console.error(`RequestHandler was not set. Please check the logs.`);
             return null;
         }
     }
 
-    public updateDataTable(matches: ParsedResultMatch[]): void{
+    public updateDataTable(matches: ParsedResultMatch[]): void {
 
-                                matches?.forEach((match: ParsedResultMatch)=>{
+        matches?.forEach((match: ParsedResultMatch) => {
 
-                                    // Since Tinder sends the messages in the order from last to first, we must first reverse the messages to first to last
-                                    // since the .reverse() is applied to the array 'in place' instead of 'on output' applying it once will produce the array in desired format anywhere
-                                    match.matchMessages.reverse();
-        
-                                    // get record index by systemid for each match
-                                    const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(match.match.id, this.nameController);
-                                    
-                                    let tinderMatchDataRecordValues: DataRecordValues[];
-                                    let dataFields: DataField[];
-        
-                                    if(matchRecordIndex  === -1){
-                                        // if match doesnt exist, create new data record, fill new record with all data needed
-                                        // console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
-                                        const newDataRecord = new DataRecord();
-                                        dataFields = newDataRecord.getDataFields();
-                                        tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
-                                        
-                                        const dataAddedSuccessfully:boolean = newDataRecord.addDataToDataFields(tinderMatchDataRecordValues);
-                                        if(dataAddedSuccessfully){
-                                            this.dataTable.addNewDataRecord(newDataRecord);
-                                        }else{
-                                            console.error(`Error adding data from retrieved match. Please check match retrieved and error log.`);
-                                        }
-                                        
-                                    }else{
-                                        // console.log(`Going to UPDATE data record for: ${match.match.person.name}`);
-                                        dataFields = this.dataTable.getDataFieldsByRecordIndex(matchRecordIndex);
-                                        tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
-                                        this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
-                                    }
-        
-                                });
-                                
+            // Since Tinder sends the messages in the order from last to first, we must first reverse the messages to first to last
+            // since the .reverse() is applied to the array 'in place' instead of 'on output' applying it once will produce the array in desired format anywhere
+            match.matchMessages.reverse();
+
+            // get record index by systemid for each match
+            const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(match.match.id, this.nameController);
+
+            let tinderMatchDataRecordValues: DataRecordValues[];
+            let dataFields: DataField[];
+
+            if (matchRecordIndex === -1) {
+                // if match doesnt exist, create new data record, fill new record with all data needed
+                // console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
+                const newDataRecord = new DataRecord();
+                dataFields = newDataRecord.getDataFields();
+                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
+
+                const dataAddedSuccessfully: boolean = newDataRecord.addDataToDataFields(tinderMatchDataRecordValues);
+                if (dataAddedSuccessfully) {
+                    this.dataTable.addNewDataRecord(newDataRecord);
+                } else {
+                    console.error(`Error adding data from retrieved match. Please check match retrieved and error log.`);
+                }
+
+            } else {
+                // console.log(`Going to UPDATE data record for: ${match.match.person.name}`);
+                dataFields = this.dataTable.getDataFieldsByRecordIndex(matchRecordIndex);
+                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
+                this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
+            }
+
+        });
+
     }
 
     private setUnupdatedMatchesToBlocked(matches: ParsedResultMatch[], dataTable: DataTable): void {
-        const unupdatedMatchesList: DataRecord[] = dataTable.getAllDataRecords().filter((dataRecord)=>{
-            const doesDataRecordHaveMatchListed = matches.findIndex((match)=>{
+        const unupdatedMatchesList: DataRecord[] = dataTable.getAllDataRecords().filter((dataRecord) => {
+            const doesDataRecordHaveMatchListed = matches.findIndex((match) => {
                 return match.match.id === dataRecord.getRecordPersonSystemId('tinder') || match.match.person._id === dataRecord.getRecordPersonSystemId('tinder');
             });
 
             return doesDataRecordHaveMatchListed === -1 ? true : false;
         });
 
-        unupdatedMatchesList.forEach((unupdatedMatch)=>{
-            
+        unupdatedMatchesList.forEach((unupdatedMatch) => {
+
             // do not update if dataField 'Blocked' is already set to true
-            const indexDataFieldBlocked:number = unupdatedMatch.getIndexOfDataFieldByTitle('Blocked-or-no-contact');
-            if(unupdatedMatch.usedDataFields[indexDataFieldBlocked].getValue()){
+            const indexDataFieldBlocked: number = unupdatedMatch.getIndexOfDataFieldByTitle('Blocked-or-no-contact');
+            if (unupdatedMatch.usedDataFields[indexDataFieldBlocked].getValue()) {
                 return;
             }
 
