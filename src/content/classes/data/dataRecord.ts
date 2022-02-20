@@ -19,11 +19,11 @@ import {dataCheckSystemId} from "./dataCheckLogic/dataCheckSystemId";
 import {DataFieldTypes} from "src/content/interfaces/data/dataFieldTypes.interface";
 import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 import { dataCheckMessage } from "./dataCheckLogic/dataCheckMessage";
-import { Message } from "src/content/interfaces/data/message.interface";
+import { Message } from "src/message.interface";
 
 export class DataRecord {
         
-    private needsToBeUpdated = false;
+    private messagesNeedToBeUpdated = false;
     /*
         Output:
 
@@ -163,7 +163,7 @@ export class DataRecord {
     }
 
     public setUpdateMessages(isToBeUpdated: boolean): void {
-        this.needsToBeUpdated = isToBeUpdated;
+        this.messagesNeedToBeUpdated = isToBeUpdated;
     }
 
     public getLatestMessage(): Message | null {
@@ -230,7 +230,7 @@ export class DataRecord {
 
 
         //todo: maybe it would be better to put all the check logic inside the DataField classes and subclasses anyway?
-        public getDataFields(allowedFieldsOnly?: boolean, requiredUIFieldsOnly?: boolean, requiredUiScreen?: UIRequired): DataField[] {
+    public getDataFields(allowedFieldsOnly?: boolean, requiredUIFieldsOnly?: boolean, requiredUiScreen?: UIRequired): DataField[] {
         return this.usedDataFields.filter((dataField: DataField) => {
             if(allowedFieldsOnly){
                 if(dataField.updateValueAllowed()){

@@ -1,4 +1,4 @@
-import { Message } from "src/content/interfaces/data/message.interface";
+import { Message } from "src/message.interface";
 import { baseTypes, logicContainer } from "src/content/interfaces/logicContainer.interface";
 import { uniqueEntryChecker } from "../util/uniqueEntryChecker";
 import { GhostStatus } from "./dataItems/dataItemGhost";

@@ -1,6 +1,6 @@
 import { datingAppController } from "src/content/interfaces/controllers/datingAppController.interface";
 import { ParsedResultMatch } from "src/content/interfaces/controllers/ParsedResultMatch.interface";
-import { Message, ParsedResultMessages } from "src/content/interfaces/http-requests/MessagesListTinder.interface";
+import { TinderMessage, ParsedResultMessages } from "src/content/interfaces/http-requests/MessagesListTinder.interface";
 import { Badges, Match, MatchListTinderAPI } from "src/content/interfaces/http-requests/MatchesListTinder.interface";
 import { matchMockTwo } from "../mocks/matchesMock";
 import { DataTable } from '../data/dataTable';
@@ -20,6 +20,7 @@ import { DataField, UIRequired } from "../data/dataField";
 import { PersonAction } from "./../../../peronAction.enum"; // todo: had to move this to top level AND make a relative path.. but since ALL components (content, background, popup) share the same interfaces/enums etc. why not move everything to top lvl for importing? ALSO; why did an error occur when i tried to relative import this?
 import { SubmitAction } from "src/background/requestInterceptor";
 import { DOMHelper } from "../util/DOMHelper";
+import { Message, MessageAuthorEnum } from "./../../../message.interface";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
