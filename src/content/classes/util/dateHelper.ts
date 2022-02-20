@@ -37,4 +37,36 @@ export class DateHelper {
         }
         return moment.duration(moment(dateLater).diff(dateFormer)).asMilliseconds();
     }
+
+}
+
+export class DateHelperTimeStamp {
+    static isDateBetweenGreaterThanAmountOfDays(dateOne: number, dateTwo: number, amountOfDays: number): boolean | null {
+        if(amountOfDays <= 0){
+            console.error(`The amount of days cannot be 0 or less`);
+            return null;
+        }
+
+        const miliSecondsInDay = 86400000;
+        const amountOfDaysInMS = amountOfDays * 86400000;
+
+        //todo: why can't i type this shorthand without type converting it to a number?
+        return this.getAmountDaysBetweenDates(dateOne, dateTwo) !== null && <number>this.getAmountDaysBetweenDates(dateOne, dateTwo) >= amountOfDays ? true : false;
+    }
+
+    static getAmountDaysBetweenDates(dateFormer: number, dateLater: number): number | null {
+        if(!DateHelperTimeStamp.isValidDate(dateFormer) || !DateHelperTimeStamp.isValidDate(dateLater)){
+            console.error(`Parameter dateOne: ${dateFormer} and/or dateTwo: ${dateLater} is not a valid date`);
+            return null;
+        }
+        // return moment.duration(moment(dateLater).diff(dateFormer)).asDays();
+
+        const miliSecondsInDay = 86400000;
+        return (dateLater - dateFormer)/(miliSecondsInDay);
+    }
+
+    static isValidDate(dateTimeStampNumber: number): boolean {
+        // timestamp 0 is 1-1-1970 01:00:00. Any number below that is in the future thus is invalid
+        return dateTimeStampNumber > 0 ? true : false;
+    }
 }
