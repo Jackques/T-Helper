@@ -1215,6 +1215,14 @@ export class TinderController implements datingAppController {
         });
 
         unupdatedMatchesList.forEach((unupdatedMatch)=>{
+            
+            // do not update if dataField 'Blocked' is already set to true
+            const indexDataFieldBlocked:number = unupdatedMatch.getIndexOfDataFieldByTitle('Blocked-or-no-contact');
+            if(unupdatedMatch.usedDataFields[indexDataFieldBlocked].getValue()){
+                return;
+            }
+
+            // update dataField 'Blocked' to true
             unupdatedMatch.addDataToDataFields([
                 {
                     label: 'Blocked-or-no-contact',

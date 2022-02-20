@@ -195,7 +195,7 @@ export class DataRecord {
         })
     }
 
-    private getIndexOfDataFieldByTitle(title: string):number{
+    public getIndexOfDataFieldByTitle(title: string):number{
         return this.usedDataFields.findIndex((usedDataField)=>{
             return usedDataField.title === title;
         });
