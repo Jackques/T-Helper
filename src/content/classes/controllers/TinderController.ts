@@ -23,8 +23,8 @@ import { DOMHelper } from "../util/DOMHelper";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
-    listEndpoints = ['a', 'b', 'c'];
-    hasCredentials = false;
+    listEndpoints = ['a', 'b', 'c']; //todo: should refactor this so i will not need to provide these here? I doubt i use these here anyway
+    private hasCredentials = false;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
     private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer();
 
@@ -34,7 +34,7 @@ export class TinderController implements datingAppController {
     private dataTable: DataTable;
     private dataStorage: dataStorage;
 
-    private currentScreenTimeoutId:number | null = null;
+    private currentScreenTimeoutId: number | null = null;
     private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
     private currentMatchIdByUrlChat: string | null = null;
 
@@ -49,6 +49,7 @@ export class TinderController implements datingAppController {
 
         if (this.dataRetrievalMethod === 'api' || this.dataRetrievalMethod === 'dom') {
             if (this.dataRetrievalMethod === 'api') {
+                //todo: update this to actually get the getCredentials, put in a constant, and check if the constant is filled with a correct string value
                 this.hasCredentials = this.getCredentials();
                 if (this.hasCredentials) {
 
