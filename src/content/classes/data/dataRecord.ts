@@ -23,7 +23,6 @@ import { Message } from "src/message.interface";
 
 export class DataRecord {
         
-    private messagesNeedToBeUpdated = false;
     /*
         Output:
 
@@ -163,7 +162,13 @@ export class DataRecord {
     }
 
     public setUpdateMessages(isToBeUpdated: boolean): void {
-        this.messagesNeedToBeUpdated = isToBeUpdated;
+        const dataMessagesField = this.usedDataFields[this.getIndexOfDataFieldByTitle('Messages')] as DataFieldMessages;
+        dataMessagesField.setNeedsToBeUpdated(isToBeUpdated);
+    }
+
+    public isNeedFieldMessagesBeUpdated(): boolean {
+        const dataMessagesField = this.usedDataFields[this.getIndexOfDataFieldByTitle('Messages')] as DataFieldMessages;
+        return dataMessagesField.isNeedsToBeUpdated();
     }
 
     public getLatestMessage(): Message | null {
