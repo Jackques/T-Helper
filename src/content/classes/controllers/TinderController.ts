@@ -1001,48 +1001,11 @@ export class TinderController implements datingAppController {
 
         if (requestHandler) {
             this.getMatches().then((matchList: ParsedResultMatch[] | null) => {
-
-                // eslint-disable-next-line @typescript-eslint/ban-types
-                const getMatchesMessages = async (fn: Function, id: string) => {
-                    console.log(`STARTED - GETTING MESSAGES FOR: ${id}`);
-
-                    return await new Promise<TinderMessage[]>((resolve, reject) => {
-                        console.log(2);
-                        let resultsMessages: TinderMessage[] = [];
-                        const attempt = async (next_page_token?: string) => {
-                            next_page_token = next_page_token ? next_page_token : '';
-
-                            await fn(this.xAuthToken, id, next_page_token)
-                                .then(async (messages: ParsedResultMessages) => {
-                                    console.log(3);
-                                    resultsMessages = [...resultsMessages, ...messages.data.messages]
-                                    if (messages.data.next_page_token && messages.data.next_page_token?.length > 0) {
-                                        console.log(`START CONTINUE: Got a page token so need to get more messages for ${id}`);
-                                        await attempt(messages.data.next_page_token);
-                                    } else {
-                                        console.log(`ENDED - Getting MESSAGES FOR: ${id} && i got a next_page_token: ${next_page_token}`);
-                                        return resolve(resultsMessages);
-                                    }
-                                })
-                                .catch((e: Error) => {
-                                    console.log(4);
-                                    console.log(`ENDED (ERROR) - Getting MESSAGES FOR: ${id}`);
-                                    return resolve([]);
-                                    console.log(`Error retrieving match messages:`);
-                                    console.dir(e);
-                                    const error = e;
-                                    reject(error);
-                                })
-                        };
-                        attempt();
-                    });
-
-                };
                 async function getMessagesPerMatchesAsynchronously(matchesWithoutMessagesList: ParsedResultMatch[]): Promise<ParsedResultMatch[]> {
                     // used a standard for loop to ensure synchronous looping
                     for (let i = 0; i < matchesWithoutMessagesList.length; i = i + 1) {
                         console.log(`GETTING MESSAGES now for: ${i} - ${matchesWithoutMessagesList[i].match.id}`);
-                        matchesWithoutMessagesList[i].matchMessages = await getMatchesMessages(requestHandler.getMessagesFromMatch, matchesWithoutMessagesList[i].match.id)
+                        matchesWithoutMessagesList[i].matchMessages = await requestHandler.getMatchesMessagesStart(matchesWithoutMessagesList[i].match.id)
 
 
 

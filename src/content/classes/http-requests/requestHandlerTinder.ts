@@ -1,5 +1,5 @@
 import { data } from 'jquery';
-import { ParsedResultMessages } from 'src/content/interfaces/http-requests/MessagesListTinder.interface';
+import { ParsedResultMessages, TinderMessage } from 'src/content/interfaces/http-requests/MessagesListTinder.interface';
 import { Match, MatchListTinderAPI } from 'src/content/interfaces/http-requests/MatchesListTinder.interface';
 import { RequestHandler } from 'src/content/interfaces/http-requests/RequestHandler.interface';
 import { Matches } from  '../../interfaces/tinder_api/matches.interface';
@@ -10,7 +10,7 @@ export class RequestHandlerTinder implements RequestHandler {
     private xAuthToken: string;
 
     constructor(xAuthToken: string){
-      	this.xAuthToken = xAuthToken;
+        this.xAuthToken = xAuthToken;
     }
 
     private getRandomCoupleHunderdMS(): number {
@@ -62,12 +62,12 @@ export class RequestHandlerTinder implements RequestHandler {
     }
 
     // public getMessagesFromMatch(auth_token: string, match_id: string, next_page_token_num?:string):Promise<ParsedResultMessages>{
-    public getMessagesFromMatch(auth_token: string, match_id: string, next_page_token_num?:string):Promise<string>{
+    public getMessagesFromMatch(auth_token: string, match_id: string, next_page_token_num?:string):Promise<ParsedResultMessages>{
         const next_page_token = next_page_token_num ? '&page_token='+next_page_token_num : '';
         console.log('2a')
 
         // const getMatchMessages = new Promise<ParsedResultMessages>((resolve, reject) => {
-        const getMatchMessages = new Promise<string>((resolve, reject) => {
+        const getMatchMessages = new Promise<ParsedResultMessages>((resolve, reject) => {
             const ms = Math.floor(Math.random() * 100)+100;
             setTimeout(() => {
                 // console.log(`I delayed at: ${ms}`); //todo: figure out why i cannot call the this.getRandomCoupleHunderdMS method here
@@ -164,5 +164,42 @@ export class RequestHandlerTinder implements RequestHandler {
             };
             attempt();
         })
+    }
+
+    public getMatchesMessagesStart(id: string):Promise<TinderMessage[]> {
+        
+            console.log(`STARTED - GETTING MESSAGES FOR: ${id}`);
+
+            return new Promise<TinderMessage[]>((resolve, reject) => {
+                console.log(2);
+                let resultsMessages: TinderMessage[] = [];
+                const attempt = async (next_page_token?: string) => {
+                    next_page_token = next_page_token ? next_page_token : '';
+
+                    await this.getMessagesFromMatch(this.xAuthToken, id, next_page_token)
+                        .then(async (messages: ParsedResultMessages) => {
+                            console.log(3);
+                            resultsMessages = [...resultsMessages, ...messages.data.messages]
+                            if (messages.data.next_page_token && messages.data.next_page_token?.length > 0) {
+                                console.log(`START CONTINUE: Got a page token so need to get more messages for ${id}`);
+                                await attempt(messages.data.next_page_token);
+                            } else {
+                                console.log(`ENDED - Getting MESSAGES FOR: ${id} && i got a next_page_token: ${next_page_token}`);
+                                return resolve(resultsMessages);
+                            }
+                        })
+                        .catch((e: Error) => {
+                            console.log(4);
+                            console.log(`ENDED (ERROR) - Getting MESSAGES FOR: ${id}`);
+                            return reject([]);
+                            console.log(`Error retrieving match messages:`);
+                            console.dir(e);
+                            const error = e;
+                            reject(error);
+                        })
+                };
+                attempt();
+            });
+
     }
 }
