@@ -369,27 +369,35 @@ export class TinderController implements datingAppController {
         return null;
     }
 
-    private parseMatchDataToDataRecordValues(match: ParsedResultMatch, dataFields: DataField[] | DataFieldMessages[]): DataRecordValues[] {
+    private parseMatchDataToDataRecordValues(dataFields: DataField[] | DataFieldMessages[], match?: ParsedResultMatch, systemId?: string): DataRecordValues[] {
         //todo: refactor code to use dataFields directly (similair to dataFieldMessages) instead of creating & adding fields to the seperate list below
         const dataRecordValuesList: DataRecordValues[] = [];
+        const messagesDataField = dataFields[2] as DataFieldMessages;
 
         // todo: refactor this to nicely get dataRecord, and from dataRecord (write a method to?) retrieve messages DataField
-        const messagesDataField = dataFields[2] as DataFieldMessages;
-        messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(match.matchMessages, match.match.person._id))
+        if(match && match.match.messages.length > 0 || match && match.matchMessages.length > 0){
+            const retrievedMessagesFromMatch = match.matchMessages.length > 0 ? match.matchMessages : match.match.messages as unknown as TinderMessage[];
+            messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(retrievedMessagesFromMatch, match.match.person._id))
+        }
 
         dataFields.forEach((dataField) => {
             switch (dataField.title) {
-                case 'System-no':
+                case 'System-no': {
+                    dataField = dataField as DataFieldSystemNo;
                     dataRecordValuesList.push({
                         'label': 'System-no', 'value': {
                             'appType': 'tinder',
-                            'id': match.match.id
+                            'id': match ? match.match.id : systemId
                         }
                     });
                     break;
+                }
                 case 'No':
                     //todo: ensure providing null increments the number in dataTable instead of throwing error
-                    dataRecordValuesList.push({ 'label': 'No', 'value': undefined });
+                    dataRecordValuesList.push({ 
+                        'label': 'No', 
+                        'value': dataField.getValue() ? dataField.getValue() : undefined
+                    });
                     break;
                 case 'Last-updated':
                     dataRecordValuesList.push({ 'label': 'Last-updated', 'value': new Date().toISOString() });
@@ -399,19 +407,22 @@ export class TinderController implements datingAppController {
                     dataRecordValuesList.push({ 'label': 'Date-liked-or-passed', 'value': dataField.getValue() });
                     break;
                 case 'Name':
-                    dataRecordValuesList.push({ 'label': 'Name', 'value': match.match.person.name });
+                    dataRecordValuesList.push({ 
+                        'label': 'Name', 
+                        'value': match ? match.match.person.name : dataField.getValue()
+                    });
                     break;
                 case 'Age':
-                    dataRecordValuesList.push({ 'label': 'Age', 'value': DateHelper.getAgeFromBirthDate(match.match.person.birth_date) });
+                    dataRecordValuesList.push({ 
+                        'label': 'Age', 
+                        'value': match ? DateHelper.getAgeFromBirthDate(match.match.person.birth_date) : dataField.getValue()
+                    });
                     break;
                 case 'Has-profiletext': {
-                    // ensure that if Has-profiletext has been set once, it will not be overwritten again. 
-                    // todo: Maybe make a field setting for this?
-                    let value = dataField.getValue();
-                    if (value === null) {
-                        value = match.match.person.bio && match.match.person.bio.length > 0 ? true : false
-                    }
-                    dataRecordValuesList.push({ 'label': 'Has-profiletext', 'value': value });
+                    dataRecordValuesList.push({ 
+                        'label': 'Has-profiletext', 
+                        'value': match ? (match.match.person.bio && match.match.person.bio.length > 0 ? true : false) : dataField.getValue()
+                    });
                     break;
                 }
                 case 'Has-usefull-profiletext':
@@ -420,11 +431,10 @@ export class TinderController implements datingAppController {
                 case 'Is-verified': {
                     // ensure that if Is-verified has been set once, it will not be overwritten again. 
                     // todo: Maybe make a field setting for this?
-                    let value = dataField.getValue();
-                    if (value === null) {
-                        value = match.match.person.badges ? this._isVerifiedMatch(match.match.person.badges) : false;
-                    }
-                    dataRecordValuesList.push({ 'label': 'Is-verified', 'value': value });
+                    dataRecordValuesList.push({ 
+                        'label': 'Is-verified', 
+                        'value': match ? (match.match.person.badges ? this._isVerifiedMatch(match.match.person.badges) : false) : dataField.getValue()
+                    });
                     break;
                 }
                 case 'Attractiveness-score':
@@ -434,20 +444,28 @@ export class TinderController implements datingAppController {
                     dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': dataField.getValue() });
                     break;
                 case 'Is-match':
-                    dataRecordValuesList.push({ 'label': 'Is-match', 'value': dataField.getValue() });
+                    // if the data is ever parsed, it is obviously a match, otherwise it is not
+                    dataRecordValuesList.push({ 'label': 'Is-match', 'value': true });
                     break;
                 case 'Date-match':
-                    dataRecordValuesList.push({ 'label': 'Date-match', 'value': match.match.created_date });
+                    dataRecordValuesList.push({ 
+                        'label': 'Date-match', 
+                        'value': match ? match.match.created_date : dataField.getValue()
+                    });
                     break;
                 case 'Match-sent-first-message': {
-                    dataRecordValuesList.push({ 'label': 'Match-sent-first-message', 'value': messagesDataField.hasMessages() ? this._hasMatchSentFirstMessage(messagesDataField.getAllMessages()) : undefined });
+                    dataRecordValuesList.push({ 
+                        'label': 'Match-sent-first-message', 
+                        'value': messagesDataField.hasMessages() ? this._hasMatchSentFirstMessage(messagesDataField.getAllMessages()) : undefined });
                     break;
                 }
                 case 'Match-responded':
                     dataRecordValuesList.push({ 'label': 'Match-responded', 'value': messagesDataField.hasMessages() ? this._hasMatchGivenResponse(messagesDataField.getAllMessages()) : undefined });
                     break;
                 case 'Conversation-exists':
-                    dataRecordValuesList.push({ 'label': 'Conversation-exists', 'value': messagesDataField.hasMessages() ? this._hasConversation(messagesDataField.getAllMessages()) : undefined });
+                    dataRecordValuesList.push({ 
+                        'label': 'Conversation-exists', 
+                        'value': messagesDataField.hasMessages() ? this._hasConversation(messagesDataField.getAllMessages()) : undefined });
                     break;
                 case 'Vibe-conversation':
                     dataRecordValuesList.push({ 'label': 'Vibe-conversation', 'value': dataField.getValue() });
@@ -455,7 +473,7 @@ export class TinderController implements datingAppController {
                 case 'How-many-ghosts':
                     dataRecordValuesList.push({
                         'label': 'How-many-ghosts',
-                        'value': messagesDataField.hasMessages() ? this._getNumberOfGhosting(messagesDataField.getAllMessages(), match.match) : []
+                        'value': messagesDataField.hasMessages() ? this._getNumberOfGhosting(messagesDataField.getAllMessages(), match && match.match ? match.match : undefined) : []
                     });
                     break;
                 case 'Acquired-number':
@@ -504,7 +522,7 @@ export class TinderController implements datingAppController {
             messagesForDataRecord.push(
                 {
                     message: matchMessage.message,
-                    timestamp: matchMessage.timestamp,
+                    timestamp: matchMessage.timestamp !== 0 ? matchMessage.timestamp : new Date(matchMessage.sent_date).getTime(),
                     author: matchMessage.from === matchPersonId ? MessageAuthorEnum.Match : MessageAuthorEnum.Me
                 }
             );
@@ -575,7 +593,7 @@ export class TinderController implements datingAppController {
 
         return responseSpeedMoments;
     }
-    private _getNumberOfGhosting(matchMessages: Message[], match: Match): any[] {
+    private _getNumberOfGhosting(matchMessages: Message[], match?: Match): any[] {
 
         let amountOfGhosts = 0;
         const ghostsList: any[] = [];
@@ -621,7 +639,7 @@ export class TinderController implements datingAppController {
         // 1. DOES THE 'DEAD' PROPERTY IN THE API RESPONSE REPRESENT A BLOCKED/REMOVED MATCH & THUS MESSAGES?
         // 2. DOES THE 'LAST ACTIVITY DATE' REPRESENT WHEN THE MATCH BLOCKED/REMOVED THE CHAT?
         // 3. IF I HAVE GOTTEN HER NUMBER, THIS DOES NOT COUNT AS A GHOST
-        if (match.dead) {
+        if (match && match.dead) {
             const lastGhostMoment = ghostsList.pop();
             lastGhostMoment.status = GhostStatus.BLOCKED;
             ghostsList.push(lastGhostMoment);
@@ -1111,7 +1129,8 @@ export class TinderController implements datingAppController {
                 // console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
                 const newDataRecord = new DataRecord();
                 dataFields = newDataRecord.getDataFields();
-                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
+
+                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(dataFields, match);
 
                 const dataAddedSuccessfully: boolean = newDataRecord.addDataToDataFields(tinderMatchDataRecordValues);
                 if (dataAddedSuccessfully) {
@@ -1122,8 +1141,9 @@ export class TinderController implements datingAppController {
 
             } else {
                 // console.log(`Going to UPDATE data record for: ${match.match.person.name}`);
+                
                 dataFields = this.dataTable.getDataFieldsByRecordIndex(matchRecordIndex);
-                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(match, dataFields);
+                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(dataFields, match);
                 this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
             }
 
@@ -1133,11 +1153,11 @@ export class TinderController implements datingAppController {
 
     private setUnupdatedMatchesToBlocked(matches: ParsedResultMatch[], dataTable: DataTable): void {
         const unupdatedMatchesList: DataRecord[] = dataTable.getAllDataRecords().filter((dataRecord) => {
-            const doesDataRecordHaveMatchListed = matches.findIndex((match) => {
+            const doesDataRecordNotHaveMatchListed = matches.findIndex((match) => {
                 return match.match.id === dataRecord.getRecordPersonSystemId('tinder') || match.match.person._id === dataRecord.getRecordPersonSystemId('tinder');
             });
 
-            return doesDataRecordHaveMatchListed === -1 ? true : false;
+            return doesDataRecordNotHaveMatchListed === -1 ? true : false;
         });
 
         unupdatedMatchesList.forEach((unupdatedMatch) => {
@@ -1155,6 +1175,7 @@ export class TinderController implements datingAppController {
                     value: true
                 }
             ]);
+            unupdatedMatch.setUpdateMessages(false);
         });
     }
 
