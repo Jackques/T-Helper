@@ -1058,6 +1058,54 @@ export class TinderController implements datingAppController {
             });
     }
 
+    public updateMessagesDataRecords(requestHandler: RequestHandlerTinder, dataRecords: DataRecord[], matches: ParsedResultMatch[]): Promise<boolean> {
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise<boolean>(async (resolve, reject) => {
+            if(dataRecords.length === 0){
+                return reject(false);
+            }
+
+            for (let i = 0; i <= (dataRecords.length - 1); i = i + 1) {
+                console.log(`GETTING MESSAGES now for: ${i} - ${dataRecords[i].usedDataFields[5].getValue()}`);
+                const systemIdMatch = dataRecords[i].getRecordPersonSystemId('tinder');
+                const personId = this.getPersonIdFromMatch(systemIdMatch, matches);
+                const messages = await requestHandler.getMatchesMessagesStart(systemIdMatch);
+                // console.log(`Got Messages: `);
+                // console.dir(messages);
+                // console.log(`==========================`);
+                
+                if(personId){
+                    const messagesDataField = dataRecords[i].usedDataFields[2] as DataFieldMessages;
+                    messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(messages.reverse(), personId))
+                }else{
+                    console.warn(`Messages could not be added to dataRecord because personId was not found in matches array. Please check the values provided.`);
+                }
+                
+                //todo: create method which adds new messages directly?
+
+                if(i === (dataRecords.length - 1)){
+                    return resolve(true);
+                }
+            }
+        });
+
+    }
+    public getPersonIdFromMatch(systemIdMatch: string, matches: ParsedResultMatch[]): string | null {
+        if(!systemIdMatch || !matches || matches.length === 0){
+            console.error(`Insufficient systemIdMatch or match array was provided. Please check the provided values.`);
+            return null;
+        }
+        const match = matches.find((match)=>{
+            return match.match._id === systemIdMatch || match.match.person._id === systemIdMatch;
+        });
+        if(match){
+            return match.match.person._id;
+        }else{
+            console.error(`No match found in match array with systemIdMatch: ${systemIdMatch}`);
+            return null;
+        }
+    }
+
     public updateDataTable(matches: ParsedResultMatch[]): void {
 
         matches?.forEach((match: ParsedResultMatch) => {
