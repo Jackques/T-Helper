@@ -158,7 +158,7 @@ export class DataField {
         // if the data entry IS NOT allowed to be empty, but the data entry is not empty
         // continue with the check
 
-        if(this.mustBeUnique && !this._isDataEntryUnique('noDataEntry', dataEntry)){
+        if(this.mustBeUnique && !this._isDataEntryUnique('noDataEntry', dataEntry) && dataEntry !== this.dataEntry){
             console.error(`dataEntry: ${dataEntry} for property: ${this.title} does not have a unique number.`)
         }
 
