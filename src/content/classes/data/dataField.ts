@@ -72,7 +72,13 @@ export class DataField {
     }
 
     public hasValue(): boolean {
-        return this.dataEntry || this.dataEntryList.length > 0 ? true : false;
+        if(this.dataEntryList.length > 0){
+            return true;
+        }
+        if(this.dataEntry !== null || this.dataEntry !== undefined){
+            return true;
+        }
+        return false;
     }
     public updateValueAllowed(): boolean {
         // if has value AND is multipleDataEntry -> can be updated, if has no value -> can be updated.. otherwise NO?
