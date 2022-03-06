@@ -1005,22 +1005,8 @@ export class TinderController implements datingAppController {
                     // used a standard for loop to ensure synchronous looping
                     for (let i = 0; i < matchesWithoutMessagesList.length; i = i + 1) {
                         console.log(`GETTING MESSAGES now for: ${i} - ${matchesWithoutMessagesList[i].match.id}`);
-                        matchesWithoutMessagesList[i].matchMessages = await requestHandler.getMatchesMessagesStart(matchesWithoutMessagesList[i].match.id)
-
-
-
-
-                        //NOTE: Set limit to get messages from the first 25 matches ONLY! This is done to reduce time to load
-                        if (i > 25) {
-                            console.log('CONGRATZ you reached the end!');
-                            // eslint-disable-next-line no-debugger
-                            // debugger;
-                            return matchesWithoutMessagesList;
-                            
-                        }
-
-
-
+                        matchesWithoutMessagesList[i].matchMessages = await requestHandler.getMatchesMessagesStart(matchesWithoutMessagesList[i].match.id);
+                        return matchesWithoutMessagesList;
                     }
                     return matchesWithoutMessagesList;
                 }
