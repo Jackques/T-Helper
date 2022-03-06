@@ -897,6 +897,9 @@ export class TinderController implements datingAppController {
                         }, {
                             label: 'Did-i-like',
                             value: personActionStatus
+                        },{
+                            label: 'Is-match',
+                            value: false
                         }]);
 
                         this.dataTable.addNewDataRecord(newDataRecord);
