@@ -61,8 +61,17 @@ export class DataTable {
         this.dataRecords[index].addDataToDataFields(dataRecord);
     }
 
-    public getAllDataRecords(){
+    public getAllDataRecords(): DataRecord[] {
         return this.dataRecords;
+    }
+
+    public getAllDataRecordsWhereMessageNeedTobeUpdated(): DataRecord[] {
+        return this.dataRecords.filter((dataRecord) => {
+            if (dataRecord.isNeedFieldMessagesBeUpdated()) {
+                return dataRecord;
+            }
+        })
+
     }
 
 }
