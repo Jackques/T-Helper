@@ -58,10 +58,14 @@ export class TinderController implements datingAppController {
                     this.requestHandler = new RequestHandlerTinder(this.xAuthToken);
 
                     // Gather data (by api's OR (less preferably) DOM)
-                    this.getMatchesAndMatchMessagesByAPI(this.requestHandler, false)?.then((matches: ParsedResultMatch[] | null) => {
+                    this.getMatches()?.then((matches: ParsedResultMatch[] | null) => {
 
                         console.log(`Matches & match messages:`);
                         console.dir(matches);
+
+
+                        // eslint-disable-next-line no-debugger
+                        debugger;
 
                         if (matches === null) {
                             console.error(`Could not retrieve matches`);
@@ -72,15 +76,41 @@ export class TinderController implements datingAppController {
 
                         this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
 
-                        console.log(`And here is my data table:`);
-                        console.dir(dataTable);
+                        const dataRecordsWhereMessagesNeedToBeUpdated = this.dataTable.getAllDataRecordsWhereMessageNeedTobeUpdated();
+                        this.updateMessagesDataRecords(this.requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved)=>{
 
-                        //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
-                        this.setSwipeHelperOnScreen();
+                            if(!hasMessagesBeenRetrieved){
+                                console.error(`Somethign went wrong with getting messages! Check the network logs.`);
+                            }
 
-                        this.setScreenWatcher();
-                        this.setMessageListWatcherOnScreen();
-                        this.setMatchesListWatcher();
+                            debugger;
+
+                            const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
+                            dataRecords.forEach((dataRecord)=>{
+                                const dataFields: DataField[] = dataRecord.getDataFields();
+
+                                const systemId: string = dataRecord.getRecordPersonSystemId(this.nameController)
+                                const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
+                                const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
+                                this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
+                            });
+
+                            console.log(`And here is my data table:`);
+                            console.dir(dataTable);
+    
+                            // eslint-disable-next-line no-debugger
+                            debugger;
+    
+                            //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
+                            this.setSwipeHelperOnScreen();
+    
+                            this.setScreenWatcher();
+                            this.setMessageListWatcherOnScreen();
+                            this.setMatchesListWatcher();
+                        })
+
+                        // debugger;
+
                     });
 
                     // HINT: In order to scroll to the very bottom of the messageList in tinder;
@@ -383,7 +413,6 @@ export class TinderController implements datingAppController {
         dataFields.forEach((dataField) => {
             switch (dataField.title) {
                 case 'System-no': {
-                    dataField = dataField as DataFieldSystemNo;
                     dataRecordValuesList.push({
                         'label': 'System-no', 'value': {
                             'appType': 'tinder',
