@@ -57,79 +57,23 @@ export class TinderController implements datingAppController {
                     //todo: test to see if auth token works by using a simple request first?
                     this.requestHandler = new RequestHandlerTinder(this.xAuthToken);
 
-                    // Gather data (by api's OR (less preferably) DOM)
-                    this.getMatches()?.then((matches: ParsedResultMatch[] | null) => {
+                    this.refreshDataTableMatchesAndMatchMessages(this.requestHandler).then(()=>{
+                        //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
+                        this.setSwipeHelperOnScreen();
 
-                        console.log(`Matches & match messages:`);
-                        console.dir(matches);
+                        this.setScreenWatcher();
+                        this.setMessageListWatcherOnScreen();
+                        this.setMatchesListWatcher();
 
-                        //TODO: SET LIMIT HERE! REMOVE IF NO LONGER NECESSARY
-                        if(matches && matches.length > 25){
-                            matches = matches.filter((match, index)=> {
-                                if(index <= 25){
-                                    return match
-                                }
-                            })
-                        }
-                        //TODO: SET LIMIT HERE! REMOVE IF NO LONGER NECESSARY
-
-                        // eslint-disable-next-line no-debugger
-                        debugger;
-
-                        if (matches === null) {
-                            console.error(`Could not retrieve matches`);
-                            return;
-                        }
-
-                        this.updateDataTable(matches);
-
-                        this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
-
-                        const dataRecordsWhereMessagesNeedToBeUpdated = this.dataTable.getAllDataRecordsWhereMessageNeedTobeUpdated();
-                        this.updateMessagesDataRecords(this.requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved)=>{
-
-                            if(!hasMessagesBeenRetrieved){
-                                console.error(`Somethign went wrong with getting messages! Check the network logs.`);
-                            }
-
-                            debugger;
-
-                            const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
-                            dataRecords.forEach((dataRecord)=>{
-                                const dataFields: DataField[] = dataRecord.getDataFields();
-
-                                const systemId: string = dataRecord.getRecordPersonSystemId(this.nameController)
-                                const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
-                                const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
-                                this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
-                            });
-
-                            console.log(`And here is my data table:`);
-                            console.dir(dataTable);
-    
-                            // eslint-disable-next-line no-debugger
-                            debugger;
-    
-                            //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
-                            this.setSwipeHelperOnScreen();
-    
-                            this.setScreenWatcher();
-                            this.setMessageListWatcherOnScreen();
-                            this.setMatchesListWatcher();
-                        })
-
-                        // debugger;
-
+                        // HINT: In order to scroll to the very bottom of the messageList in tinder;
+                        /*
+                        Use 
+                        $0.children[$0.children.length-1].scrollIntoView()
+                        and a few ms after use;
+                        $0.scrollIntoView()
+                        .. and repeat again, again and again untill you have the full list
+                        */
                     });
-
-                    // HINT: In order to scroll to the very bottom of the messageList in tinder;
-                    /*
-                    Use 
-                    $0.children[$0.children.length-1].scrollIntoView()
-                    and a few ms after use;
-                    $0.scrollIntoView()
-                    .. and repeat again, again and again untill you have the full list
-                    */
 
                 } else {
                     console.error(`Could not get credentials for tinder`);
@@ -142,6 +86,72 @@ export class TinderController implements datingAppController {
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
         }
 
+    }
+
+    private refreshDataTableMatchesAndMatchMessages(requestHandler: RequestHandlerTinder): Promise<void>{
+        return new Promise<void>((resolve, reject) => {
+            // Gather data (by api's OR (less preferably) DOM)
+            this.getMatches()?.then((matches: ParsedResultMatch[] | null) => {
+
+                console.log(`Matches & match messages:`);
+                console.dir(matches);
+
+                //TODO: SET LIMIT HERE! REMOVE IF NO LONGER NECESSARY
+                if(matches && matches.length > 25){
+                    matches = matches.filter((match, index)=> {
+                        if(index <= 25){
+                            return match
+                        }
+                    })
+                }
+                //TODO: SET LIMIT HERE! REMOVE IF NO LONGER NECESSARY
+
+                // eslint-disable-next-line no-debugger
+                debugger;
+
+                if (matches === null) {
+                    console.error(`Could not retrieve matches`);
+                    return;
+                }
+
+                this.updateDataTable(matches);
+
+                this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
+
+                const dataRecordsWhereMessagesNeedToBeUpdated = this.dataTable.getAllDataRecordsWhereMessageNeedTobeUpdated();
+                this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved)=>{
+
+                    if(!hasMessagesBeenRetrieved){
+                        console.error(`Somethign went wrong with getting messages! Check the network logs.`);
+                        return reject();
+                    }
+
+                    // eslint-disable-next-line no-debugger
+                    debugger;
+
+                    const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
+                    dataRecords.forEach((dataRecord)=>{
+                        const dataFields: DataField[] = dataRecord.getDataFields();
+
+                        const systemId: string = dataRecord.getRecordPersonSystemId(this.nameController)
+                        const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
+                        const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
+                        this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
+                    });
+
+                    console.log(`And here is my data table:`);
+                    console.dir(this.dataTable);
+
+                    // eslint-disable-next-line no-debugger
+                    debugger;
+
+                    return resolve();
+                });
+
+                // debugger;
+
+            });
+        });
     }
 
     private setScreenWatcher() {
