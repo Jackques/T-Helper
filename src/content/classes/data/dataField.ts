@@ -365,28 +365,34 @@ export class DataFieldMessages extends DataField {
         this.needsToBeUpdated = needsToBeUpdated;
     }
 
-    public updateMessagesList(updatedMessagesList: Message[]): void {
+    public updateMessagesList(updatedMessagesList: Message[], forceAdd?: boolean): void {
         if(updatedMessagesList.length > 0){
 
-            if(this.dataEntryList.length < updatedMessagesList.length){
+            if(forceAdd){
                 this.addDataEntry(updatedMessagesList);
-                console.log(`WEW, LOOKS LIKE WE GOT A RECORD WHICH CONTAINS FEWER MESSAGES THAN WE GET FROM THE NEW MESSAGES LIST. Should be pretty much everyone INITIALLY?`);
-                console.log(`ALSO; we cannot know for sure if this datarecord will receive the latest messages or not, so let's just simply set this one to needsToBeUpdated true`);
-                this.setNeedsToBeUpdated(true);
+                this.setNeedsToBeUpdated(false);
             }else{
 
-                const isAllNewMessagesPresent = updatedMessagesList.every((newMessage:Message)=>{
-                    const indexNewMessage = this.dataEntryList.findIndex((dataEntry)=>{
-                        return (dataEntry as unknown as Message).timestamp === newMessage.timestamp;
-                    })
-                    return indexNewMessage !== -1 ? true : false;
-                });
-
-                if(!isAllNewMessagesPresent){
-                    console.log(`OH BOY! LOOKS LIKE WE GOT A RECORD WHICH DOES NOT CONTAIN THE LATEST MESSAGES. WE NEED A TEST SCENARIO FOR THIS`);
+                if(this.dataEntryList.length < updatedMessagesList.length){
+                    this.addDataEntry(updatedMessagesList);
+                    console.log(`WEW, LOOKS LIKE WE GOT A RECORD WHICH CONTAINS FEWER MESSAGES THAN WE GET FROM THE NEW MESSAGES LIST. Should be pretty much everyone INITIALLY?`);
+                    console.log(`ALSO; we cannot know for sure if this datarecord will receive the latest messages or not, so let's just simply set this one to needsToBeUpdated true`);
                     this.setNeedsToBeUpdated(true);
-                }
+                }else{
 
+                    const isAllNewMessagesPresent = updatedMessagesList.every((newMessage:Message)=>{
+                        const indexNewMessage = this.dataEntryList.findIndex((dataEntry)=>{
+                            return (dataEntry as unknown as Message).timestamp === newMessage.timestamp;
+                        })
+                        return indexNewMessage !== -1 ? true : false;
+                    });
+
+                    if(!isAllNewMessagesPresent){
+                        console.log(`OH BOY! LOOKS LIKE WE GOT A RECORD WHICH DOES NOT CONTAIN THE LATEST MESSAGES. WE NEED A TEST SCENARIO FOR THIS`);
+                        this.setNeedsToBeUpdated(true);
+                    }
+
+                }
             }
         }
     }

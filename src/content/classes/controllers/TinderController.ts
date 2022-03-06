@@ -1121,7 +1121,7 @@ export class TinderController implements datingAppController {
                 
                 if(personId){
                     const messagesDataField = dataRecords[i].usedDataFields[2] as DataFieldMessages;
-                    messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(messages.reverse(), personId))
+                    messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(messages.reverse(), personId), true)
                 }else{
                     console.warn(`Messages could not be added to dataRecord because personId was not found in matches array. Please check the values provided.`);
                 }
