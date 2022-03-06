@@ -149,8 +149,8 @@ export class DataField {
         //if the data entry is allowed to be empty, but data entry is not empty
         // continue with the check
 
-        // if the data entry IS NOT allowed to be empty, but data entry IS empty
-        if(!this.emptyFieldAllowed && this._isDataEntryEmpty(dataEntry)){
+        // if the data entry IS NOT allowed to be empty, but data entry IS empty AND the current entry is not null (empty)
+        if(!this.emptyFieldAllowed && this._isDataEntryEmpty(dataEntry) && this.dataEntry !== null){
             console.error(`The data entry for  ${this.title} cannot be empty or of a falsy value. Value: (${dataEntry}).`);
             return false;
         }
