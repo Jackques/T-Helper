@@ -97,9 +97,9 @@ export class TinderController implements datingAppController {
                 console.dir(matches);
 
                 //TODO: SET LIMIT HERE! REMOVE IF NO LONGER NECESSARY
-                if(matches && matches.length > 25){
+                if(matches && matches.length > 50){
                     matches = matches.filter((match, index)=> {
-                        if(index <= 25){
+                        if(index <= 50){
                             return match
                         }
                     })
