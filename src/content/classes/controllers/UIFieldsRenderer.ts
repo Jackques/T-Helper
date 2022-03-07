@@ -20,7 +20,7 @@ export class UIFieldsRenderer {
                 return NaN;
             },
             template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null): string => {
-                defaultValue = defaultValue === null ? '' : defaultValue;
+                defaultValue = defaultValue === null || defaultValue === undefined ? '' : defaultValue;
                 return `
                 <div class="fieldContainer fieldContainer--slider">
                     <label for="${id}" class="form-label">${label}</label>
@@ -51,7 +51,7 @@ export class UIFieldsRenderer {
                 return false;
             },
             template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null):string => { 
-                defaultValue = defaultValue === null ? false : defaultValue;
+                defaultValue = defaultValue === null || defaultValue === undefined ? false : defaultValue;
                 return `
                 <div class="fieldContainer fieldContainer--switch">
                     <div class="form-check form-switch">
@@ -71,7 +71,7 @@ export class UIFieldsRenderer {
                 return '';
             },
             template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null):string => {
-                defaultValue = defaultValue === null ? '' : defaultValue; 
+                defaultValue = defaultValue === null || defaultValue === undefined ? '' : defaultValue; 
                 return `
                 <div class="fieldContainer fieldContainer--input">
                     <div class="input-group mb-12">
@@ -90,7 +90,7 @@ export class UIFieldsRenderer {
                 return '';
             },
             template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null): string => { 
-                defaultValue = defaultValue === null ? '' : defaultValue; 
+                defaultValue = defaultValue === null || defaultValue === undefined ? '' : defaultValue; 
                 return `
                 <div class="fieldContainer fieldContainer--textarea">
                     <div class="form-floating">
