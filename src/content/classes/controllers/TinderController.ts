@@ -265,6 +265,7 @@ export class TinderController implements datingAppController {
                     // eslint-disable-next-line no-debugger
                     // debugger;
                     dataRecord.setUpdateMessages(true);
+                    this.setRefreshDataTable(true);
                     console.log(`%c ${console.count()} (2)I just set profile: ${dataRecord.usedDataFields[5].getValue()} with id: ${matchId} with recordIndex: ${this.dataTable.getRecordIndexBySystemId(matchId, 'tinder')} to true.. for this person sent me a new message thus my messages list for her should be reviewed`, "color: orange");
                     return;
                 }
@@ -296,28 +297,7 @@ export class TinderController implements datingAppController {
                         if (this.amountOfUnmessagedMatches !== currentUnmessagedMatchesAmount) {
                             this.amountOfUnmessagedMatches = currentUnmessagedMatchesAmount;
 
-                            if (this.matchesListTimeoutId === null) {
-                                this.uiRenderer.setLoadingOverlay('loadingMatches', true);
-                                this.matchesListTimeoutId = setTimeout(() => {
-                                    this.matchesListTimeoutId = null;
-
-                                    console.log(`%c Got some added/deleted unmessaged matches! Let's update those matches!`, "color: purple");
-
-                                    this.getMatches()?.then((matches: ParsedResultMatch[] | null) => {
-                                        if (matches && matches.length > 0) {
-                                            this.updateDataTable(matches);
-                                            this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
-                                        } else {
-                                            console.error(`Matches received from getMatches were null. Please check the logs.`);
-                                        }
-
-                                        this.uiRenderer.setLoadingOverlay('loadingMatches', false);
-
-                                    });
-
-                                }, 500);
-                            }
-
+                            this.setRefreshDataTable(true);
                         }
                     } else {
                         console.error(`Could not find matchesListContainer. Please update the identifier.`);
