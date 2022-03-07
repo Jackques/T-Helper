@@ -42,6 +42,8 @@ export class TinderController implements datingAppController {
     private amountOfUnmessagedMatches = 0;
     private matchesListTimeoutId: number | null = null;
 
+    private dataTableNeedsToBeUpdated = false;
+
     constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: dataStorage) {
 
         this.dataRetrievalMethod = dataRetrievalMethod;
@@ -194,12 +196,23 @@ export class TinderController implements datingAppController {
             this.currentScreenTimeoutId = setTimeout(() => {
                 this.currentScreen = this.getCurrentScreenByDOM();
                 console.log(`Current screen: ${this.currentScreen}`);
-
-                this.uiRenderer.setLoadingOverlay('switchScreen', false);
+                
                 this.currentScreenTimeoutId = null;
 
                 console.log(`execute add UI helpers for screen: ${this.currentScreen}`);
-                this.addUIHelpers(this.currentScreen);
+                
+                if(this.dataTableNeedsToBeUpdated){
+                    this.refreshDataTableMatchesAndMatchMessages(this.requestHandler).then(()=>{
+                        this.setRefreshDataTable(false);
+                        this.setSwipeHelperOnScreen();
+                    }).finally(()=>{
+                        this.uiRenderer.setLoadingOverlay('switchScreen', false);
+                    });
+                }else{
+                    this.addUIHelpers(this.currentScreen);
+                    this.uiRenderer.setLoadingOverlay('switchScreen', false);
+                }
+
             }, 500);
         }).observe($SOCcontainer, {
             childList: true, // observe direct children
@@ -325,6 +338,10 @@ export class TinderController implements datingAppController {
             return;
         }
     }
+    private setRefreshDataTable(shouldDataTableBeRefreshed: boolean) {
+        this.dataTableNeedsToBeUpdated = shouldDataTableBeRefreshed;
+    }
+
     private getUnmessagedMatchesAmount(matchesListContainerElement: HTMLElement): number {
         const matchListItemsAmount = $(matchesListContainerElement).find('a.matchListItem').length;
 
