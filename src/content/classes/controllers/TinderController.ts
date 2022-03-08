@@ -59,6 +59,7 @@ export class TinderController implements datingAppController {
                     //todo: test to see if auth token works by using a simple request first?
                     this.requestHandler = new RequestHandlerTinder(this.xAuthToken);
 
+                    this.uiRenderer.setLoadingOverlay('initApp', true);
                     this.refreshDataTableMatchesAndMatchMessages(this.requestHandler).then(()=>{
                         //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
                         this.setSwipeHelperOnScreen();
@@ -75,6 +76,11 @@ export class TinderController implements datingAppController {
                         $0.scrollIntoView()
                         .. and repeat again, again and again untill you have the full list
                         */
+                    }).catch((error)=>{
+                        console.dir(error);
+                        console.error(`Something went wrong`);
+                    }).finally(()=>{
+                        this.uiRenderer.setLoadingOverlay('initApp', false);
                     });
 
                 } else {
