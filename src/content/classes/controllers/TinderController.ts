@@ -119,7 +119,7 @@ export class TinderController implements datingAppController {
 
                 if (matches === null) {
                     console.error(`Could not retrieve matches`);
-                    return;
+                    return reject();
                 }
 
                 this.updateDataTable(matches);
@@ -127,6 +127,10 @@ export class TinderController implements datingAppController {
                 this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
 
                 const dataRecordsWhereMessagesNeedToBeUpdated = this.dataTable.getAllDataRecordsWhereMessageNeedTobeUpdated();
+                if(dataRecordsWhereMessagesNeedToBeUpdated.length === 0){
+                    return resolve();
+                }
+
                 this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved)=>{
 
                     if(!hasMessagesBeenRetrieved){
@@ -154,10 +158,16 @@ export class TinderController implements datingAppController {
                     debugger;
 
                     return resolve();
+                }).catch((error)=>{
+                    console.dir(error);
+                    console.error(`Error occured getting matchMessages`);
                 });
 
                 // debugger;
 
+            }).catch((error)=>{
+                console.dir(error);
+                console.error(`An error occured getting matches`);
             });
         });
     }
@@ -1120,6 +1130,7 @@ export class TinderController implements datingAppController {
         // eslint-disable-next-line no-async-promise-executor
         return new Promise<boolean>(async (resolve, reject) => {
             if(dataRecords.length === 0){
+                console.error(`Data records amount cannot be 0`);
                 return reject(false);
             }
 
