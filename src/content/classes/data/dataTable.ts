@@ -71,7 +71,13 @@ export class DataTable {
                 return dataRecord;
             }
         })
+    }
 
+    public getRecordValuesObject(): string {
+       const valuesDataRecords: Record<string, string | unknown>[] = this.dataRecords.map((dataRecord: DataRecord)=>{
+            return dataRecord.getRecordValueObject();
+       }); 
+       return JSON.stringify(valuesDataRecords);
     }
 
 }

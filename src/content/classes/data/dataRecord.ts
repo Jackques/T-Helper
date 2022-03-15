@@ -212,6 +212,20 @@ export class DataRecord {
         }
     }
 
+    public getRecordValueObject(): Record<string, unknown> {
+        const result: Record<string, unknown> = {};
+        this.usedDataFields.forEach((usedDataField)=>{
+
+            if(usedDataField instanceof DataFieldSystemNo){
+                result[usedDataField.title] = usedDataField.getValue({appType: 'tinder'});
+            }else{
+                result[usedDataField.title] = usedDataField.getValue();
+            }
+            
+        });
+        return result;
+    }
+
     /*  ZET HIER WELKE TAGS IK MOMENTEEL WEL GA ONDERSTEUNEN EN WELKE NIET! BEGIN KLEIN!
     'IsFake', // e.g. obvious catfishes, because maybe I want to keep track of how many (OBVIOUSLY) fake profiles I encounter on any given app (very few of these exist tho..)
     'seemsFake', // e.g. IG-modellike profiles with whom no man ever matches? Or do (some) men match with them? (the obvious insta-model girls.. tinder seems to prioritize these girls at the first recs of the list of recs with the property 'is_superlike_upsell' but unfortunatelly i cannot read the recs data..)

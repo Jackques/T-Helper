@@ -44,16 +44,21 @@ export class DataField {
         }
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null {
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null | Record<string, unknown>[] {
         // console.log('uses getBaseValue from datafield');
+
+        if(this.dataLogic.baseType === 'list'){
+            return this.dataEntryList;
+        }
 
         if(!this.hasValue()){
             return null;
         }
 
         if(this.dataEntryList.length > 0){
-            console.error(`getValue method called on ${this.title} has not yet been inplemented. Please inplement this logic first`);
-            return null;
+            // console.error(`getValue method called on ${this.title} has not yet been inplemented. Please inplement this logic first`);
+            // return null;
+            return this.dataEntryList;
         }else{
             switch (this.dataLogic.baseType) {
                 case 'string': 
@@ -80,6 +85,7 @@ export class DataField {
         }
         return false;
     }
+
     public updateValueAllowed(): boolean {
         // if has value AND is multipleDataEntry -> can be updated, if has no value -> can be updated.. otherwise NO?
         // if has value AND is onlyGatherOnce = false -> can be updated, if has no value -> can be updated.. otherwise NO
@@ -304,6 +310,7 @@ export class DataField {
 
         return true;
     }
+
 }
 
 export class DataFieldSystemNo extends DataField {
@@ -342,9 +349,11 @@ export class DataFieldMessages extends DataField {
         super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null {
-        console.error(`getValue method called on DataFieldMessages has not yet been inplemented. Please inplement this logic first`);
-        return null;
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | Record<string, unknown>[] | null {
+        // console.error(`getValue method called on DataFieldMessages has not yet been inplemented. Please inplement this logic first`);
+        // return null;
+
+        return super.getValue();
     }
 
     public getLastMessage(): Message | null {
@@ -408,9 +417,11 @@ export class DataFieldReactionSpeedList extends DataField {
         super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null {
-        console.error(`getValue method called on DataFieldReminderList has not yet been inplemented. Please inplement this logic first`);
-        return null;
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | Record<string, unknown>[] | null {
+        // console.error(`getValue method called on DataFieldMessages has not yet been inplemented. Please inplement this logic first`);
+        // return null;
+
+        return super.getValue();
     }
 }
 
@@ -420,9 +431,11 @@ export class DataFieldReminderList extends DataField {
         super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null {
-        console.error(`getValue method called on DataFieldReminderList has not yet been inplemented. Please inplement this logic first`);
-        return null;
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | Record<string, unknown>[] | null {
+        // console.error(`getValue method called on DataFieldMessages has not yet been inplemented. Please inplement this logic first`);
+        // return null;
+
+        return super.getValue();
     }
 }
 
@@ -432,10 +445,11 @@ export class DataFieldGhostsList extends DataField {
         super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null {
-        //todo: Inplement getValue for complex data objects (e.g. DataFieldGhosts, DataFieldReminder etc.) when needed. For now returning null suffices since these fields do not need to return their respective values.
-        console.error(`getValue method called on DataFieldGhostsList has not yet been inplemented. Please inplement this logic first`);
-        return null;
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | Record<string, unknown>[] | null {
+        // console.error(`getValue method called on DataFieldMessages has not yet been inplemented. Please inplement this logic first`);
+        // return null;
+
+        return super.getValue();
     }
 
     public updateMoment(updatedTime: string, updatedStatus: GhostStatus):void {

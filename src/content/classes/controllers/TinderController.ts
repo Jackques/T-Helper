@@ -81,6 +81,7 @@ export class TinderController implements datingAppController {
                         console.error(`Something went wrong`);
                     }).finally(()=>{
                         this.uiRenderer.setLoadingOverlay('initApp', false);
+                        this.setDownloadExportButton(this.dataTable);
                     });
 
                 } else {
@@ -94,6 +95,18 @@ export class TinderController implements datingAppController {
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
         }
 
+    public setDownloadExportButton(dataTable: DataTable): void {
+        $('body').prepend(`
+               <button class="downloadButton" id="downloadButton">Download</button>
+            `);
+        
+        $(`body`).on("click", '[id="downloadButton"]', () => {
+            const element = document.createElement('a');
+            element.setAttribute('href','data:text/plain;charset=utf-8, ' + encodeURIComponent(dataTable.getRecordValuesObject()));
+            element.setAttribute('download', 'output.json');
+            document.body.appendChild(element);
+            element.click();
+        });
     }
 
     private refreshDataTableMatchesAndMatchMessages(requestHandler: RequestHandlerTinder): Promise<void>{
