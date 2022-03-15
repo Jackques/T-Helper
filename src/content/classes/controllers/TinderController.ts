@@ -64,9 +64,7 @@ export class TinderController implements datingAppController {
                         //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
                         this.setSwipeHelperOnScreen();
 
-                        this.setScreenWatcher();
-                        this.setMessageListWatcherOnScreen();
-                        this.setMatchesListWatcher();
+                        
 
                         // HINT: In order to scroll to the very bottom of the messageList in tinder;
                         /*
@@ -81,6 +79,9 @@ export class TinderController implements datingAppController {
                         console.error(`Something went wrong`);
                     }).finally(()=>{
                         this.uiRenderer.setLoadingOverlay('initApp', false);
+                        this.setScreenWatcher();
+                        this.setMessageListWatcherOnScreen();
+                        this.setMatchesListWatcher();
                         this.setDownloadExportButton(this.dataTable);
                     });
 
@@ -94,6 +95,7 @@ export class TinderController implements datingAppController {
         } else {
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
         }
+    }
 
     public setDownloadExportButton(dataTable: DataTable): void {
         $('body').prepend(`
@@ -128,7 +130,7 @@ export class TinderController implements datingAppController {
                 //TODO: SET LIMIT HERE! REMOVE IF NO LONGER NECESSARY
 
                 // eslint-disable-next-line no-debugger
-                debugger;
+                // debugger;
 
                 if (matches === null) {
                     console.error(`Could not retrieve matches`);
@@ -152,7 +154,7 @@ export class TinderController implements datingAppController {
                     }
 
                     // eslint-disable-next-line no-debugger
-                    debugger;
+                    // debugger;
 
                     const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
                     dataRecords.forEach((dataRecord)=>{
@@ -168,7 +170,7 @@ export class TinderController implements datingAppController {
                     console.dir(this.dataTable);
 
                     // eslint-disable-next-line no-debugger
-                    debugger;
+                    // debugger;
 
                     return resolve();
                 }).catch((error)=>{
