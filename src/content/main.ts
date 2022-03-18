@@ -1,5 +1,6 @@
 import 'regenerator-runtime/runtime'
 import { SubmitAction } from 'src/background/requestInterceptor';
+import { FileHelper } from '../fileNameHelper';
 import { parse } from 'tldts';
 import { TinderController } from './classes/controllers/TinderController';
 import { DataRecord } from './classes/data/dataRecord';
@@ -13,8 +14,10 @@ export class Main {
     private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
     private datingAppType = '';
 
-    private dataTable: DataTable | null = null;
+    // private dataTable: DataTable | null = null;
+    private dataTable = new DataTable();
     private dataStorage = new dataStorage();
+    private importedFile: FileHelper | null = null;
     
     constructor() {
         //console.log(`The main app constructor content works`);
@@ -22,18 +25,19 @@ export class Main {
         chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
             console.assert(port.name === "knockknock");
             port.onMessage.addListener((portMessage: PortMessage) => {
-                if(portMessage.messageSender === 'POPUP'){
+                if(portMessage.messageSender === 'POPUP' && portMessage.action === 'INIT'){
                     //console.log(`I received the following message payload: `);
                     //console.dir(msg.payload);
                     
                     //todo: Move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
                     this.datingAppType = this.checkDatingApp();
                     if(this.datingAppType.length > 0){
-                        this.dataTable = new DataTable();
+                        // this.dataTable = new DataTable();
 
                         //for every entry i the list received in payload
                         //todo: CURRENTLY; i ASSUME the dataTable will be empty (which it most likely is), but maybe i would want to check here if prior data already exists, thus updating data rather than creating new records
-                        portMessage.payload.forEach((msg:DataRecordValues[])=>{
+                        const importedRecords = portMessage.payload as any[];
+                        importedRecords.forEach((msg:DataRecordValues[])=>{
                             const newDataRecord = new DataRecord();
                             
                             const isDataAddedSuccesfully: boolean = newDataRecord.addDataToDataFields(msg);
@@ -52,7 +56,18 @@ export class Main {
                 if(msg.messageSender === 'BACKGROUND' && msg.action === 'SUBMIT_ACTION'){
                     console.log(`Received submit action from background script: `);
                     console.dir(msg);
-                    this.dataStorage.addActionToDataStore(<SubmitAction>msg.payload[0]);
+                    const message = msg.payload as any[];
+                    this.dataStorage.addActionToDataStore(<SubmitAction>message[0]);
+                }
+            });
+            port.onMessage.addListener((msg: PortMessage) => {
+                //TODO TODO TODO: use filename set, convert date to new date & use in setDownloadExportButton
+                if(msg.messageSender === 'POPUP' && msg.action === 'FILENAME'){
+                    console.log(`Received filename from popup: `);
+                    console.dir(msg);
+                    this.importedFile = new FileHelper(msg.payload as string);
+                    this.setDownloadExportButton(this.dataTable, this.importedFile);
+                    
                 }
             })
         });
@@ -86,14 +101,18 @@ export class Main {
         }
     }
 
-    //TODO: import & export methods go to seperate data json class?
-    public exportTinderDataToJson(){
-        //TODO: Inplement method
-    }
-
-    public importTinderDataFromJson(){
-        //TODO: Inplement, import, compare data & add where needed (e.g. when an unmatch happend, fill in the gaps or update the messages)
-
-        //TODO: (NEW APP IDEA;) Inplement statistic methods (and easy-to-create-said-methods) to answer questions in PSYCHOLOGIE/Vragen-te-beantwoorden-met-nepprofielen
+    public setDownloadExportButton(dataTable: DataTable, fileHelper: FileHelper): void {
+        $('body').prepend(`
+               <button class="downloadButton" id="downloadButton">Download</button>
+            `);
+        
+        $(`body`).on("click", '[id="downloadButton"]', () => {
+            const element = document.createElement('a');
+            element.setAttribute('href','data:text/plain;charset=utf-8, ' + encodeURIComponent(dataTable.getRecordValuesObject()));
+            // element.setAttribute('download', 'output.json');
+            element.setAttribute('download', fileHelper.getUpdateFileName());
+            document.body.appendChild(element);
+            element.click();
+        });
     }
 }

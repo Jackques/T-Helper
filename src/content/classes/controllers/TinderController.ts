@@ -14,7 +14,6 @@ import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 import { UIFieldsRenderer } from "./UIFieldsRenderer";
 import { RequestHandlerTinder } from "../http-requests/requestHandlerTinder";
 import { Person } from "../tinder/Person";
-import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { dataStorage } from '../data/dataStorage';
 import { DataField, DataFieldMessages, UIRequired } from "../data/dataField";
 import { PersonAction } from "./../../../peronAction.enum"; // todo: had to move this to top level AND make a relative path.. but since ALL components (content, background, popup) share the same interfaces/enums etc. why not move everything to top lvl for importing? ALSO; why did an error occur when i tried to relative import this?
@@ -82,7 +81,6 @@ export class TinderController implements datingAppController {
                         this.setScreenWatcher();
                         this.setMessageListWatcherOnScreen();
                         this.setMatchesListWatcher();
-                        this.setDownloadExportButton(this.dataTable);
                     });
 
                 } else {
@@ -95,20 +93,6 @@ export class TinderController implements datingAppController {
         } else {
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
         }
-    }
-
-    public setDownloadExportButton(dataTable: DataTable): void {
-        $('body').prepend(`
-               <button class="downloadButton" id="downloadButton">Download</button>
-            `);
-        
-        $(`body`).on("click", '[id="downloadButton"]', () => {
-            const element = document.createElement('a');
-            element.setAttribute('href','data:text/plain;charset=utf-8, ' + encodeURIComponent(dataTable.getRecordValuesObject()));
-            element.setAttribute('download', 'output.json');
-            document.body.appendChild(element);
-            element.click();
-        });
     }
 
     private refreshDataTableMatchesAndMatchMessages(requestHandler: RequestHandlerTinder): Promise<void>{
