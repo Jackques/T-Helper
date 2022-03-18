@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#warnText').removeClass('d-none');
             $('#warnText').show();
             uploadedFile.getFileErrors().forEach((fileErrorMessage: string)=>{
-                $('#warnText').text(fileErrorMessage);
+                $('#warnText').text(fileErrorMessage + '</br>');
             })
         }
     }
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if(fileUpload.files){
                 if(fileUpload.files.length > 1){
-                    $('#warnText').text('No more than 1 file upload allowed, try again');
+                    $('#warnText').text('No more than 1 file upload allowed, try again' + '</br>');
                     $('#warnText').removeClass('d-none');
                     return;
                 }
