@@ -101,7 +101,7 @@ export class Main {
 
     public setDownloadExportButton(dataTable: DataTable, fileHelper: FileHelper): void {
         $('body').prepend(`
-               <button class="downloadButton" id="downloadButton">Download</button>
+               <button class="downloadButton" id="downloadButton">Export JSON</button>
             `);
         
         $(`body`).on("click", '[id="downloadButton"]', () => {
