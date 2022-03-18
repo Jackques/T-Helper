@@ -6,17 +6,19 @@ import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DataField } from "src/content/classes/data/dataField";
+import { FileHelper } from "../fileNameHelper";
+
 
 document.addEventListener('DOMContentLoaded', function () {
     const reader = new FileReader();
-    const allowedFileTypes: string[] = ['.csv'];
+    
     const propertiesChecker:PropertiesChecker = new PropertiesChecker();
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     const dataFields:DataField[] = new DataRecord().getDataFields();
     const requiredHeadersList: string[] = dataFields.map((header) => header.title);
+    let uploadedFile: FileHelper;
 
-    // let inputData: Record<string, string | number | boolean | null | Record<string, string | number | boolean>> = null;
     let inputDataList: DataRecordValues[][] | null = null;
 
     function onFileInputChange(evt:Event){
@@ -26,31 +28,23 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#activate').prop('disabled', true);
         inputDataList = null;
 
-        const uploadedFile: File | undefined = getTargetFile(evt);
-        if(uploadedFile && isValidFileType(uploadedFile)){
-            console.log('uploaded file: ');
-            console.dir(uploadedFile);
-            reader.readAsText(uploadedFile);
+        const file: File | undefined = getTargetFile(evt);
+        if(!file){
+            console.error(`Error while importing uploaded file. Please check your file for any technical errors`);
+            return;
         }
-    }
 
-    function isValidFileType(file: File): boolean {
-        let extension:string | undefined = file.name && file.name.split('.').length ? file.name.split('.').pop() : '';
-        
-        if(extension && extension.length){
-            extension = extension?.padStart(extension.length+1, '.');
-
-            const isValidExtension = allowedFileTypes.some((allowedFileType)=>{
-                return allowedFileType === extension
-            });
-
-            if(isValidExtension){
-                return true;
-            }
+        uploadedFile = new FileHelper(file);
+        if(!uploadedFile.hasFileErrors()){
+            $('#succesText').show();
+            reader.readAsText(file);
+        }else{
+            $('#warnText').removeClass('d-none');
+            $('#warnText').show();
+            uploadedFile.getFileErrors().forEach((fileErrorMessage: string)=>{
+                $('#warnText').text(fileErrorMessage);
+            })
         }
-        $('#warnText').text(`Unrecognized or unallowed file type, try again with a different file. Allowed file types: ${allowedFileTypes.toString()}`);
-        $('#warnText').removeClass('d-none');
-        return false;
     }
 
     function getTargetFile(evt:Event):File | undefined {
@@ -99,11 +93,8 @@ document.addEventListener('DOMContentLoaded', function () {
         function connectToCurrentTab () {
             getCurrentTabId(function(currentTabId:number) {
                 const port = chrome.tabs.connect(currentTabId, <chrome.runtime.Port>{name: "knockknock"});
-                port.postMessage(<PortMessage>{'messageSender': 'POPUP', 'action': 'INIT', 'payload': inputDataList});
-                // port.onMessage.addListener(function(msg) {
-                //     console.log('I am not expecting a message back?');
-                //     console.log(msg);
-                // });
+                port.postMessage(<PortMessage>{'messageSender': 'POPUP', 'action': 'FILENAME', 'payload': uploadedFile.getFileName()});
+                port.postMessage(<PortMessage>{'messageSender': 'POPUP', 'action': 'INIT', 'payload': inputDataList as any[]});
             });
         }
         connectToCurrentTab();
@@ -116,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if(!contents){
                     $('#warnText').text('No empty files allowed, try again');
-                    $('#warnText').removeClass('d-none');
+                    $('#warnText').show();
                     return;
                 }
                 csv({
@@ -321,7 +312,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     reader.onerror = function() {
         $('#warnText').text('Reading file error, check console log. Try again or with a different file');
-        $('#warnText').removeClass('d-none');
+        $('#warnText').show();
         console.error(`Render error: ${reader.error}`);
     };
+    
 });
+
+
+
