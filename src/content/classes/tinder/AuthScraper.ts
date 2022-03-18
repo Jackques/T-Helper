@@ -6,7 +6,7 @@ export class AuthScraper {
         
         chrome.runtime.onMessage.addListener((token:string) => {
             // This data came from background.js
-            debugger;
+            // debugger;
             this.xAuthToken = token;
 
             if(this.callback){
