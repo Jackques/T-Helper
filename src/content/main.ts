@@ -107,7 +107,6 @@ export class Main {
         $(`body`).on("click", '[id="downloadButton"]', () => {
             const element = document.createElement('a');
             element.setAttribute('href','data:text/plain;charset=utf-8, ' + encodeURIComponent(dataTable.getRecordValuesObject()));
-            // element.setAttribute('download', 'output.json');
             element.setAttribute('download', fileHelper.getUpdateFileName());
             document.body.appendChild(element);
             element.click();
