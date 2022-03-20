@@ -464,7 +464,7 @@ export class TinderController implements datingAppController {
                     break
                 case 'Date-liked-or-passed':
                     // does not get logged by tinder, thus can only be logged by me, thus should be undefined
-                    dataRecordValuesList.push({ 'label': 'Date-liked-or-passed', 'value': dataField.getValue() });
+                    dataRecordValuesList.push({ 'label': 'Date-liked-or-passed', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break;
                 case 'Name':
                     dataRecordValuesList.push({ 
@@ -478,6 +478,18 @@ export class TinderController implements datingAppController {
                         'value': match ? DateHelper.getAgeFromBirthDate(match.match.person.birth_date) : dataField.getValue()
                     });
                     break;
+                case 'City':
+                    dataRecordValuesList.push({ 
+                        'label': 'City', 
+                        'value': dataField.getValue() ? dataField.getValue() : null
+                    });
+                    break;
+                case 'Job':
+                    dataRecordValuesList.push({ 
+                        'label': 'Job', 
+                        'value': dataField.getValue() ? dataField.getValue() : null
+                    });
+                    break;
                 case 'Has-profiletext': {
                     dataRecordValuesList.push({ 
                         'label': 'Has-profiletext', 
@@ -486,7 +498,7 @@ export class TinderController implements datingAppController {
                     break;
                 }
                 case 'Has-usefull-profiletext':
-                    dataRecordValuesList.push({ 'label': 'Has-usefull-profiletext', 'value': dataField.getValue() });
+                    dataRecordValuesList.push({ 'label': 'Has-usefull-profiletext', 'value': dataField.getValue() ? dataField.getValue() || false : false });
                     break;
                 case 'Is-verified': {
                     // ensure that if Is-verified has been set once, it will not be overwritten again. 
@@ -498,10 +510,10 @@ export class TinderController implements datingAppController {
                     break;
                 }
                 case 'Attractiveness-score':
-                    dataRecordValuesList.push({ 'label': 'Attractiveness-score', 'value': dataField.getValue() });
+                    dataRecordValuesList.push({ 'label': 'Attractiveness-score', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break;
                 case 'Did-i-like':
-                    dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': dataField.getValue() });
+                    dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break;
                 case 'Is-match':
                     // if the data is ever parsed, it is obviously a match, otherwise it is not
@@ -516,19 +528,19 @@ export class TinderController implements datingAppController {
                 case 'Match-sent-first-message': {
                     dataRecordValuesList.push({ 
                         'label': 'Match-sent-first-message', 
-                        'value': messagesDataField.hasMessages() ? this._hasMatchSentFirstMessage(messagesDataField.getAllMessages()) : undefined });
+                        'value': messagesDataField.hasMessages() ? this._hasMatchSentFirstMessage(messagesDataField.getAllMessages()) : null });
                     break;
                 }
                 case 'Match-responded':
-                    dataRecordValuesList.push({ 'label': 'Match-responded', 'value': messagesDataField.hasMessages() ? this._hasMatchGivenResponse(messagesDataField.getAllMessages()) : undefined });
+                    dataRecordValuesList.push({ 'label': 'Match-responded', 'value': messagesDataField.hasMessages() ? this._hasMatchGivenResponse(messagesDataField.getAllMessages()) : null });
                     break;
                 case 'Conversation-exists':
                     dataRecordValuesList.push({ 
                         'label': 'Conversation-exists', 
-                        'value': messagesDataField.hasMessages() ? this._hasConversation(messagesDataField.getAllMessages()) : undefined });
+                        'value': messagesDataField.hasMessages() ? this._hasConversation(messagesDataField.getAllMessages()) : null });
                     break;
                 case 'Vibe-conversation':
-                    dataRecordValuesList.push({ 'label': 'Vibe-conversation', 'value': dataField.getValue() });
+                    dataRecordValuesList.push({ 'label': 'Vibe-conversation', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break;
                 case 'How-many-ghosts':
                     dataRecordValuesList.push({
@@ -537,7 +549,7 @@ export class TinderController implements datingAppController {
                     });
                     break;
                 case 'Acquired-number':
-                    dataRecordValuesList.push({ 'label': 'Acquired-number', 'value': dataField.getValue() });
+                    dataRecordValuesList.push({ 'label': 'Acquired-number', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break
                 case 'Response-speed':
                     dataRecordValuesList.push(
@@ -555,16 +567,16 @@ export class TinderController implements datingAppController {
                     break;
                 case 'Blocked-or-no-contact':
                     //todo: for deleted convo's by matches; does is there a property in the api response?
-                    dataRecordValuesList.push({ 'label': 'Blocked-or-no-contact', 'value': dataField.getValue() });
+                    dataRecordValuesList.push({ 'label': 'Blocked-or-no-contact', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break
                 case 'Interested-in-sex':
-                    dataRecordValuesList.push({ 'label': 'Interested-in-sex', 'value': dataField.getValue() });
+                    dataRecordValuesList.push({ 'label': 'Interested-in-sex', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break
                 case 'Potential-click':
-                    dataRecordValuesList.push({ 'label': 'Potential-click', 'value': dataField.getValue() });
+                    dataRecordValuesList.push({ 'label': 'Potential-click', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break
                 case 'Notes':
-                    dataRecordValuesList.push({ 'label': 'Notes', 'value': dataField.getValue() !== null ? dataField.getValue() : 'this note should appear for everyone.. right?' });
+                    dataRecordValuesList.push({ 'label': 'Notes', 'value': dataField.getValue() ? dataField.getValue() : '' });
                     break
                 default:
                     if (!dataField.emptyFieldAllowed) {
