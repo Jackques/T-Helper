@@ -42,12 +42,13 @@ export class Main {
                             
                             const isDataAddedSuccesfully: boolean = newDataRecord.addDataToDataFields(msg);
                             if(isDataAddedSuccesfully && this.dataTable !== null){
-                                this.dataTable.addNewDataRecord(newDataRecord);
+                                this.dataTable.addNewDataRecord(newDataRecord, this.datingAppType);
                             }else{
                                 console.error(`Error adding data from import. Please check data fields from import and error log.`);
                             }
                         });
 
+                        //todo: maybe should seperate out the logic for init app and actually getting the imported data?
                         this.datingAppController = this.initAppController(this.datingAppType, this.dataTable, this.dataStorage);
                     }
                 }

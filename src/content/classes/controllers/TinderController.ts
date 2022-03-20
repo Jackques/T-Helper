@@ -974,7 +974,7 @@ export class TinderController implements datingAppController {
                             value: false
                         }]);
 
-                        this.dataTable.addNewDataRecord(newDataRecord);
+                        this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
 
                         this.addUIHelpers(currentScreen, true);
                     }
@@ -1210,7 +1210,7 @@ export class TinderController implements datingAppController {
 
                 const dataAddedSuccessfully: boolean = newDataRecord.addDataToDataFields(tinderMatchDataRecordValues);
                 if (dataAddedSuccessfully) {
-                    this.dataTable.addNewDataRecord(newDataRecord);
+                    this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
                 } else {
                     console.error(`Error adding data from retrieved match. Please check match retrieved and error log.`);
                 }

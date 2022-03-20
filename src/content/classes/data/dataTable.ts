@@ -30,21 +30,41 @@ export class DataTable {
         return null;
     }
 
-    public addNewDataRecord(dataRecord: DataRecord): boolean {
+    public addNewDataRecord(dataRecord: DataRecord, appType: string): boolean {
+
+        // Update dataTable doubles; 
+        // if record already exists with the same personId/matchid; 
+        // choose the one with newer lastUpdated date
+        const indexExistingRecord = this.getRecordIndexBySystemId(dataRecord.getRecordPersonSystemId(appType), appType);
+        if(indexExistingRecord !== -1){
+            console.warn(`A record with the same system person id already exists in the dataTable. Record systemid: ${dataRecord.getRecordPersonSystemId(appType)}`);
+            const existingRecordLastUpdated = this.dataRecords[indexExistingRecord].getValueLastUpdated();
+            const newRecordLastUpdated = dataRecord.getValueLastUpdated();
+
+            if(new Date(newRecordLastUpdated).getTime() > new Date(existingRecordLastUpdated).getTime()){
+                // add the newer data record (simply continue with the existing process)
+                // remove the old data record
+                console.warn(`Inserted the newly imported dataRecord into the dataTable and removed the old one.`);
+                this.dataRecords.splice(indexExistingRecord, 1);
+            }else{
+                console.warn(`Did not add the newly imported dataRecord into the dataTable and kept the existing record.`);
+                return false;
+            }
+        }
 
         // if dataRecord has no number, assign a number by the current (incremented) count for this table & add record
         const currentRecordNo: number | null = dataRecord.getNoDataRecord();
-        if (currentRecordNo === null) {
+        if (currentRecordNo === null || currentRecordNo !== (this.dataRecordAmount + 1)) {
+
+            // if dataRecord has an invalid number, show warn
+            if (currentRecordNo !== (this.dataRecordAmount + 1)) {
+                console.warn(`Invalid data record number: ${dataRecord.getNoDataRecord()} for record: ${dataRecord}. Data record number must be incremented from the current data record amount: ${this.dataRecordAmount}`);
+            }
+
             dataRecord.setNoDataRecord(this.dataRecordAmount + 1);
             this.dataRecords.push(dataRecord);
             this.incrementRecordAmount();
             return true;
-        }
-
-        // if dataRecord has an invalid number, log error
-        if (currentRecordNo !== (this.dataRecordAmount + 1)) {
-            console.error(`Invalid data record number: ${dataRecord.getNoDataRecord()} for record: ${dataRecord}. Data record number must be incremented from the current data record amount: ${this.dataRecordAmount}`);
-            return false;
         }
 
         // if dataRecord has a number, number must be incrementable from start of app
