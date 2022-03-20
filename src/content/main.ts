@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime'
 import { SubmitAction } from 'src/background/requestInterceptor';
-import { FileHelper } from '../fileNameHelper';
+import { FileHelper } from '../fileHelper';
 import { parse } from 'tldts';
 import { TinderController } from './classes/controllers/TinderController';
 import { DataRecord } from './classes/data/dataRecord';

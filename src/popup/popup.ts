@@ -6,7 +6,7 @@ import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DataField } from "src/content/classes/data/dataField";
-import { FileHelper } from "../fileNameHelper";
+import { FileHelper } from "../fileHelper";
 
 
 document.addEventListener('DOMContentLoaded', function () {
