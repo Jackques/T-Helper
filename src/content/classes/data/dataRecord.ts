@@ -54,21 +54,19 @@ export class DataRecord {
     //todo: to ensure proper nesting without errors; ensure the datafield labels / headers ONLY contain alphanumeric characters AND dashes.. nothing else
     //todo: maybe needs a systemNo or something? Just like No but specifically for the system
     public usedDataFields:DataField[] = [
+        //Mandatory data fields
         new DataFieldSystemNo('System-no', 'The number the system of the datingapp assigned this person to', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckSystemId()}),
         new DataField('No', 'The number of the person for my app internaly', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, true, true, true, {baseType: 'number', customCheckClass: null}),
-
         new DataFieldMessages('Messages', 'The messages sent between me and my match', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckMessage()}),
         new DataField('Last-updated', 'The datetime this record has been last updated (including messages)', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         
+
         // need to keep track of this myself, but since I'M swiping/liking this will not be a problem 
         new DataField('Date-liked-or-passed', 'The datetime when I gave the like/sent my first message/disliked/counsiously ignored this potential person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         new DataField('Name', 'The name of the person', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: null}),
         new DataField('Age', 'The age of the person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'number', customCheckClass: null}), // preferably getting this by birthdate otherwise just the age number is fine too
-        
         new DataField('City', 'The city this person lives in claimed by themself or tinder', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.ALPHANUMERIC_INPUT }, false, false, true, false, {baseType: 'string', customCheckClass: null}),
         new DataField('Job', 'The claimed job title this person holds', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.ALPHANUMERIC_INPUT }, false, false, true, false, {baseType: 'string', customCheckClass: null}),
-
-
         // in match.bio
         new DataField('Has-profiletext', 'Wether or not this person has some text on the profile', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Has-usefull-profiletext', 'Wether or not this person has some usefull text on the profile', true, { UIrequired: UIRequired.SELECT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
@@ -93,6 +91,19 @@ export class DataRecord {
         new DataField('Potential-click', 'Wether the vibe of the conversation was good enough to say "we clicked"', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Notes', 'Any interesting notes on this person', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.TEXTAREA }, false, false, false, false, {baseType: 'string', customCheckClass: null}),
     ];
+
+    constructor(){
+        const mandatoryFieldsTitleList: string[] = [
+            'System-no', 
+            'No', 
+            'Messages', 
+            'Last-updated'
+        ];
+        const isAllMandatoryFieldsPresent = mandatoryFieldsTitleList.every(mandatoryFieldTitle => this.getIndexOfDataFieldByTitle(mandatoryFieldTitle) !== -1);
+        if(!isAllMandatoryFieldsPresent){
+            console.error(`Some data fields are missing or their title do not match the mandatory data fields title list. Please check the mandatory data fields list & the data fields which are present in dataRecord class.`);
+        }
+    }
 
     // why do this instead of simply creating object instances?
     /* 
