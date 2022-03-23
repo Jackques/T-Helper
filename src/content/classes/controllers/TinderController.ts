@@ -447,7 +447,7 @@ export class TinderController implements datingAppController {
                     dataRecordValuesList.push({
                         'label': 'System-no', 'value': {
                             'appType': 'tinder',
-                            'id': match ? match.match.id : systemId
+                            'id': match && match.match && match.match.id ? match.match.id : systemId
                         }
                     });
                     break;
@@ -1193,20 +1193,19 @@ export class TinderController implements datingAppController {
             // Since Tinder sends the messages in the order from last to first, we must first reverse the messages to first to last
             // since the .reverse() is applied to the array 'in place' instead of 'on output' applying it once will produce the array in desired format anywhere
             match.matchMessages.reverse();
-
-            // get record index by systemid for each match
-            const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(match.match.id, this.nameController);
+            
+            const matchRecordIndex: number = this.getMatchRecordIndexBySystemIdOrPersonId(match.match, this.nameController);
 
             let tinderMatchDataRecordValues: DataRecordValues[];
             let dataFields: DataField[];
 
             if (matchRecordIndex === -1) {
                 // if match doesnt exist, create new data record, fill new record with all data needed
-                // console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
+                console.log(`Going to CREATE new data record for: ${match.match.person.name}`);
                 const newDataRecord = new DataRecord();
                 dataFields = newDataRecord.getDataFields();
 
-                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(dataFields, match);
+                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(dataFields, match, match.match.id);
 
                 const dataAddedSuccessfully: boolean = newDataRecord.addDataToDataFields(tinderMatchDataRecordValues);
                 if (dataAddedSuccessfully) {
@@ -1216,15 +1215,23 @@ export class TinderController implements datingAppController {
                 }
 
             } else {
-                // console.log(`Going to UPDATE data record for: ${match.match.person.name}`);
+                console.log(`Going to UPDATE data record for: ${match.match.person.name}`);
                 
                 dataFields = this.dataTable.getDataFieldsByRecordIndex(matchRecordIndex);
-                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(dataFields, match);
+                tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(dataFields, match, match.match.id);
                 this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
             }
 
         });
 
+    }
+
+    private getMatchRecordIndexBySystemIdOrPersonId(match: Match, nameController: string): number {
+        const recordIndex = this.dataTable.getRecordIndexBySystemId(match.id, nameController);
+        if(recordIndex === -1){
+            return this.dataTable.getRecordIndexBySystemId(match.person._id, nameController);
+        }
+        return recordIndex;
     }
 
     private setUnupdatedMatchesToBlocked(matches: ParsedResultMatch[], dataTable: DataTable): void {
