@@ -20,6 +20,7 @@ import { PersonAction } from "./../../../peronAction.enum"; // todo: had to move
 import { SubmitAction } from "src/background/requestInterceptor";
 import { DOMHelper } from "../util/DOMHelper";
 import { Message, MessageAuthorEnum } from "./../../../message.interface";
+import { MatchDetailsAPI } from "src/content/interfaces/http-requests/MatchDetailsAPI.interface";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
@@ -903,27 +904,6 @@ export class TinderController implements datingAppController {
             const uiRequiredDataFields: DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
 
             newDataRecord.addDataToDataFields([
-                // set initial value 
-                {
-                    label: 'Date-liked-or-passed',
-                    value: new Date().toISOString()
-                },
-                {
-                    label: 'Name',
-                    value: this.getPersonNameFromUI()
-                },
-                {
-                    label: 'Age',
-                    value: this.getPersonAgeFromUI()
-                },
-                {
-                    label: 'Has-profiletext',
-                    value: this.getHasProfileTextFromUI()
-                },
-                {
-                    label: 'Is-verified',
-                    value: this.getIsVerifiedFromUI()
-                },
                 // set initial value to later be adjusted by ui control
                 {
                     label: 'Has-usefull-profiletext',
@@ -941,6 +921,13 @@ export class TinderController implements datingAppController {
                 newDataRecord.addDataToDataFields([value]);
                 console.log(`Updated dataRecord: `);
                 console.dir(newDataRecord);
+
+                // debugger;
+                //TODO TODO TODO: Sometimes incorrect profile data is retrieved, possible because my code cannot correctly get name & age from ui?
+                    // SEEMS TO WORK! NICE!
+                    // THIS MEANS I CAN MUCH MORE EASILY GET; EXACT NAME, AGE, DISTANCE, CITY, BIO, GENDER, SCHOOLS, JOB (IF ANY), EVEN PICS (TO SAVE?), interests & common connections on fb!
+                //todo minder: number of ghosts always seem to be 0
+                //todo: NOTE; -1 is women, 1 is men? 0 is non-binary?
 
             }, (submitType: SubmitType) => {
                 console.log('Callback received a submit type!');
@@ -973,32 +960,66 @@ export class TinderController implements datingAppController {
                             return;
                         }
 
-                        //TODO: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
-                        newDataRecord.addDataToDataFields([{
-                            label: 'System-no',
-                            value: {
-                                appType: 'tinder',
-                                tempId: submitAction.personId
-                            }
-                        }, {
-                            label: 'Did-i-like',
-                            value: personActionStatus
-                        },{
-                            label: 'Is-match',
-                            value: false
-                        }]);
+                        this.requestHandler.getProfileDetailsStart(submitAction.personId).then((matchDetails: MatchDetailsAPI)=>{
+                            //todo: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
+                            
+                            //TODO TODO TODO: What.. if i match with a girl, get instant match, this datarecord will be added AND my app will instantly trry to get new matches?
+                            newDataRecord.addDataToDataFields([
+                                {
+                                    label: 'System-no',
+                                    value: {
+                                        appType: 'tinder',
+                                        tempId: submitAction.personId
+                                    }
+                                }, 
+                                {
+                                    label: 'Did-i-like',
+                                    value: personActionStatus
+                                },
+                                {
+                                    label: 'Is-match',
+                                    value: false
+                                },
+                                {
+                                    label: 'Date-liked-or-passed',
+                                    value: new Date().toISOString()
+                                },
+                                {
+                                    label: 'Name',
+                                    value: matchDetails?.results?.name ? matchDetails.results.name : 'Unknown name'
+                                },
+                                {
+                                    label: 'Age',
+                                    value: matchDetails?.results?.birth_date ? DateHelper.getAgeFromBirthDate(matchDetails.results.birth_date) : NaN
+                                },
+                                {
+                                    label: 'City',
+                                    value: matchDetails?.results?.city?.name.length > 0 ? matchDetails.results.city.name : ''
+                                },
+                                {
+                                    label: 'Job',
+                                    value: matchDetails?.results?.jobs?.at(0)?.title.name ? matchDetails?.results.jobs.at(0)?.title.name : ''
+                                },
+                                {
+                                    label: 'Has-profiletext',
+                                    value: matchDetails?.results?.bio.length > 0 ? true : false
+                                },
+                                {
+                                    label: 'Is-verified',
+                                    value: matchDetails?.results?.badges.length > 0 ? this._isVerifiedMatch(matchDetails?.results?.badges) : false
+                                }
+                            ]);
+                            debugger;
 
-                        this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
+                            this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
 
-                        this.addUIHelpers(currentScreen, true);
+                            this.addUIHelpers(currentScreen, true);
+
+                            this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
+                        });
                     }
-
-                    this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
-
                 }, 1000);
-
             });
-
         }
 
         //todo: create view to show gathered info for all dataFields (thus also showing current value of; name, age, hasProfiletext etc.)
@@ -1037,6 +1058,7 @@ export class TinderController implements datingAppController {
         return href.substring(href.lastIndexOf('/') + 1);
     }
 
+    /*
     public getIsVerifiedFromUI(): boolean {
         const isVerifiedDOMNode: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div.recsPage div[aria-hidden="false"] path[fill="#1786ff"]');
         return isVerifiedDOMNode ? true : false;
@@ -1066,6 +1088,7 @@ export class TinderController implements datingAppController {
             return null;
         }
     }
+    */
 
     public getCurrentScreenByDOM(): ScreenNavStateCombo {
         const swipeIdentifier = '.recsToolbar';

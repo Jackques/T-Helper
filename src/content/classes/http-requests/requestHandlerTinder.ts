@@ -2,27 +2,28 @@ import { data } from 'jquery';
 import { ParsedResultMessages, TinderMessage } from 'src/content/interfaces/http-requests/MessagesListTinder.interface';
 import { Match, MatchListTinderAPI } from 'src/content/interfaces/http-requests/MatchesListTinder.interface';
 import { RequestHandler } from 'src/content/interfaces/http-requests/RequestHandler.interface';
-import { Matches } from  '../../interfaces/tinder_api/matches.interface';
+import { Matches } from '../../interfaces/tinder_api/matches.interface';
 import { ParsedResultMatch } from 'src/content/interfaces/controllers/ParsedResultMatch.interface';
+import { MatchDetailsAPI } from 'src/content/interfaces/http-requests/MatchDetailsAPI.interface';
 
 export class RequestHandlerTinder implements RequestHandler {
 
     private xAuthToken: string;
 
-    constructor(xAuthToken: string){
+    constructor(xAuthToken: string) {
         this.xAuthToken = xAuthToken;
     }
 
     private getRandomCoupleHunderdMS(): number {
         // for some reason,.. private classes dont work?
-        return Math.floor(Math.random() * 100)+100;
+        return Math.floor(Math.random() * 100) + 100;
     }
 
-    public async getMatches(auth_token: string, next_page_token_num?:string):Promise<MatchListTinderAPI>{
+    public async getMatches(auth_token: string, next_page_token_num?: string): Promise<MatchListTinderAPI> {
         console.dir(`ik ga tindermatches ophalen, oh en de nextpagetokenis: ${next_page_token_num}`);
-        const next_page_token = next_page_token_num ? '&page_token='+next_page_token_num : '';
-        
-        if(!auth_token){
+        const next_page_token = next_page_token_num ? '&page_token=' + next_page_token_num : '';
+
+        if (!auth_token) {
             console.error(`Provided auth_token invalid!`);
         }
 
@@ -31,70 +32,70 @@ export class RequestHandlerTinder implements RequestHandler {
         const getMatches = new Promise<MatchListTinderAPI>((resolve, reject) => {
             // NOTE: Tinder gives you the 'next page of results' by providing the "next_page_token" provided with the previous request response if present
             // note 2: "message=0" if no messages have been exchanged yet, "message=1" if messages have been exchanged yet
-            const ms = Math.floor(Math.random() * 100)+100;
+            const ms = Math.floor(Math.random() * 100) + 100;
             setTimeout(() => {
                 // console.log(`I delayed at: ${ms}`); //todo: figure out why i cannot call the this.getRandomCoupleHunderdMS method here
                 fetch(`https://api.gotinder.com/v2/matches?locale=nl&count=100${next_page_token}`, {
-                    method: 'GET',    
+                    method: 'GET',
                     credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Auth-Token': auth_token
-                        }
+                    }
                 })
-                .then(result => {
-                    return result.json() 
-                    // the result of the fetch is a promise, but calling .json on this result also returns a promise!
-                    // the first .then return the json representation of the result, which is also a promise..
-                }) 
-                .catch(error => {
-                    console.log(`tindermatches error! Error is:`);
-                    console.dir(error);
-                    reject(error);
-                })
-                .then(resultJSON => {
-                    // console.log(`tindermatches JSON result is: ${resultJSON}`);
-                    resolve(resultJSON);
-                });
+                    .then(result => {
+                        return result.json()
+                        // the result of the fetch is a promise, but calling .json on this result also returns a promise!
+                        // the first .then return the json representation of the result, which is also a promise..
+                    })
+                    .catch(error => {
+                        console.log(`tindermatches error! Error is:`);
+                        console.dir(error);
+                        reject(error);
+                    })
+                    .then(resultJSON => {
+                        // console.log(`tindermatches JSON result is: ${resultJSON}`);
+                        resolve(resultJSON);
+                    });
             }, ms);
         });
         return getMatches;
     }
 
     // public getMessagesFromMatch(auth_token: string, match_id: string, next_page_token_num?:string):Promise<ParsedResultMessages>{
-    public getMessagesFromMatch(auth_token: string, match_id: string, next_page_token_num?:string):Promise<ParsedResultMessages>{
-        const next_page_token = next_page_token_num ? '&page_token='+next_page_token_num : '';
+    public getMessagesFromMatch(auth_token: string, match_id: string, next_page_token_num?: string): Promise<ParsedResultMessages> {
+        const next_page_token = next_page_token_num ? '&page_token=' + next_page_token_num : '';
         console.log('2a')
 
         // const getMatchMessages = new Promise<ParsedResultMessages>((resolve, reject) => {
         const getMatchMessages = new Promise<ParsedResultMessages>((resolve, reject) => {
-            const ms = Math.floor(Math.random() * 100)+100;
+            const ms = Math.floor(Math.random() * 100) + 100;
             setTimeout(() => {
                 // console.log(`I delayed at: ${ms}`); //todo: figure out why i cannot call the this.getRandomCoupleHunderdMS method here
                 //https://api.gotinder.com/v2/matches/528ce2770640a14b0f00007c601a943026064201006f6133/messages?locale=nl&count=100&page_token=MjAyMS0wNi0wNlQxOTo0Nzo0Ni4xMzJa
                 fetch(`https://api.gotinder.com/v2/matches/${match_id}/messages?locale=nl&count=100${next_page_token}`, {
-                    method: 'GET',    
+                    method: 'GET',
                     credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Auth-Token': auth_token
-                        }
+                    }
                 })
-                .then(result => {
-                    console.log('2b');
-                    return result.json() 
-                })
-                .catch(error => {
-                    console.log(`tindermatchmessage error! Error is:`);
-                    console.dir(error);
-                    reject(error);
-                })
-                .then(resultJSON => {
-                    console.log('2c');
-                    console.log(`tindermatch message JSON result is:`);
-                    console.dir(resultJSON);
-                    resolve(resultJSON);
-                });
+                    .then(result => {
+                        console.log('2b');
+                        return result.json()
+                    })
+                    .catch(error => {
+                        console.log(`tindermatchmessage error! Error is:`);
+                        console.dir(error);
+                        reject(error);
+                    })
+                    .then(resultJSON => {
+                        console.log('2c');
+                        console.log(`tindermatch message JSON result is:`);
+                        console.dir(resultJSON);
+                        resolve(resultJSON);
+                    });
             }, ms);
         });
         return getMatchMessages;
@@ -115,7 +116,7 @@ export class RequestHandlerTinder implements RequestHandler {
         // }
     }
 
-        //todo: code below gets the conversation with one of my old matches i had of which deleted me as a match, but apparantly the conversation is still there!
+    //todo: code below gets the conversation with one of my old matches i had of which deleted me as a match, but apparantly the conversation is still there!
     // this means that the conversation still exists even if a match is no longer valid, thus i really need to check the data retrieved by my api's to ensure no false positives (like a 'ongoing'-conversation with a non-existing match)
 
 
@@ -124,82 +125,122 @@ export class RequestHandlerTinder implements RequestHandler {
     // this sends a like to the user by that id
 
     // private getMatchesStart = (fn:(Function)):Promise<ParsedResultMatch[]> => {
-    public getMatchesStart():Promise<ParsedResultMatch[]> {
+    public getMatchesStart(): Promise<ParsedResultMatch[]> {
 
-        return new Promise<ParsedResultMatch[]>((resolve, reject) =>{
-            const results:ParsedResultMatch[] = [];
+        return new Promise<ParsedResultMatch[]>((resolve, reject) => {
+            const results: ParsedResultMatch[] = [];
 
-            const attempt = (next_page_token?:string) => {
+            const attempt = (next_page_token?: string) => {
                 next_page_token = next_page_token ? next_page_token : '';
 
-                    this.getMatches(this.xAuthToken, next_page_token)
-                    .then((parsedResult: MatchListTinderAPI)=>{
-                        if(parsedResult?.data?.matches){
+                this.getMatches(this.xAuthToken, next_page_token)
+                    .then((parsedResult: MatchListTinderAPI) => {
+                        if (parsedResult?.data?.matches) {
 
-                            parsedResult?.data?.matches.forEach((match: Match)=>{
+                            parsedResult?.data?.matches.forEach((match: Match) => {
                                 results.push(
                                     {
-                                    match: match,
-                                    matchMessages: []
-                                }
+                                        match: match,
+                                        matchMessages: []
+                                    }
                                 );
                             });
                         }
-                        
-                        if(parsedResult.data.next_page_token){
+
+                        if (parsedResult.data.next_page_token) {
                             attempt(parsedResult.data.next_page_token);
-                        }else{
+                        } else {
                             console.log(`Finished getting results:`);
                             console.dir(results);
                             resolve(results);
                         }
                     })
-                    .catch(function(e:Error){
-                            console.log(`Error retrieving matches:`);
-                            console.dir(e);
-                            const error = e;
-                            reject(error);
-                        });
-                
+                    .catch(function (e: Error) {
+                        console.log(`Error retrieving matches:`);
+                        console.dir(e);
+                        const error = e;
+                        reject(error);
+                    });
+
             };
             attempt();
         })
     }
 
-    public getMatchesMessagesStart(id: string):Promise<TinderMessage[]> {
-        
-            console.log(`STARTED - GETTING MESSAGES FOR: ${id}`);
+    public getMatchesMessagesStart(id: string): Promise<TinderMessage[]> {
 
-            return new Promise<TinderMessage[]>((resolve, reject) => {
-                console.log(2);
-                let resultsMessages: TinderMessage[] = [];
-                const attempt = async (next_page_token?: string) => {
-                    next_page_token = next_page_token ? next_page_token : '';
+        console.log(`STARTED - GETTING MESSAGES FOR: ${id}`);
 
-                    await this.getMessagesFromMatch(this.xAuthToken, id, next_page_token)
-                        .then(async (messages: ParsedResultMessages) => {
-                            console.log(3);
-                            resultsMessages = [...resultsMessages, ...messages.data.messages]
-                            if (messages.data.next_page_token && messages.data.next_page_token?.length > 0) {
-                                console.log(`START CONTINUE: Got a page token so need to get more messages for ${id}`);
-                                await attempt(messages.data.next_page_token);
-                            } else {
-                                console.log(`ENDED - Getting MESSAGES FOR: ${id} && i got a next_page_token: ${next_page_token}`);
-                                return resolve(resultsMessages);
-                            }
-                        })
-                        .catch((e: Error) => {
-                            console.log(4);
-                            console.log(`ENDED (ERROR) - Getting MESSAGES FOR: ${id}`);
-                            return reject([]);
-                            console.log(`Error retrieving match messages:`);
-                            console.dir(e);
-                            const error = e;
-                            reject(error);
-                        })
-                };
-                attempt();
-            });
+        return new Promise<TinderMessage[]>((resolve, reject) => {
+            console.log(2);
+            let resultsMessages: TinderMessage[] = [];
+            const attempt = async (next_page_token?: string) => {
+                next_page_token = next_page_token ? next_page_token : '';
 
+                await this.getMessagesFromMatch(this.xAuthToken, id, next_page_token)
+                    .then(async (messages: ParsedResultMessages) => {
+                        console.log(3);
+                        resultsMessages = [...resultsMessages, ...messages.data.messages]
+                        if (messages.data.next_page_token && messages.data.next_page_token?.length > 0) {
+                            console.log(`START CONTINUE: Got a page token so need to get more messages for ${id}`);
+                            await attempt(messages.data.next_page_token);
+                        } else {
+                            console.log(`ENDED - Getting MESSAGES FOR: ${id} && i got a next_page_token: ${next_page_token}`);
+                            return resolve(resultsMessages);
+                        }
+                    })
+                    .catch((e: Error) => {
+                        console.log(4);
+                        console.log(`ENDED (ERROR) - Getting MESSAGES FOR: ${id}`);
+                        return reject([]);
+                        console.log(`Error retrieving match messages:`);
+                        console.dir(e);
+                        const error = e;
+                        reject(error);
+                    })
+            };
+            attempt();
+        });
+
+    }
+
+    public async getProfileDetailsStart(personId: string): Promise<MatchDetailsAPI> {
+        return new Promise<MatchDetailsAPI>((resolve, reject) => {
+            const attempt = async () => {
+                await this.getProfileDetails(this.xAuthToken, personId)
+                    .then(async (profileData: MatchDetailsAPI) => {
+                        // console.log(profileData);
+                        resolve(profileData);
+                    })
+                    .catch((e: Error) => {
+                        // console.log(e);
+                        reject(e);
+                    })
+            };
+            attempt();
+        });
+    }
+
+    // https://api.gotinder.com/like/5fccbf17a0848701001bb1f5?locale=nl
+    // const deId = '619ad9d05566a10100f92c62';
+    // id's above are for testing purposes
+    
+    public getProfileDetails(xAuthToken: string, personId: string): Promise<MatchDetailsAPI> {
+        return new Promise<MatchDetailsAPI>((resolve, reject) => {
+            fetch(`https://api.gotinder.com/user/${personId}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Auth-Token': xAuthToken
+                }
+            })
+                .then(result => {
+                    return resolve(result.json())
+                })
+                .catch(error => {
+                    return reject(error);
+                })
+        });
     }
 }
