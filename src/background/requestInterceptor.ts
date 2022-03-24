@@ -26,6 +26,7 @@ export class requestInterceptor {
             break;
           case details.url.startsWith('https://api.gotinder.com/like/'):
             // like url example: https://api.gotinder.com/like/61ed3245cf08560100178715?locale=nl
+            // https://api.gotinder.com/like/5fccbf17a0848701001bb1f5?locale=nl
             action = {
               'submitType': PersonAction.LIKED_PERSON,
               'personId': this._getPersonIdFromUrl(details.url)
@@ -60,16 +61,19 @@ export class requestInterceptor {
 
   private _getPersonIdFromUrl(url: string): string {
     
-    let personIdStr = url.split('/').find((string) => {
-      if(string.length > 2){
-        const subStr = string.substring(0,2);
-          return !isNaN(Number(subStr));
-    }});
+    let longestStringInArray = "";
 
-    if(personIdStr){
-      personIdStr = personIdStr.indexOf('?') !== -1 ? personIdStr.substring(0, personIdStr.indexOf('?')) : personIdStr;
-      personIdStr = personIdStr.indexOf('&') !== -1 ? personIdStr.substring(0, personIdStr.indexOf('&')) : personIdStr;
-      return personIdStr;
+    // the personId string even without the '?locale=nl' part is always the longest with 24 characters
+    url.split('/').forEach((urlPart)=>{
+      if(longestStringInArray.length < urlPart.length){
+        longestStringInArray = urlPart;
+      }
+    });
+
+    if(longestStringInArray.length > 0){
+      longestStringInArray = longestStringInArray.indexOf('?') !== -1 ? longestStringInArray.substring(0, longestStringInArray.indexOf('?')) : longestStringInArray;
+      longestStringInArray = longestStringInArray.indexOf('&') !== -1 ? longestStringInArray.substring(0, longestStringInArray.indexOf('&')) : longestStringInArray;
+      return longestStringInArray;
     }
     console.error(`Could not get personId from url. Please check the settings for retrieving personId from string`);
     return url;
