@@ -7,7 +7,7 @@ import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 import { DOMHelper } from "../util/DOMHelper";
 
 export class UIFieldsRenderer {
-    
+    private decoratedSubmitEventsDOMElementsList: HTMLElement[] = [];
     private templatesList: TemplateSetting[] = [
         {
             name: 'sliderBootstrap',
@@ -135,9 +135,6 @@ export class UIFieldsRenderer {
 
     constructor(){
         console.log(`UIRenderer init`);
-
-        //todo: can this be a class method as well?
-
     }
     
     private _getSubmitType(currentTarget: HTMLInputElement): SubmitType | undefined {
@@ -232,11 +229,13 @@ export class UIFieldsRenderer {
     }
 
     private _setSubmitEventHandlers(screen: ScreenNavStateCombo): void {
+
         if(screen === ScreenNavStateCombo.Swipe){
             // const submitButtonDOMType_pass = $(".recsCardboard__cards div[class*=c-pink] button").first();
             const submitButtonDOMType_pass = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*=c-pink] button");
             if(submitButtonDOMType_pass !== null){
                 $(submitButtonDOMType_pass).attr('id', 'submitAction_passed');
+                this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_pass);
             }else{
                 console.error(`submitAction_passed could not be set! submit button not found. Please update the selector.`);
             }
@@ -245,6 +244,7 @@ export class UIFieldsRenderer {
             const submitButtonDOMType_superlike = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*=c-superlike-blue] button");
             if(submitButtonDOMType_superlike !== null){
                 $(submitButtonDOMType_superlike).attr('id', 'submitAction_superliked');
+                this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_superlike);
             }else{
                 console.error(`submitAction_superliked could not be set! submit button not found. Please update the selector.`);
             }
@@ -253,6 +253,7 @@ export class UIFieldsRenderer {
             const submitButtonDOMType_like = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*=c-like-green] button");
             if(submitButtonDOMType_like !== null){
                 $(submitButtonDOMType_like).attr('id', 'submitAction_liked');
+                this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_like);
             }else{
                 console.error(`submitAction_pass could not be set! submit button not found. Please update the selector.`);
             }
@@ -263,6 +264,7 @@ export class UIFieldsRenderer {
             const submitButtonDOMType_sendMessage = DOMHelper.getFirstDOMNodeByJquerySelector("div.BdT > form > button[type='submit']");
             if(submitButtonDOMType_sendMessage !== null){
                 $(submitButtonDOMType_sendMessage).attr('id', 'submitAction_sendMessage');
+                this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_sendMessage);
             }else{
                 console.error(`submitAction_sendMessage could not be set! submit button not found. Please update the selector.`);
             }
@@ -296,8 +298,17 @@ export class UIFieldsRenderer {
 
     public removeAllUIHelpers(): void {
         this.resetExistingFields();
+
+        $(`body`).off("blur", '#uiHelperFieldsContainer [id^="datafieldUI_"]');
+        $(`body`).off("click", '[id^="submitAction_"]');
+
+        this.decoratedSubmitEventsDOMElementsList.forEach((decoratedSubmitElement)=>{ //todo: refactor this to normal for loop because async
+            $(decoratedSubmitElement).removeAttr('id');
+        });
+
         this.valuesCallback = undefined;
         this.submitCallback = undefined;
+
         const helperFieldsContainer = $(`#uiHelperFields`);
         if(helperFieldsContainer){
             helperFieldsContainer.remove();

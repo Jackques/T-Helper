@@ -43,6 +43,8 @@ export class TinderController implements datingAppController {
 
     private dataTableNeedsToBeUpdated = false;
 
+    private watchersUIList: MutationObserver[] = [];
+
     constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: dataStorage) {
 
         this.dataRetrievalMethod = dataRetrievalMethod;
@@ -185,7 +187,7 @@ export class TinderController implements datingAppController {
 
         // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
         // Thus I can always apply DOM manipulations on them when needed!
-        new MutationObserver((mutations: MutationRecord[]) => {
+        const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
 
             if (this.currentScreenTimeoutId !== null) {
                 // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
@@ -229,11 +231,14 @@ export class TinderController implements datingAppController {
                 }
 
             }, 500);
-        }).observe($SOCcontainer, {
+        });
+        mutationObv.observe($SOCcontainer, {
             childList: true, // observe direct children
             subtree: true, // lower descendants too
             characterDataOldValue: true, // pass old data to callback
         });
+
+        this.watchersUIList.push(mutationObv);
     }
 
     private setMessageListWatcherOnScreen() {
@@ -246,7 +251,7 @@ export class TinderController implements datingAppController {
             return;
         }
 
-        new MutationObserver((mutations: MutationRecord[]) => {
+        const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
 
             // ensures that only descandt nodes of the (div) node with class 'messageList' will be passed
             const mutationsOnMessageItem = mutations.filter((mutation) => {
@@ -286,11 +291,15 @@ export class TinderController implements datingAppController {
                 }
             }
             // if not, then mutations are from switching match conversation
-        }).observe($MessageListContainer, {
+        });
+
+        mutationObv.observe($MessageListContainer, {
             childList: true, // observe direct children
             subtree: true, // lower descendants too
             characterDataOldValue: false, // pass old data to callback
         });
+
+        this.watchersUIList.push(mutationObv);
     }
 
     private setMatchesListWatcher(): void {
@@ -303,7 +312,7 @@ export class TinderController implements datingAppController {
             if (matchesListContainer !== null) {
                 this.amountOfUnmessagedMatches = this.getUnmessagedMatchesAmount(matchesListContainer);
 
-                new MutationObserver((mutations: MutationRecord[]) => {
+                const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
                     if (matchesListContainer !== null) {
                         const currentUnmessagedMatchesAmount: number = this.getUnmessagedMatchesAmount(matchesListContainer);
                         console.log(`Did the UI get updated so I can NOW get the number of unmessaged matches after one or more has been added/deleted?`);
@@ -319,11 +328,16 @@ export class TinderController implements datingAppController {
                         return;
                     }
 
-                }).observe(matchesListContainer, {
+                });
+                
+                mutationObv.observe(matchesListContainer, {
                     childList: true, // observe direct children
                     subtree: true, // lower descendants too
                     characterDataOldValue: false, // pass old data to callback
                 });
+
+                this.watchersUIList.push(mutationObv);
+                
             } else {
                 console.error(`Could not find matchesListContainer. Please update the identifier.`);
                 return;
@@ -1260,6 +1274,21 @@ export class TinderController implements datingAppController {
             ]);
             unupdatedMatch.setUpdateMessages(false);
         });
+    }
+
+    public disconnectAllUIWatchers(): boolean {
+        // this.uiRenderer.removeAllUIHelpersFromScreen();
+        this.uiRenderer.removeAllUIHelpers();
+
+        let disconnectedWatchersAmount = 0;
+        this.watchersUIList.forEach((watcher: MutationObserver)=>{
+            watcher.disconnect();
+            disconnectedWatchersAmount = disconnectedWatchersAmount +1;
+        });
+        if(this.watchersUIList.length === disconnectedWatchersAmount){
+            this.watchersUIList.length = 0;
+        }
+        return this.watchersUIList.length === 0 ? true : false;
     }
 
 }

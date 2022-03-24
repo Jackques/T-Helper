@@ -100,4 +100,9 @@ export class DataTable {
        return JSON.stringify(valuesDataRecords);
     }
 
+    public emptyDataTable(): void {
+        this.dataRecords.length = 0;
+        this.dataRecordAmount = 0;
+    }
+
 }
