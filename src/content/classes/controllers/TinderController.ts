@@ -505,6 +505,20 @@ export class TinderController implements datingAppController {
                         'value': dataField.getValue() ? dataField.getValue() : null
                     });
                     break;
+
+                case 'Seems-fake':
+                    dataRecordValuesList.push({ 
+                        'label': 'Seems-fake', 
+                        'value': dataField.getValue() ? dataField.getValue() : false
+                    });
+                    break;
+                case 'Seems-empty':
+                    dataRecordValuesList.push({ 
+                        'label': 'Seems-empty', 
+                        'value': dataField.getValue() ? dataField.getValue() : false
+                    });
+                    break;
+
                 case 'Has-profiletext': {
                     dataRecordValuesList.push({ 
                         'label': 'Has-profiletext', 
