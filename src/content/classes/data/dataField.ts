@@ -319,8 +319,8 @@ export class DataField {
 
 export class DataFieldSystemNo extends DataField {
 
-    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
-        super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    constructor(title:string, description:string, emptyFieldAllowed:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, emptyFieldAllowed, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): string | null {
@@ -349,8 +349,8 @@ export class DataFieldSystemNo extends DataField {
 export class DataFieldMessages extends DataField {
     private needsToBeUpdated = false;
     
-    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
-        super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    constructor(title:string, description:string, emptyFieldAllowed:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, emptyFieldAllowed, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | Record<string, unknown>[] | null {
@@ -417,8 +417,8 @@ export class DataFieldMessages extends DataField {
 
 export class DataFieldReactionSpeedList extends DataField {
 
-    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
-        super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    constructor(title:string, description:string, emptyFieldAllowed:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, emptyFieldAllowed, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | Record<string, unknown>[] | null {
@@ -431,8 +431,8 @@ export class DataFieldReactionSpeedList extends DataField {
 
 export class DataFieldReminderList extends DataField {
     
-    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
-        super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    constructor(title:string, description:string, emptyFieldAllowed:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, emptyFieldAllowed, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | Record<string, unknown>[] | null {
@@ -445,8 +445,8 @@ export class DataFieldReminderList extends DataField {
 
 export class DataFieldGhostsList extends DataField {
     
-    constructor(title:string, description:string, requiredField:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
-        super(title, description, requiredField, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    constructor(title:string, description:string, emptyFieldAllowed:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, emptyFieldAllowed, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | Record<string, unknown>[] | null {
