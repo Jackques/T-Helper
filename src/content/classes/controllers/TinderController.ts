@@ -459,12 +459,17 @@ export class TinderController implements datingAppController {
         dataFields.forEach((dataField) => {
             switch (dataField.title) {
                 case 'System-no': {
+                    if(!match){
+                        break;
+                    }
                     dataRecordValuesList.push({
                         'label': 'System-no', 'value': {
                             'appType': 'tinder',
-                            'id': match && match.match && match.match.id ? match.match.id : systemId
+                            'id': match && match.match && match.match.id ? match.match.id : systemId,
+                            'tempId': match?.match?.person?._id ? match.match.person._id : ''
                         }
                     });
+                    // debugger;
                     break;
                 }
                 case 'No':
