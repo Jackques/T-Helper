@@ -132,15 +132,15 @@ export class DataRecord {
         }
     }
 
-    public getRecordPersonSystemId(appType: string): string {
+    public getRecordPersonSystemId(appType: string, onlyTempId?: boolean): string {
         const labelPersonSystemid = 'System-no';
         const valueDataField:unknown | null = this.getValueOfDataFieldByTitle(labelPersonSystemid, {'appType': appType});
         if(valueDataField !== null && typeof valueDataField === 'object'){
             for(const [key, value] of Object.entries(valueDataField)){
-                if(key === 'tempId' && value){
+                if(key === 'id' && value && !onlyTempId){
                     return value as string;
                 }
-                if(key === 'id' && value){
+                if(key === 'tempId' && value){
                     return value as string;
                 }
             }
