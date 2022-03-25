@@ -1,5 +1,6 @@
 import {
     DataField,
+    DataFieldDistances,
     DataFieldGhostsList,
     DataFieldMessages,
     DataFieldReactionSpeedList,
@@ -20,6 +21,7 @@ import {DataFieldTypes} from "src/content/interfaces/data/dataFieldTypes.interfa
 import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 import { dataCheckMessage } from "./dataCheckLogic/dataCheckMessage";
 import { Message } from "src/message.interface";
+import { dataCheckDistances } from "./dataCheckLogic/dataCheckDistances";
 
 export class DataRecord {
         
@@ -74,6 +76,7 @@ export class DataRecord {
         new DataField('Seems-fake', 'If a profile just seems too good to be true or is a pornstar quality of sorts', false, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Seems-empty', 'If a profile appear to have no identifying info whatsoever, maybe even simply a blank picture', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
 
+        new DataFieldDistances('Distance-in-km', 'The reported distance of this person relative to me on a given datetime', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, false, false, {baseType: 'list', customCheckClass: new dataCheckDistances()}),
 
 
         new DataField('Is-verified', 'Wether or not this person is verified', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),

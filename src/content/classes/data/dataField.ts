@@ -472,3 +472,16 @@ export class DataFieldGhostsList extends DataField {
         // }
     }
 }
+
+export class DataFieldDistances extends DataField {
+    constructor(title:string, description:string, emptyFieldAllowed:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+        super(title, description, emptyFieldAllowed, UISetting, multipleDataEntry, mustBeUnique, autoGather, onlyGatherOnce, dataLogic);
+    }
+
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | Record<string, unknown>[] | null {
+        // console.error(`getValue method called on DataFieldMessages has not yet been inplemented. Please inplement this logic first`);
+        // return null;
+
+        return super.getValue();
+    }
+}
