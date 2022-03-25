@@ -120,6 +120,10 @@ export class DataField {
                         this.dataEntryList = [...this.dataEntryList, ...isArrayDataEntryList];
                     }
                 }else{
+                    //WARNING: 25-03-2022: Activated this for messages, ghosts, reminders & reaction-speed, but it caused double or triple records to appear (since old imported items & newly parsed items are merged together),
+                    // thus SHOULD; have a method which checks for duplicates of any object type first and only adds the new additions.. but even this MIGHT be sensitive to bugs (what if i change the logic for ghosts? or a message gets added by tidner somewhere which messes up the entire ghosts-chain.. creating a new list of ghosts to be added to the current list!?)
+
+                    // Thus it is best NOT to use the multipleDataEntry and always use the standard overwrite old data since i'm always getting the old list of messages anyway (and any app also supports always getting your old messages anyway af far as i can tell atm).
                     this.dataEntryList = isArrayDataEntryList;
                 }
             }
