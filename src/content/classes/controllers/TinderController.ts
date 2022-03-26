@@ -15,7 +15,7 @@ import { UIFieldsRenderer } from "./UIFieldsRenderer";
 import { RequestHandlerTinder } from "../http-requests/requestHandlerTinder";
 import { Person } from "../tinder/Person";
 import { dataStorage } from '../data/dataStorage';
-import { DataField, DataFieldMessages, UIRequired } from "../data/dataField";
+import { DataField, DataFieldDistances, DataFieldMessages, UIRequired } from "../data/dataField";
 import { PersonAction } from "./../../../peronAction.enum"; // todo: had to move this to top level AND make a relative path.. but since ALL components (content, background, popup) share the same interfaces/enums etc. why not move everything to top lvl for importing? ALSO; why did an error occur when i tried to relative import this?
 import { SubmitAction } from "src/background/requestInterceptor";
 import { DOMHelper } from "../util/DOMHelper";
@@ -891,6 +891,26 @@ export class TinderController implements datingAppController {
                                     dataRecord?.setUpdateMessages(true);
                                 });
                         }
+
+                        const indexDataFieldDistance = dataRecord.getIndexOfDataFieldByTitle('Distance-in-km');
+                        if(indexDataFieldDistance !== -1){
+
+                        const distanceDataField = dataRecord.usedDataFields[indexDataFieldDistance] as DataFieldDistances;
+                        const hasRecentDistanceEntry = distanceDataField.containsRecordWithinHours(12);
+                        const personId = dataRecord.getRecordPersonSystemId(this.nameController, true);
+
+                            if(hasRecentDistanceEntry === false && personId && personId.length > 0){
+                                this.requestHandler.getProfileDetailsStart(personId).then((matchDetails: MatchDetailsAPI)=>{
+                                    dataRecord?.addDataToDataFields([{
+                                        label: 'Distance-in-km',
+                                        value: [{
+                                            dateTime: new Date().toISOString(),
+                                            distanceInKM: this._convertDistanceMilesToKM(matchDetails?.results?.distance_mi)
+                                        }]
+                                    }]);
+                                });
+                            }
+                        }
                     }
                 } else {
                     //todo: needs inplementation on what to do if recordid is not found? This should not happen tho.. wait.. yes it should! What if i get a new match after i imported everything and started chatting with match!?
@@ -983,7 +1003,7 @@ export class TinderController implements datingAppController {
                             //todo: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
                             
                             //TODO TODO TODO: What.. if i match with a girl, get instant match, this datarecord will be added AND my app will instantly trry to get new matches?
-                            newDataRecord.addDataToDataFields([
+                            const dataForDataFields: DataRecordValues[] = [
                                 {
                                     label: 'System-no',
                                     value: {
@@ -1027,7 +1047,21 @@ export class TinderController implements datingAppController {
                                     label: 'Is-verified',
                                     value: matchDetails?.results?.badges.length > 0 ? this._isVerifiedMatch(matchDetails?.results?.badges) : false
                                 }
-                            ]);
+                            ];
+
+                            if(matchDetails?.results?.distance_mi){
+                                dataForDataFields.push({
+                                    label: 'Distance-in-km',
+                                    value: [{
+                                        dateTime: new Date().toISOString(),
+                                        distanceInKM: this._convertDistanceMilesToKM(matchDetails?.results?.distance_mi)
+                                    }]
+                                });
+                            }
+
+                            
+
+                            newDataRecord.addDataToDataFields(dataForDataFields);
                             debugger;
 
                             this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
@@ -1053,6 +1087,11 @@ export class TinderController implements datingAppController {
 
         //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
     }
+
+    private _convertDistanceMilesToKM(distance_mi: number): number {
+        return (distance_mi * 1.6);
+    }
+
     public getCurrentMatchIdFromChatScreen(): string {
         const matchIdFromUrl: string | null = this.getCurrentMatchIdFromUrl();
         if (matchIdFromUrl) {

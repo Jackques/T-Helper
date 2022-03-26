@@ -2,6 +2,7 @@ import { Message } from "src/message.interface";
 import { baseTypes, logicContainer } from "src/content/interfaces/logicContainer.interface";
 import { uniqueEntryChecker } from "../util/uniqueEntryChecker";
 import { GhostStatus } from "./dataItems/dataItemGhost";
+import { DateHelper } from "../util/dateHelper";
 
 export enum UIRequired { SELECT_ONLY = 'select_only', CHAT_ONLY = 'chat_only', ALL = 'all', NONE = 'none' }
 export enum UIRequiredType { TEXTAREA = 'textarea', ALPHANUMERIC_INPUT = 'alphanumeric-input', SLIDER = 'slider', SWITCH = 'switch' }
@@ -483,5 +484,27 @@ export class DataFieldDistances extends DataField {
         // return null;
 
         return super.getValue();
+    }
+
+    public containsRecordWithinHours(hours: number): boolean | null {
+        const milisecondsInOneHour = 3600000;
+        const totalMiliseconds = hours * milisecondsInOneHour;
+        let amountInstancesErrorThrown = 0;
+
+        return this.dataEntryList.some((dataEntry: Record<string, unknown>)=>{
+            if(amountInstancesErrorThrown >= 1){
+                return null;
+            }
+
+            // empty array by default returns false
+            if(Object.prototype.hasOwnProperty.call(dataEntry, "dateTime") && typeof dataEntry['dateTime'] === 'string'){
+                const amountMSEntryToCurrentDateTime = DateHelper.getAmountMilisecondesBetweenDates(dataEntry['dateTime'] as string, new Date().toISOString());
+                return amountMSEntryToCurrentDateTime && amountMSEntryToCurrentDateTime <= totalMiliseconds ? true : false;
+            }
+
+            amountInstancesErrorThrown = amountInstancesErrorThrown + 1;
+            console.error(`The dateTime keyname for DataFieldDistances entries cannot be found. Please check your datafields & entries on existing records if these still contain the dateTime keyname with a valid datetime.`);
+        });
+        
     }
 }
