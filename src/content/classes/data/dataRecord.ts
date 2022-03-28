@@ -68,8 +68,8 @@ export class DataRecord {
         new DataField('Date-liked-or-passed', 'The datetime when I gave the like/sent my first message/disliked/counsiously ignored this potential person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         new DataField('Name', 'The name of the person', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: null}),
         new DataField('Age', 'The age of the person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'number', customCheckClass: null}), // preferably getting this by birthdate otherwise just the age number is fine too
-        new DataField('City', 'The city this person lives in claimed by themself or tinder', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.ALPHANUMERIC_INPUT }, false, false, true, false, {baseType: 'string', customCheckClass: null}),
-        new DataField('Job', 'The claimed job title this person holds', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.ALPHANUMERIC_INPUT }, false, false, true, false, {baseType: 'string', customCheckClass: null}),
+        new DataField('City', 'The city this person lives in claimed by themself or tinder', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'string', customCheckClass: null}),
+        new DataField('Job', 'The claimed job title this person holds', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'string', customCheckClass: null}),
         // in match.bio
         new DataField('Has-profiletext', 'Wether or not this person has some text on the profile', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Has-usefull-profiletext', 'Wether or not this person has some usefull text on the profile', true, { UIrequired: UIRequired.SELECT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
@@ -100,9 +100,12 @@ export class DataRecord {
         new DataField('Acquired-number', 'Did I get further contact details (e.g. phone number) from this person?', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataFieldReactionSpeedList('Response-speed', 'The moments of time between each response', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'list', customCheckClass: new dataCheckReactionSpeed()}), // de dagen & tijden tussen de eerste nieuwe berichten vanuit de ander
         new DataFieldReminderList('Reminders-amount', 'The amount of reminders I sent and if they worked', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'list', customCheckClass: new dataCheckReminders()}),
-        new DataField('Blocked-or-no-contact', 'If this person blocked me/deleted our conversation or indicated they did not wish further contact', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}), // needs a UI too!
+        new DataField('Match-wants-no-contact', 'If this person indicated they did not wish further contact', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Blocked-or-removed', 'If this person certainly blocked my profile/removed us as match', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Date-of-unmatch', 'The datetime the match was removed', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         new DataField('Interested-in-sex', 'Wether this person has indicated to be interested in a hookup or not', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Potential-click', 'Wether the vibe of the conversation was good enough to say "we clicked"', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Did-i-unmatch', 'If i am going to/have unmatched an existing match', false, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Notes', 'Any interesting notes on this person', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.TEXTAREA }, false, false, false, false, {baseType: 'string', customCheckClass: null}),
     ];
 
@@ -264,8 +267,8 @@ export class DataRecord {
     /*  ZET HIER WELKE TAGS IK MOMENTEEL WEL GA ONDERSTEUNEN EN WELKE NIET! BEGIN KLEIN!
 
     //todo: TEST: the 'likes you' count (in the matches panel, which takes you to 'see who likes you'); does the api response (found in; https://api.gotinder.com/v2/fast-match/teaser?locale=nl&type=recently-active) tell you an exact number past what is shown (if you have more than 100 likes, 100+ is shown)? or does it stop at 100 despite you have more like than 100 (100+)? IF an exact number is gtiven past 100 if you have more than 100 likes.. then this info could be pretty valueble to log as well.. especially with a log list e.g; [{date, likescount}, {date, likescount}, {date, likescount} etc.]
+        // it does not unfortunatelly. 99+ sticks at 99 in the api data
 
-    'date-of-unmatch' // is likely the same as lastUpdated, but attempts to get the datetime of if she unmatches me, could be usefull
     'did-i-unmatch' // track if i unmatched the person, or if the person unmatched me ( cause i should do it too, to clean up my matches in hopes of increasing ELO)
 
     'show-average-number-matches-to-go' // maybe handy tool, not for logging data, but for comparing how many potential matches i can get with 1 profile (as done by my own research) and thus how many 'to-go' for my region etc. This 'visual indicator' might just help me get more of a grasp on how large/small my 'potential datingpool' really is.. which is exactly what i need (cause; abundance mindset)

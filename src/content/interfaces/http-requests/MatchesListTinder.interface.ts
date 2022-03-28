@@ -84,3 +84,10 @@ export interface Match {
   export interface Badges {
     "type": string
   }
+
+  export interface MatchApi {
+    data: Match,
+    meta: {
+      status: number
+    }
+  }

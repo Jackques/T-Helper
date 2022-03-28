@@ -1,7 +1,7 @@
 import { datingAppController } from "src/content/interfaces/controllers/datingAppController.interface";
 import { ParsedResultMatch } from "src/content/interfaces/controllers/ParsedResultMatch.interface";
 import { TinderMessage, ParsedResultMessages } from "src/content/interfaces/http-requests/MessagesListTinder.interface";
-import { Badges, Match, MatchListTinderAPI } from "src/content/interfaces/http-requests/MatchesListTinder.interface";
+import { Badges, Match, MatchApi, MatchListTinderAPI } from "src/content/interfaces/http-requests/MatchesListTinder.interface";
 import { matchMockTwo } from "../mocks/matchesMock";
 import { DataTable } from '../data/dataTable';
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
@@ -611,9 +611,9 @@ export class TinderController implements datingAppController {
                             'value': messagesDataField.hasMessages() ? this._getReminderAmount(messagesDataField.getAllMessages()) : []
                         });
                     break;
-                case 'Blocked-or-no-contact':
+                case 'Match-wants-no-contact':
                     //todo: for deleted convo's by matches; does is there a property in the api response?
-                    dataRecordValuesList.push({ 'label': 'Blocked-or-no-contact', 'value': dataField.getValue() ? dataField.getValue() : null });
+                    dataRecordValuesList.push({ 'label': 'Match-wants-no-contact', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break
                 case 'Interested-in-sex':
                     dataRecordValuesList.push({ 'label': 'Interested-in-sex', 'value': dataField.getValue() ? dataField.getValue() : null });
@@ -621,6 +621,12 @@ export class TinderController implements datingAppController {
                 case 'Potential-click':
                     dataRecordValuesList.push({ 'label': 'Potential-click', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break
+                case 'Did-i-unmatch':
+                    dataRecordValuesList.push({
+                        'label': 'Did-i-unmatch',
+                        'value': dataField.getValue() ? dataField.getValue() : false
+                    });
+                    break;
                 case 'Notes':
                     dataRecordValuesList.push({ 'label': 'Notes', 'value': dataField.getValue() ? dataField.getValue() : '' });
                     break
@@ -754,8 +760,8 @@ export class TinderController implements datingAppController {
         }
 
         //TODO TODO TODO: TEST THIS WITH BLOCKED MATCH! (TIP: J. is now a blocked match as of 3-1-2022?)
-        // 1. DOES THE 'DEAD' PROPERTY IN THE API RESPONSE REPRESENT A BLOCKED/REMOVED MATCH & THUS MESSAGES?
-        // 2. DOES THE 'LAST ACTIVITY DATE' REPRESENT WHEN THE MATCH BLOCKED/REMOVED THE CHAT?
+        // 1. DOES THE 'DEAD' PROPERTY IN THE API RESPONSE REPRESENT A BLOCKED/REMOVED MATCH & THUS MESSAGES? -> no the closed property is match removed
+        // 2. DOES THE 'LAST ACTIVITY DATE' REPRESENT WHEN THE MATCH BLOCKED/REMOVED THE CHAT? -> nope
         // 3. IF I HAVE GOTTEN HER NUMBER, THIS DOES NOT COUNT AS A GHOST
         if (match && match.dead) {
             const lastGhostMoment = ghostsList.pop();
@@ -929,7 +935,7 @@ export class TinderController implements datingAppController {
                                         },
                                         {
                                             label: 'Job',
-                                            value: matchDetails?.results?.jobs?.at(0)?.title.name ? matchDetails?.results.jobs.at(0)?.title.name : ''
+                                            value: matchDetails?.results?.jobs?.at(0)?.title?.name ? matchDetails?.results.jobs.at(0)?.title.name : ''
                                         },
                                         {
                                             label: 'School',
@@ -1015,13 +1021,6 @@ export class TinderController implements datingAppController {
                 newDataRecord.addDataToDataFields([value]);
                 console.log(`Updated dataRecord: `);
                 console.dir(newDataRecord);
-
-                // debugger;
-                //TODO TODO TODO: Sometimes incorrect profile data is retrieved, possible because my code cannot correctly get name & age from ui?
-                // SEEMS TO WORK! NICE!
-                // THIS MEANS I CAN MUCH MORE EASILY GET; EXACT NAME, AGE, DISTANCE, CITY, BIO, GENDER, SCHOOLS, JOB (IF ANY), EVEN PICS (TO SAVE?), interests & common connections on fb!
-                // i also wanna track; gender, schools, interests
-                //todo: NOTE; -1 is men, 1 is woman? 0 is non-binary?
 
             }, (submitType: SubmitType) => {
                 console.log('Callback received a submit type!');
@@ -1126,10 +1125,7 @@ export class TinderController implements datingAppController {
                                 });
                             }
 
-
-
                             newDataRecord.addDataToDataFields(dataForDataFields);
-                            debugger;
 
                             this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
 
@@ -1459,19 +1455,37 @@ export class TinderController implements datingAppController {
         unupdatedMatchesList.forEach((unupdatedMatch) => {
 
             // do not update if dataField 'Blocked' is already set to true
-            const indexDataFieldBlocked: number = unupdatedMatch.getIndexOfDataFieldByTitle('Blocked-or-no-contact');
+            const indexDataFieldBlocked: number = unupdatedMatch.getIndexOfDataFieldByTitle('Blocked-or-removed');
             if (unupdatedMatch.usedDataFields[indexDataFieldBlocked].getValue()) {
                 return;
             }
 
-            // update dataField 'Blocked' to true
-            unupdatedMatch.addDataToDataFields([
-                {
-                    label: 'Blocked-or-no-contact',
-                    value: true
+            // do not update if dataField 'isMatch' is still false, since this person can still become a match in the future
+            const indexDataFieldIsMatch: number = unupdatedMatch.getIndexOfDataFieldByTitle('Is-match');
+            if (!unupdatedMatch.usedDataFields[indexDataFieldIsMatch].getValue()) {
+                return;
+            }
+
+            this.requestHandler.getMatchDetailsStart(unupdatedMatch.getRecordPersonSystemId('tinder')).then((matchDetails: Match) => {
+
+                // update dataField 'Blocked' to true
+                if(matchDetails.closed){
+                    unupdatedMatch.addDataToDataFields([
+                        {
+                            label: 'Blocked-or-removed',
+                            value: true
+                        },
+                        {
+                            label: 'Date-of-unmatch',
+                            value: new Date().toISOString()
+                        }
+                    ]);
+    
+                    unupdatedMatch.setUpdateMessages(false);
                 }
-            ]);
-            unupdatedMatch.setUpdateMessages(false);
+
+            });
+
         });
     }
 
