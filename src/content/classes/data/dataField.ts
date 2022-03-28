@@ -118,7 +118,7 @@ export class DataField {
             if(isArrayDataEntryList){
                 if(this.multipleDataEntry){
                     if(isArrayDataEntryList !== null){
-                        this.dataEntryList = [...this.dataEntryList, ...isArrayDataEntryList];
+                        this.dataEntryList = Array.from(new Set([...this.dataEntryList, ...isArrayDataEntryList]));
                     }
                 }else{
                     //WARNING: 25-03-2022: Activated this for messages, ghosts, reminders & reaction-speed, but it caused double or triple records to appear (since old imported items & newly parsed items are merged together),
