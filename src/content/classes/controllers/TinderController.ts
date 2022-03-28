@@ -62,11 +62,11 @@ export class TinderController implements datingAppController {
                     this.requestHandler = new RequestHandlerTinder(this.xAuthToken);
 
                     this.uiRenderer.setLoadingOverlay('initApp', true);
-                    this.refreshDataTableMatchesAndMatchMessages(this.requestHandler).then(()=>{
+                    this.refreshDataTableMatchesAndMatchMessages(this.requestHandler).then(() => {
                         //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
                         this.setSwipeHelperOnScreen();
 
-                        
+
 
                         // HINT: In order to scroll to the very bottom of the messageList in tinder;
                         /*
@@ -76,10 +76,10 @@ export class TinderController implements datingAppController {
                         $0.scrollIntoView()
                         .. and repeat again, again and again untill you have the full list
                         */
-                    }).catch((error)=>{
+                    }).catch((error) => {
                         console.dir(error);
                         console.error(`Something went wrong`);
-                    }).finally(()=>{
+                    }).finally(() => {
                         this.uiRenderer.setLoadingOverlay('initApp', false);
                         this.setScreenWatcher();
                         this.setMessageListWatcherOnScreen();
@@ -98,7 +98,7 @@ export class TinderController implements datingAppController {
         }
     }
 
-    private refreshDataTableMatchesAndMatchMessages(requestHandler: RequestHandlerTinder): Promise<void>{
+    private refreshDataTableMatchesAndMatchMessages(requestHandler: RequestHandlerTinder): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             // Gather data (by api's OR (less preferably) DOM)
             this.getMatches()?.then((matches: ParsedResultMatch[] | null) => {
@@ -107,9 +107,9 @@ export class TinderController implements datingAppController {
                 console.dir(matches);
 
                 //TODO: SET LIMIT HERE! REMOVE IF NO LONGER NECESSARY
-                if(matches && matches.length > 50){
-                    matches = matches.filter((match, index)=> {
-                        if(index <= 50){
+                if (matches && matches.length > 50) {
+                    matches = matches.filter((match, index) => {
+                        if (index <= 50) {
                             return match
                         }
                     })
@@ -129,13 +129,13 @@ export class TinderController implements datingAppController {
                 this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
 
                 const dataRecordsWhereMessagesNeedToBeUpdated = this.dataTable.getAllDataRecordsWhereMessageNeedTobeUpdated();
-                if(dataRecordsWhereMessagesNeedToBeUpdated.length === 0){
+                if (dataRecordsWhereMessagesNeedToBeUpdated.length === 0) {
                     return resolve();
                 }
 
-                this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved)=>{
+                this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved) => {
 
-                    if(!hasMessagesBeenRetrieved){
+                    if (!hasMessagesBeenRetrieved) {
                         console.error(`Somethign went wrong with getting messages! Check the network logs.`);
                         return reject();
                     }
@@ -144,7 +144,7 @@ export class TinderController implements datingAppController {
                     // debugger;
 
                     const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
-                    dataRecords.forEach((dataRecord)=>{
+                    dataRecords.forEach((dataRecord) => {
                         const dataFields: DataField[] = dataRecord.getDataFields();
 
                         const systemId: string = dataRecord.getRecordPersonSystemId(this.nameController)
@@ -160,14 +160,14 @@ export class TinderController implements datingAppController {
                     // debugger;
 
                     return resolve();
-                }).catch((error)=>{
+                }).catch((error) => {
                     console.dir(error);
                     console.error(`Error occured getting matchMessages`);
                 });
 
                 // debugger;
 
-            }).catch((error)=>{
+            }).catch((error) => {
                 console.dir(error);
                 console.error(`An error occured getting matches`);
             });
@@ -214,19 +214,19 @@ export class TinderController implements datingAppController {
             this.currentScreenTimeoutId = setTimeout(() => {
                 this.currentScreen = this.getCurrentScreenByDOM();
                 console.log(`Current screen: ${this.currentScreen}`);
-                
+
                 this.currentScreenTimeoutId = null;
 
                 console.log(`execute add UI helpers for screen: ${this.currentScreen}`);
-                
-                if(this.dataTableNeedsToBeUpdated){
-                    this.refreshDataTableMatchesAndMatchMessages(this.requestHandler).then(()=>{
+
+                if (this.dataTableNeedsToBeUpdated) {
+                    this.refreshDataTableMatchesAndMatchMessages(this.requestHandler).then(() => {
                         this.setRefreshDataTable(false);
                         this.setSwipeHelperOnScreen();
-                    }).finally(()=>{
+                    }).finally(() => {
                         this.uiRenderer.setLoadingOverlay('switchScreen', false);
                     });
-                }else{
+                } else {
                     this.addUIHelpers(this.currentScreen);
                     this.uiRenderer.setLoadingOverlay('switchScreen', false);
                 }
@@ -330,7 +330,7 @@ export class TinderController implements datingAppController {
                     }
 
                 });
-                
+
                 mutationObv.observe(matchesListContainer, {
                     childList: true, // observe direct children
                     subtree: true, // lower descendants too
@@ -338,7 +338,7 @@ export class TinderController implements datingAppController {
                 });
 
                 this.watchersUIList.push(mutationObv);
-                
+
             } else {
                 console.error(`Could not find matchesListContainer. Please update the identifier.`);
                 return;
@@ -451,7 +451,7 @@ export class TinderController implements datingAppController {
         const messagesDataField = dataFields[2] as DataFieldMessages;
 
         // todo: refactor this to nicely get dataRecord, and from dataRecord (write a method to?) retrieve messages DataField
-        if(match && match.match.messages.length > 0 || match && match.matchMessages.length > 0){
+        if (match && match.match.messages.length > 0 || match && match.matchMessages.length > 0) {
             const retrievedMessagesFromMatch = match.matchMessages.length > 0 ? match.matchMessages : match.match.messages as unknown as TinderMessage[];
             messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(retrievedMessagesFromMatch, match.match.person._id))
         }
@@ -459,7 +459,7 @@ export class TinderController implements datingAppController {
         dataFields.forEach((dataField) => {
             switch (dataField.title) {
                 case 'System-no': {
-                    if(!match){
+                    if (!match) {
                         break;
                     }
                     dataRecordValuesList.push({
@@ -474,8 +474,8 @@ export class TinderController implements datingAppController {
                 }
                 case 'No':
                     //todo: ensure providing null increments the number in dataTable instead of throwing error
-                    dataRecordValuesList.push({ 
-                        'label': 'No', 
+                    dataRecordValuesList.push({
+                        'label': 'No',
                         'value': dataField.getValue() ? dataField.getValue() : undefined
                     });
                     break;
@@ -487,59 +487,69 @@ export class TinderController implements datingAppController {
                     dataRecordValuesList.push({ 'label': 'Date-liked-or-passed', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break;
                 case 'Name':
-                    dataRecordValuesList.push({ 
-                        'label': 'Name', 
+                    dataRecordValuesList.push({
+                        'label': 'Name',
                         'value': match ? match.match.person.name : dataField.getValue()
                     });
                     break;
                 case 'Age':
-                    dataRecordValuesList.push({ 
-                        'label': 'Age', 
+                    dataRecordValuesList.push({
+                        'label': 'Age',
                         'value': match ? DateHelper.getAgeFromBirthDate(match.match.person.birth_date) : dataField.getValue()
                     });
                     break;
                 case 'City':
-                    dataRecordValuesList.push({ 
-                        'label': 'City', 
+                    dataRecordValuesList.push({
+                        'label': 'City',
                         'value': dataField.getValue() ? dataField.getValue() : null
                     });
                     break;
                 case 'Job':
-                    dataRecordValuesList.push({ 
-                        'label': 'Job', 
+                    dataRecordValuesList.push({
+                        'label': 'Job',
                         'value': dataField.getValue() ? dataField.getValue() : null
                     });
                     break;
 
                 case 'Seems-fake':
-                    dataRecordValuesList.push({ 
-                        'label': 'Seems-fake', 
+                    dataRecordValuesList.push({
+                        'label': 'Seems-fake',
                         'value': dataField.getValue() ? dataField.getValue() : false
                     });
                     break;
                 case 'Seems-empty':
-                    dataRecordValuesList.push({ 
-                        'label': 'Seems-empty', 
+                    dataRecordValuesList.push({
+                        'label': 'Seems-empty',
                         'value': dataField.getValue() ? dataField.getValue() : false
                     });
                     break;
 
                 case 'Has-profiletext': {
-                    dataRecordValuesList.push({ 
-                        'label': 'Has-profiletext', 
+                    dataRecordValuesList.push({
+                        'label': 'Has-profiletext',
                         'value': match ? (match.match.person.bio && match.match.person.bio.length > 0 ? true : false) : dataField.getValue()
                     });
                     break;
                 }
                 case 'Has-usefull-profiletext':
-                    dataRecordValuesList.push({ 'label': 'Has-usefull-profiletext', 'value': dataField.getValue() ? dataField.getValue() || false : false });
+                    dataRecordValuesList.push({ 'label': 'Has-usefull-profiletext', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
+                    break;
+                case 'Gender':
+                    dataRecordValuesList.push({ 'label': 'Gender', 'value': match?.match.person.gender ? this._getGender(match?.match.person.gender) : dataField.getValue() });
                     break;
                 case 'Is-verified': {
                     // ensure that if Is-verified has been set once, it will not be overwritten again. 
                     // todo: Maybe make a field setting for this?
-                    dataRecordValuesList.push({ 
-                        'label': 'Is-verified', 
+                    dataRecordValuesList.push({
+                        'label': 'Is-verified',
                         'value': match ? (match.match.person.badges ? this._isVerifiedMatch(match.match.person.badges) : false) : dataField.getValue()
+                    });
+                    break;
+                }
+                case 'Type-of-match-or-like': {
+                    dataRecordValuesList.push({
+                        'label': 'Type-of-match-or-like',
+                        'value': match?.match ? this._getTypeOfMatchAndLike(match.match) : dataField.getValue()
                     });
                     break;
                 }
@@ -554,24 +564,26 @@ export class TinderController implements datingAppController {
                     dataRecordValuesList.push({ 'label': 'Is-match', 'value': true });
                     break;
                 case 'Date-match':
-                    dataRecordValuesList.push({ 
-                        'label': 'Date-match', 
+                    dataRecordValuesList.push({
+                        'label': 'Date-match',
                         'value': match ? match.match.created_date : dataField.getValue()
                     });
                     break;
                 case 'Match-sent-first-message': {
-                    dataRecordValuesList.push({ 
-                        'label': 'Match-sent-first-message', 
-                        'value': messagesDataField.hasMessages() ? this._hasMatchSentFirstMessage(messagesDataField.getAllMessages()) : null });
+                    dataRecordValuesList.push({
+                        'label': 'Match-sent-first-message',
+                        'value': messagesDataField.hasMessages() ? this._hasMatchSentFirstMessage(messagesDataField.getAllMessages()) : null
+                    });
                     break;
                 }
                 case 'Match-responded':
                     dataRecordValuesList.push({ 'label': 'Match-responded', 'value': messagesDataField.hasMessages() ? this._hasMatchGivenResponse(messagesDataField.getAllMessages()) : null });
                     break;
                 case 'Conversation-exists':
-                    dataRecordValuesList.push({ 
-                        'label': 'Conversation-exists', 
-                        'value': messagesDataField.hasMessages() ? this._hasConversation(messagesDataField.getAllMessages()) : null });
+                    dataRecordValuesList.push({
+                        'label': 'Conversation-exists',
+                        'value': messagesDataField.hasMessages() ? this._hasConversation(messagesDataField.getAllMessages()) : null
+                    });
                     break;
                 case 'Vibe-conversation':
                     dataRecordValuesList.push({ 'label': 'Vibe-conversation', 'value': dataField.getValue() ? dataField.getValue() : null });
@@ -893,21 +905,64 @@ export class TinderController implements datingAppController {
                         }
 
                         const indexDataFieldDistance = dataRecord.getIndexOfDataFieldByTitle('Distance-in-km');
-                        if(indexDataFieldDistance !== -1){
+                        if (indexDataFieldDistance !== -1) {
 
-                        const distanceDataField = dataRecord.usedDataFields[indexDataFieldDistance] as DataFieldDistances;
-                        const hasRecentDistanceEntry = distanceDataField.containsRecordWithinHours(12);
-                        const personId = dataRecord.getRecordPersonSystemId(this.nameController, true);
+                            const distanceDataField = dataRecord.usedDataFields[indexDataFieldDistance] as DataFieldDistances;
+                            const hasRecentDistanceEntry = distanceDataField.containsRecordWithinHours(12);
+                            const personId = dataRecord.getRecordPersonSystemId(this.nameController, true);
 
-                            if(hasRecentDistanceEntry === false && personId && personId.length > 0){
-                                this.requestHandler.getProfileDetailsStart(personId).then((matchDetails: MatchDetailsAPI)=>{
-                                    dataRecord?.addDataToDataFields([{
-                                        label: 'Distance-in-km',
-                                        value: [{
-                                            dateTime: new Date().toISOString(),
-                                            distanceInKM: this._convertDistanceMilesToKM(matchDetails?.results?.distance_mi)
-                                        }]
-                                    }]);
+                            if (hasRecentDistanceEntry === false && personId && personId.length > 0) {
+                                this.requestHandler.getProfileDetailsStart(personId).then((matchDetails: MatchDetailsAPI) => {
+
+                                    const dataForDataFields: DataRecordValues[] = [
+                                        {
+                                            label: 'Name',
+                                            value: matchDetails?.results?.name ? matchDetails.results.name : 'Unknown name'
+                                        },
+                                        {
+                                            label: 'Age',
+                                            value: matchDetails?.results?.birth_date ? DateHelper.getAgeFromBirthDate(matchDetails.results.birth_date) : NaN
+                                        },
+                                        {
+                                            label: 'City',
+                                            value: matchDetails?.results?.city?.name.length > 0 ? matchDetails.results.city.name : ''
+                                        },
+                                        {
+                                            label: 'Job',
+                                            value: matchDetails?.results?.jobs?.at(0)?.title.name ? matchDetails?.results.jobs.at(0)?.title.name : ''
+                                        },
+                                        {
+                                            label: 'School',
+                                            value: matchDetails?.results?.schools?.at(0)?.name ? matchDetails?.results.schools.at(0)?.name : ''
+                                        },
+                                        {
+                                            label: 'Gender',
+                                            value: matchDetails?.results?.gender ? this._getGender(matchDetails?.results?.gender) : ''
+                                        },
+                                        {
+                                            label: 'Interests',
+                                            value: matchDetails?.results?.user_interests?.selected_interests?.length > 0 ? this._getInterests(matchDetails?.results?.user_interests?.selected_interests) : []
+                                        },
+                                        {
+                                            label: 'Has-profiletext',
+                                            value: matchDetails?.results?.bio.length > 0 ? true : false
+                                        },
+                                        {
+                                            label: 'Is-verified',
+                                            value: matchDetails?.results?.badges.length > 0 ? this._isVerifiedMatch(matchDetails?.results?.badges) : false
+                                        },
+                                        {
+                                            label: 'Distance-in-km',
+                                            value: [{
+                                                dateTime: new Date().toISOString(),
+                                                distanceInKM: this._convertDistanceMilesToKM(matchDetails?.results?.distance_mi)
+                                            }]
+                                        }
+                                        //TODO: ADD PERSON'S NAME, AGE, CITY, JOB, SCHOOL, GENDER, VERIFIED STATUS & INTERESTS TO GETTING DATA ABOUT THIS PERSON WHEN GETTING DISTANCE ON MESSAGING?
+                                    ];
+
+                                    dataRecord?.addDataToDataFields(dataForDataFields);
+
                                 });
                             }
                         }
@@ -963,10 +1018,10 @@ export class TinderController implements datingAppController {
 
                 // debugger;
                 //TODO TODO TODO: Sometimes incorrect profile data is retrieved, possible because my code cannot correctly get name & age from ui?
-                    // SEEMS TO WORK! NICE!
-                    // THIS MEANS I CAN MUCH MORE EASILY GET; EXACT NAME, AGE, DISTANCE, CITY, BIO, GENDER, SCHOOLS, JOB (IF ANY), EVEN PICS (TO SAVE?), interests & common connections on fb!
-                //todo minder: number of ghosts always seem to be 0
-                //todo: NOTE; -1 is women, 1 is men? 0 is non-binary?
+                // SEEMS TO WORK! NICE!
+                // THIS MEANS I CAN MUCH MORE EASILY GET; EXACT NAME, AGE, DISTANCE, CITY, BIO, GENDER, SCHOOLS, JOB (IF ANY), EVEN PICS (TO SAVE?), interests & common connections on fb!
+                // i also wanna track; gender, schools, interests
+                //todo: NOTE; -1 is men, 1 is woman? 0 is non-binary?
 
             }, (submitType: SubmitType) => {
                 console.log('Callback received a submit type!');
@@ -999,9 +1054,9 @@ export class TinderController implements datingAppController {
                             return;
                         }
 
-                        this.requestHandler.getProfileDetailsStart(submitAction.personId).then((matchDetails: MatchDetailsAPI)=>{
+                        this.requestHandler.getProfileDetailsStart(submitAction.personId).then((matchDetails: MatchDetailsAPI) => {
                             //todo: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
-                            
+
                             //TODO TODO TODO: What.. if i match with a girl, get instant match, this datarecord will be added AND my app will instantly trry to get new matches?
                             const dataForDataFields: DataRecordValues[] = [
                                 {
@@ -1010,7 +1065,7 @@ export class TinderController implements datingAppController {
                                         appType: 'tinder',
                                         tempId: submitAction.personId
                                     }
-                                }, 
+                                },
                                 {
                                     label: 'Did-i-like',
                                     value: personActionStatus
@@ -1040,6 +1095,18 @@ export class TinderController implements datingAppController {
                                     value: matchDetails?.results?.jobs?.at(0)?.title.name ? matchDetails?.results.jobs.at(0)?.title.name : ''
                                 },
                                 {
+                                    label: 'School',
+                                    value: matchDetails?.results?.schools?.at(0)?.name ? matchDetails?.results.schools.at(0)?.name : ''
+                                },
+                                {
+                                    label: 'Gender',
+                                    value: matchDetails?.results?.gender ? this._getGender(matchDetails?.results?.gender) : ''
+                                },
+                                {
+                                    label: 'Interests',
+                                    value: matchDetails?.results?.user_interests?.selected_interests?.length > 0 ? this._getInterests(matchDetails?.results?.user_interests?.selected_interests) : []
+                                },
+                                {
                                     label: 'Has-profiletext',
                                     value: matchDetails?.results?.bio.length > 0 ? true : false
                                 },
@@ -1049,7 +1116,7 @@ export class TinderController implements datingAppController {
                                 }
                             ];
 
-                            if(matchDetails?.results?.distance_mi){
+                            if (matchDetails?.results?.distance_mi) {
                                 dataForDataFields.push({
                                     label: 'Distance-in-km',
                                     value: [{
@@ -1059,7 +1126,7 @@ export class TinderController implements datingAppController {
                                 });
                             }
 
-                            
+
 
                             newDataRecord.addDataToDataFields(dataForDataFields);
                             debugger;
@@ -1086,6 +1153,57 @@ export class TinderController implements datingAppController {
         //todo: add other state (if,.. or seperate method) for adding chat ui helper VS swipe ui helper. Currently working on swipe ui helper
 
         //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
+    }
+    private _getTypeOfMatchAndLike(matchDetailsResults: Match): string[] {
+        const matchOrLikeStringsList: string[] = [];
+        
+            if(matchDetailsResults.is_boost_match){
+                matchOrLikeStringsList.push('boost_match');
+            }
+            if(matchDetailsResults.is_experiences_match){
+                matchOrLikeStringsList.push('experiences_match');
+            }
+            if(matchDetailsResults.is_fast_match){
+                matchOrLikeStringsList.push('fast_match');
+            }
+            if(matchDetailsResults.is_super_boost_match){
+                matchOrLikeStringsList.push('super_boost_match');
+            }
+            if(matchDetailsResults.is_super_like){
+                matchOrLikeStringsList.push('super_like_match');
+            }
+            if(matchDetailsResults.super_liker && typeof matchDetailsResults.super_liker === 'string'){
+                if (matchDetailsResults.super_liker === matchDetailsResults.person._id) {
+                    matchOrLikeStringsList.push('match_sent_me_superlike');
+                } else {
+                    matchOrLikeStringsList.push('i_sent_match_superlike');
+                }
+            }
+        
+        return matchOrLikeStringsList;
+    }
+
+    private _getInterests(selectedInterests: Record<string, string>[]): string[] {
+        const hasRecognizedStructure = selectedInterests.every((selectedInterest) => Object.prototype.hasOwnProperty.call(selectedInterest, "name") && selectedInterest['name'].length > 0 ? true : false);
+        if (hasRecognizedStructure) {
+            return selectedInterests.map((selectedinterest) => {
+                return selectedinterest['name'] as string;
+            });
+        }
+        console.warn(`Could not get interests as the received interests array does not match the recognized structure required. Check the interests received.`);
+        return [];
+    }
+
+    private _getGender(genderCode: number): string {
+        switch (genderCode) {
+            case 1:
+                return 'Female';
+            case -1:
+                return 'Male';
+            default:
+                console.warn(`Tried to get gender by genderCode but genderCode was not recognized: ${genderCode}. Thus "Other" was inserted. Checking & updating genderCodes may be advised.`);
+                return 'Other';
+        }
     }
 
     private _convertDistanceMilesToKM(distance_mi: number): number {
@@ -1180,62 +1298,62 @@ export class TinderController implements datingAppController {
 
         return new Promise<ParsedResultMatch[]>((resolve, reject) => {
 
-        if (useMock) {
-            const test: ParsedResultMatch[] = <ParsedResultMatch[]><unknown>matchMockTwo;
-            console.log(`Mock data (matches & messages):`);
-            console.log(matchMockTwo);
-            resolve(test);
-        }
+            if (useMock) {
+                const test: ParsedResultMatch[] = <ParsedResultMatch[]><unknown>matchMockTwo;
+                console.log(`Mock data (matches & messages):`);
+                console.log(matchMockTwo);
+                resolve(test);
+            }
 
-        if (requestHandler) {
-            this.getMatches().then((matchList: ParsedResultMatch[] | null) => {
-                async function getMessagesPerMatchesAsynchronously(matchesWithoutMessagesList: ParsedResultMatch[]): Promise<ParsedResultMatch[]> {
-                    // used a standard for loop to ensure synchronous looping
-                    for (let i = 0; i < matchesWithoutMessagesList.length; i = i + 1) {
-                        console.log(`GETTING MESSAGES now for: ${i} - ${matchesWithoutMessagesList[i].match.id}`);
-                        matchesWithoutMessagesList[i].matchMessages = await requestHandler.getMatchesMessagesStart(matchesWithoutMessagesList[i].match.id);
+            if (requestHandler) {
+                this.getMatches().then((matchList: ParsedResultMatch[] | null) => {
+                    async function getMessagesPerMatchesAsynchronously(matchesWithoutMessagesList: ParsedResultMatch[]): Promise<ParsedResultMatch[]> {
+                        // used a standard for loop to ensure synchronous looping
+                        for (let i = 0; i < matchesWithoutMessagesList.length; i = i + 1) {
+                            console.log(`GETTING MESSAGES now for: ${i} - ${matchesWithoutMessagesList[i].match.id}`);
+                            matchesWithoutMessagesList[i].matchMessages = await requestHandler.getMatchesMessagesStart(matchesWithoutMessagesList[i].match.id);
+                            return matchesWithoutMessagesList;
+                        }
                         return matchesWithoutMessagesList;
                     }
-                    return matchesWithoutMessagesList;
-                }
 
-                if(matchList === null){
-                    reject(null);
-                }else{
-                    resolve(getMessagesPerMatchesAsynchronously(matchList));
-                }
+                    if (matchList === null) {
+                        reject(null);
+                    } else {
+                        resolve(getMessagesPerMatchesAsynchronously(matchList));
+                    }
 
-            });
+                });
 
-        } else {
-            console.error(`The requestHandler was not set`);
-            return null;
-        }
+            } else {
+                console.error(`The requestHandler was not set`);
+                return null;
+            }
         });
     }
 
     public getMatches(): Promise<ParsedResultMatch[] | null> {
-            return new Promise<ParsedResultMatch[] | null>((resolve, reject) => {
-                if(!this.requestHandler){
+        return new Promise<ParsedResultMatch[] | null>((resolve, reject) => {
+            if (!this.requestHandler) {
+                reject(null);
+            }
+            this.requestHandler.getMatchesStart().then((matches: ParsedResultMatch[] | null) => {
+                console.log(`Matches:`);
+                console.dir(matches);
+
+                if (matches && matches.length > 0) {
+                    resolve(matches);
+                } else {
                     reject(null);
                 }
-                this.requestHandler.getMatchesStart().then((matches: ParsedResultMatch[] | null) => {
-                    console.log(`Matches:`);
-                    console.dir(matches);
-
-                    if (matches && matches.length > 0) {
-                        resolve(matches);
-                    } else {
-                        reject(null);
-                    }
-                });
             });
+        });
     }
 
     public updateMessagesDataRecords(requestHandler: RequestHandlerTinder, dataRecords: DataRecord[], matches: ParsedResultMatch[]): Promise<boolean> {
         // eslint-disable-next-line no-async-promise-executor
         return new Promise<boolean>(async (resolve, reject) => {
-            if(dataRecords.length === 0){
+            if (dataRecords.length === 0) {
                 console.error(`Data records amount cannot be 0`);
                 return reject(false);
             }
@@ -1248,17 +1366,17 @@ export class TinderController implements datingAppController {
                 // console.log(`Got Messages: `);
                 // console.dir(messages);
                 // console.log(`==========================`);
-                
-                if(personId){
+
+                if (personId) {
                     const messagesDataField = dataRecords[i].usedDataFields[2] as DataFieldMessages;
                     messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(messages.reverse(), personId), true)
-                }else{
+                } else {
                     console.warn(`Messages could not be added to dataRecord because personId was not found in matches array. Please check the values provided.`);
                 }
-                
+
                 //todo: create method which adds new messages directly?
 
-                if(i === (dataRecords.length - 1)){
+                if (i === (dataRecords.length - 1)) {
                     return resolve(true);
                 }
             }
@@ -1266,16 +1384,16 @@ export class TinderController implements datingAppController {
 
     }
     public getPersonIdFromMatch(systemIdMatch: string, matches: ParsedResultMatch[]): string | null {
-        if(!systemIdMatch || !matches || matches.length === 0){
+        if (!systemIdMatch || !matches || matches.length === 0) {
             console.error(`Insufficient systemIdMatch or match array was provided. Please check the provided values.`);
             return null;
         }
-        const match = matches.find((match)=>{
+        const match = matches.find((match) => {
             return match.match._id === systemIdMatch || match.match.person._id === systemIdMatch;
         });
-        if(match){
+        if (match) {
             return match.match.person._id;
-        }else{
+        } else {
             console.error(`No match found in match array with systemIdMatch: ${systemIdMatch}`);
             return null;
         }
@@ -1288,7 +1406,7 @@ export class TinderController implements datingAppController {
             // Since Tinder sends the messages in the order from last to first, we must first reverse the messages to first to last
             // since the .reverse() is applied to the array 'in place' instead of 'on output' applying it once will produce the array in desired format anywhere
             match.matchMessages.reverse();
-            
+
             const matchRecordIndex: number = this.getMatchRecordIndexBySystemIdOrPersonId(match.match, this.nameController);
 
             let tinderMatchDataRecordValues: DataRecordValues[];
@@ -1311,7 +1429,7 @@ export class TinderController implements datingAppController {
 
             } else {
                 console.log(`Going to UPDATE data record for: ${match.match.person.name}`);
-                
+
                 dataFields = this.dataTable.getDataFieldsByRecordIndex(matchRecordIndex);
                 tinderMatchDataRecordValues = this.parseMatchDataToDataRecordValues(dataFields, match, match.match.id);
                 this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
@@ -1323,7 +1441,7 @@ export class TinderController implements datingAppController {
 
     private getMatchRecordIndexBySystemIdOrPersonId(match: Match, nameController: string): number {
         const recordIndex = this.dataTable.getRecordIndexBySystemId(match.id, nameController);
-        if(recordIndex === -1){
+        if (recordIndex === -1) {
             return this.dataTable.getRecordIndexBySystemId(match.person._id, nameController);
         }
         return recordIndex;
@@ -1362,11 +1480,11 @@ export class TinderController implements datingAppController {
         this.uiRenderer.removeAllUIHelpers();
 
         let disconnectedWatchersAmount = 0;
-        this.watchersUIList.forEach((watcher: MutationObserver)=>{
+        this.watchersUIList.forEach((watcher: MutationObserver) => {
             watcher.disconnect();
-            disconnectedWatchersAmount = disconnectedWatchersAmount +1;
+            disconnectedWatchersAmount = disconnectedWatchersAmount + 1;
         });
-        if(this.watchersUIList.length === disconnectedWatchersAmount){
+        if (this.watchersUIList.length === disconnectedWatchersAmount) {
             this.watchersUIList.length = 0;
         }
         return this.watchersUIList.length === 0 ? true : false;

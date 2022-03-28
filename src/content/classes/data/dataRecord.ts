@@ -22,6 +22,7 @@ import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 import { dataCheckMessage } from "./dataCheckLogic/dataCheckMessage";
 import { Message } from "src/message.interface";
 import { dataCheckDistances } from "./dataCheckLogic/dataCheckDistances";
+import { dataCheckListStrings } from "./dataCheckLogic/dataCheckListStrings";
 
 export class DataRecord {
         
@@ -75,8 +76,12 @@ export class DataRecord {
 
         new DataField('Seems-fake', 'If a profile just seems too good to be true or is a pornstar quality of sorts', false, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Seems-empty', 'If a profile appear to have no identifying info whatsoever, maybe even simply a blank picture', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
-
         new DataFieldDistances('Distance-in-km', 'The reported distance of this person relative to me on a given datetime', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, false, false, {baseType: 'list', customCheckClass: new dataCheckDistances()}),
+        new DataField('School', 'The claimed school this person attends/attended', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: null}),
+        new DataField('Gender', 'The gender of this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: null}),
+        
+        new DataField('Interests', 'The interests of this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckListStrings()}),
+        new DataField('Type-of-match-or-like', 'The type of match or like me and my match might have exchanged', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckListStrings()}),
 
 
         new DataField('Is-verified', 'Wether or not this person is verified', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
@@ -257,17 +262,12 @@ export class DataRecord {
     }
 
     /*  ZET HIER WELKE TAGS IK MOMENTEEL WEL GA ONDERSTEUNEN EN WELKE NIET! BEGIN KLEIN!
-    'IsFake', // e.g. obvious catfishes, because maybe I want to keep track of how many (OBVIOUSLY) fake profiles I encounter on any given app (very few of these exist tho..)
-    'seemsFake', // e.g. IG-modellike profiles with whom no man ever matches? Or do (some) men match with them? (the obvious insta-model girls.. tinder seems to prioritize these girls at the first recs of the list of recs with the property 'is_superlike_upsell' but unfortunatelly i cannot read the recs data..)
-    'emptyProfiles', // e.g. how many empty profiles i encounter?
 
     //todo: TEST: the 'likes you' count (in the matches panel, which takes you to 'see who likes you'); does the api response (found in; https://api.gotinder.com/v2/fast-match/teaser?locale=nl&type=recently-active) tell you an exact number past what is shown (if you have more than 100 likes, 100+ is shown)? or does it stop at 100 despite you have more like than 100 (100+)? IF an exact number is gtiven past 100 if you have more than 100 likes.. then this info could be pretty valueble to log as well.. especially with a log list e.g; [{date, likescount}, {date, likescount}, {date, likescount} etc.]
 
     'date-of-unmatch' // is likely the same as lastUpdated, but attempts to get the datetime of if she unmatches me, could be usefull
-    'gender' // if i ever would want to make a female profile (or bisexual one for that matter)
     'did-i-unmatch' // track if i unmatched the person, or if the person unmatched me ( cause i should do it too, to clean up my matches in hopes of increasing ELO)
 
-    'type-of-match-tags' //OPTIONAL tag; tells me the type of match e.g.; boost, super-like, normal etc.
     'show-average-number-matches-to-go' // maybe handy tool, not for logging data, but for comparing how many potential matches i can get with 1 profile (as done by my own research) and thus how many 'to-go' for my region etc. This 'visual indicator' might just help me get more of a grasp on how large/small my 'potential datingpool' really is.. which is exactly what i need (cause; abundance mindset)
 
     'how-many-times-i-ghosted' // because i get slacky and dont redspond?
