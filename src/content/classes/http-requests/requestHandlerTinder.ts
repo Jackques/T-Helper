@@ -1,6 +1,6 @@
 import { data } from 'jquery';
 import { ParsedResultMessages, TinderMessage } from 'src/content/interfaces/http-requests/MessagesListTinder.interface';
-import { Match, MatchListTinderAPI } from 'src/content/interfaces/http-requests/MatchesListTinder.interface';
+import { Match, MatchApi, MatchListTinderAPI } from 'src/content/interfaces/http-requests/MatchesListTinder.interface';
 import { RequestHandler } from 'src/content/interfaces/http-requests/RequestHandler.interface';
 import { Matches } from '../../interfaces/tinder_api/matches.interface';
 import { ParsedResultMatch } from 'src/content/interfaces/controllers/ParsedResultMatch.interface';
@@ -227,20 +227,62 @@ export class RequestHandlerTinder implements RequestHandler {
     
     public getProfileDetails(xAuthToken: string, personId: string): Promise<MatchDetailsAPI> {
         return new Promise<MatchDetailsAPI>((resolve, reject) => {
-            fetch(`https://api.gotinder.com/user/${personId}`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Auth-Token': xAuthToken
-                }
-            })
-                .then(result => {
-                    return resolve(result.json())
-                })
-                .catch(error => {
-                    return reject(error);
-                })
+            const ms = Math.floor(Math.random() * 100) + 100;
+            setTimeout(()=>{
+                fetch(`https://api.gotinder.com/user/${personId}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Auth-Token': xAuthToken
+                    }
+                    })
+                    .then(result => {
+                        return resolve(result.json())
+                    })
+                    .catch(error => {
+                        return reject(error);
+                    })
+            }, ms);
+        });
+    }
+
+    public getMatchDetails(xAuthToken: string, systemId: string): Promise<MatchApi> {
+        return new Promise<MatchApi>((resolve, reject) => {
+            const ms = Math.floor(Math.random() * 100) + 100;
+            setTimeout(() => {
+                fetch(`https://api.gotinder.com/v2/matches/${systemId}?locale=nl`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Auth-Token': xAuthToken
+                    }
+                    })
+                    .then(result => {
+                        return resolve(result.json())
+                    })
+                    .catch(error => {
+                        return reject(error);
+                    })
+            }, ms);
+        });
+    }
+
+    public async getMatchDetailsStart(systemId: string): Promise<Match> {
+        return new Promise<Match>((resolve, reject) => {
+            const attempt = async () => {
+                await this.getMatchDetails(this.xAuthToken, systemId)
+                    .then(async (matchData: MatchApi) => {
+                        // console.log(profileData);
+                        resolve(matchData.data);
+                    })
+                    .catch((e: Error) => {
+                        // console.log(e);
+                        reject(e);
+                    })
+            };
+            attempt();
         });
     }
 }
