@@ -247,7 +247,8 @@ export class DataRecord {
             if(usedDataField instanceof DataFieldSystemNo){
                 result[usedDataField.title] = usedDataField.getValue({appType: 'tinder'});
             }else{
-                result[usedDataField.title] = usedDataField.getValue();
+                // since JSON.stringify() removes any object key-value which contains undefined, it's better to set these values as null
+                result[usedDataField.title] = usedDataField.getValue() === undefined ? null : usedDataField.getValue();
             }
             
         });
@@ -265,11 +266,6 @@ export class DataRecord {
     }
 
     /*  ZET HIER WELKE TAGS IK MOMENTEEL WEL GA ONDERSTEUNEN EN WELKE NIET! BEGIN KLEIN!
-
-    //todo: TEST: the 'likes you' count (in the matches panel, which takes you to 'see who likes you'); does the api response (found in; https://api.gotinder.com/v2/fast-match/teaser?locale=nl&type=recently-active) tell you an exact number past what is shown (if you have more than 100 likes, 100+ is shown)? or does it stop at 100 despite you have more like than 100 (100+)? IF an exact number is gtiven past 100 if you have more than 100 likes.. then this info could be pretty valueble to log as well.. especially with a log list e.g; [{date, likescount}, {date, likescount}, {date, likescount} etc.]
-        // it does not unfortunatelly. 99+ sticks at 99 in the api data
-
-    'did-i-unmatch' // track if i unmatched the person, or if the person unmatched me ( cause i should do it too, to clean up my matches in hopes of increasing ELO)
 
     'show-average-number-matches-to-go' // maybe handy tool, not for logging data, but for comparing how many potential matches i can get with 1 profile (as done by my own research) and thus how many 'to-go' for my region etc. This 'visual indicator' might just help me get more of a grasp on how large/small my 'potential datingpool' really is.. which is exactly what i need (cause; abundance mindset)
 
