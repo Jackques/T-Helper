@@ -153,8 +153,7 @@ export class TinderController implements datingAppController {
                         this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
                     });
 
-                    console.log(`And here is my data table:`);
-                    console.dir(this.dataTable);
+
 
                     // eslint-disable-next-line no-debugger
                     // debugger;
@@ -163,6 +162,9 @@ export class TinderController implements datingAppController {
                 }).catch((error) => {
                     console.dir(error);
                     console.error(`Error occured getting matchMessages`);
+                }).finally(()=>{
+                    console.log(`And here is my data table:`);
+                    console.dir(this.dataTable);
                 });
 
                 // debugger;
@@ -1452,7 +1454,8 @@ export class TinderController implements datingAppController {
             return doesDataRecordNotHaveMatchListed === -1 ? true : false;
         });
 
-        unupdatedMatchesList.forEach((unupdatedMatch) => {
+        for (let i = 0; i <= unupdatedMatchesList.length; i = i + 1) {
+            const unupdatedMatch = unupdatedMatchesList[i];
 
             // do not update if dataField 'Blocked' is already set to true
             const indexDataFieldBlocked: number = unupdatedMatch.getIndexOfDataFieldByTitle('Blocked-or-removed');
@@ -1469,7 +1472,7 @@ export class TinderController implements datingAppController {
             this.requestHandler.getMatchDetailsStart(unupdatedMatch.getRecordPersonSystemId('tinder')).then((matchDetails: Match) => {
 
                 // update dataField 'Blocked' to true
-                if(matchDetails.closed){
+                if(matchDetails?.closed){
                     unupdatedMatch.addDataToDataFields([
                         {
                             label: 'Blocked-or-removed',
@@ -1484,13 +1487,12 @@ export class TinderController implements datingAppController {
                     unupdatedMatch.setUpdateMessages(false);
                 }
 
-            });
+            })
 
-        });
+        }
     }
 
     public disconnectAllUIWatchers(): boolean {
-        // this.uiRenderer.removeAllUIHelpersFromScreen();
         this.uiRenderer.removeAllUIHelpers();
 
         let disconnectedWatchersAmount = 0;
