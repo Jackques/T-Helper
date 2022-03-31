@@ -381,17 +381,19 @@ export class DataFieldMessages extends DataField {
 
     public updateMessagesList(updatedMessagesList: Message[], forceAdd?: boolean): void {
         if(updatedMessagesList.length > 0){
+            this.setNeedsToBeUpdated(false);
 
             if(forceAdd){
                 this.addDataEntry(updatedMessagesList);
-                this.setNeedsToBeUpdated(false);
             }else{
 
                 if(this.dataEntryList.length < updatedMessagesList.length){
                     this.addDataEntry(updatedMessagesList);
                     console.log(`WEW, LOOKS LIKE WE GOT A RECORD WHICH CONTAINS FEWER MESSAGES THAN WE GET FROM THE NEW MESSAGES LIST. Should be pretty much everyone INITIALLY?`);
                     console.log(`ALSO; we cannot know for sure if this datarecord will receive the latest messages or not, so let's just simply set this one to needsToBeUpdated true`);
+                    
                     this.setNeedsToBeUpdated(true);
+
                 }else{
 
                     const isAllNewMessagesPresent = updatedMessagesList.every((newMessage:Message)=>{
@@ -404,6 +406,12 @@ export class DataFieldMessages extends DataField {
                     if(!isAllNewMessagesPresent){
                         console.log(`OH BOY! LOOKS LIKE WE GOT A RECORD WHICH DOES NOT CONTAIN THE LATEST MESSAGES. WE NEED A TEST SCENARIO FOR THIS`);
                         this.setNeedsToBeUpdated(true);
+
+                        //todo: 
+                        // WHAT IF tinder decides to throw away some or all old messages between me and match?
+                        // and after 5 years i chat to match..
+                        // thus messagesList is set to updated, and messages are overwritten?
+                        // (maybe) not relevant now, tinder nicely keeps data from years prior.. but it might happen thus i lose data?
                     }
 
                 }
