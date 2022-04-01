@@ -121,10 +121,7 @@ export class DataField {
                         this.dataEntryList = Array.from(new Set([...this.dataEntryList, ...isArrayDataEntryList]));
                     }
                 }else{
-                    //WARNING: 25-03-2022: Activated this for messages, ghosts, reminders & reaction-speed, but it caused double or triple records to appear (since old imported items & newly parsed items are merged together),
-                    // thus SHOULD; have a method which checks for duplicates of any object type first and only adds the new additions.. but even this MIGHT be sensitive to bugs (what if i change the logic for ghosts? or a message gets added by tidner somewhere which messes up the entire ghosts-chain.. creating a new list of ghosts to be added to the current list!?)
-
-                    // Thus it is best NOT to use the multipleDataEntry and always use the standard overwrite old data since i'm always getting the old list of messages anyway (and any app also supports always getting your old messages anyway af far as i can tell atm).
+                    // It is best NOT to use the multipleDataEntry and always use the standard overwrite old data since i'm always getting the old list of messages anyway (and any app also supports always getting your old messages anyway af far as i can tell atm).
                     this.dataEntryList = isArrayDataEntryList;
                 }
             }
@@ -380,6 +377,9 @@ export class DataFieldMessages extends DataField {
     }
 
     public updateMessagesList(updatedMessagesList: Message[], forceAdd?: boolean): void {
+
+        updatedMessagesList = this.removeDuplicateMessages(updatedMessagesList);
+
         if(updatedMessagesList.length > 0){
             this.setNeedsToBeUpdated(false);
 
@@ -421,6 +421,34 @@ export class DataFieldMessages extends DataField {
 
     public getAllMessages(): Message[]{
         return this.dataEntryList as unknown as Message[];
+    }
+
+    private removeDuplicateMessages(messagesList: Message[]): Message[] {
+        const filteredMessageList: Message[] = [];
+        messagesList.forEach((message) => {
+
+            const indexCurrentMessage = filteredMessageList.findIndex((filteredMessage) => {
+                const isDateTimeEqual = filteredMessage.datetime === message.datetime ? true : false;
+                if(isDateTimeEqual){
+                    const isAuthorEqual = filteredMessage.author === message.author ? true : false;
+                    if(isAuthorEqual){
+                        const isMessageContentEqual = filteredMessage.message === message.message ? true : false;
+                        if(isMessageContentEqual){
+                            return true;
+                        }else{
+                            return false;
+                        }
+                    }
+                    return false;
+                }
+                return false;
+            });
+
+            if(indexCurrentMessage === -1){
+                filteredMessageList.push(message);
+            }
+        });
+        return filteredMessageList;
     }
 }
 
