@@ -645,10 +645,25 @@ export class TinderController implements datingAppController {
         //todo: why can't i set the interface to {message: string, timestamp: number, author: 'me' | 'match'}[] ?
         const messagesForDataRecord: Message[] = [];
         matchMessages.forEach((matchMessage) => {
+            
+            const datetime = (matchMessage: TinderMessage) => {
+                if(DateHelper.isValidDate(matchMessage.sent_date)){
+                    return matchMessage.sent_date;
+                }
+                if(DateHelper.isValidDate(matchMessage.created_date)){
+                    return matchMessage.created_date;
+                }
+                if(DateHelper.isValidDate(new Date(matchMessage.timestamp).toISOString())){
+                    return new Date(matchMessage.timestamp).toISOString();
+                }
+                console.error(`Failed to get proper datetime for message`);
+                return '';
+            };
+
             messagesForDataRecord.push(
                 {
                     message: matchMessage.message,
-                    timestamp: matchMessage.timestamp !== 0 ? matchMessage.timestamp : new Date(matchMessage.sent_date).getTime(),
+                    datetime: datetime(matchMessage),
                     author: matchMessage.from === matchPersonId ? MessageAuthorEnum.Match : MessageAuthorEnum.Me
                 }
             );
@@ -664,12 +679,12 @@ export class TinderController implements datingAppController {
 
             // 1. is there 2 days or more in between my last message and my other message? AND my match sent no message in between? = ghost moment
             if (messagePrevious.author !== MessageAuthorEnum.Match && messageNext.author !== MessageAuthorEnum.Match) {
-                if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(messagePrevious.timestamp, messageNext.timestamp, 2)) {
+                if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(messagePrevious.datetime).getTime(), new Date(messageNext.datetime).getTime(), 2)) {
 
                     reminderAmountList.push({
                         number: reminderAmount,
-                        datetimeMyLastMessage: new Date(messagePrevious.timestamp).toISOString(),
-                        datetimeReminderSent: new Date(messageNext.timestamp).toISOString(),
+                        datetimeMyLastMessage: messagePrevious.datetime,
+                        datetimeReminderSent: messageNext.datetime,
                         textContentReminder: messageNext.message,
                         hasGottenReply: messageList[(currentIndex + 1)]?.author === MessageAuthorEnum.Match ? true : false
                     });
@@ -707,11 +722,10 @@ export class TinderController implements datingAppController {
 
                 // add this datetime to the list
                 responseSpeedMoments.push({
-                    datetimeMyLastMessage: new Date(currentMessage.timestamp).toISOString(),
-                    datetimeTheirResponse: new Date(nextMessage.timestamp).toISOString(),
+                    datetimeMyLastMessage: currentMessage.datetime,
+                    datetimeTheirResponse: nextMessage.datetime,
                     // get the difference in MS between the following received message received from my match and my previously sent message
-                    // differenceInMS: moment.duration(moment(messageNext.sent_date).diff(messagePrevious.sent_date)).asMilliseconds(),
-                    differenceInMS: nextMessage.timestamp - currentMessage.timestamp
+                    differenceInMS: new Date(nextMessage.datetime).getTime() - new Date(currentMessage.datetime).getTime()
                 });
 
             }
@@ -733,12 +747,15 @@ export class TinderController implements datingAppController {
 
             // 1. is there 2 days or more in between my last message and her reply message? = ghost moment
             // if(myMessage.from !== matchPersonId && matchMessageReply.from === matchPersonId){
-            const isGhostMoment = DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(myMessage.timestamp, matchMessageReply.timestamp, 2);
+                const matchMessageReplyTimeStamp = new Date(matchMessageReply.datetime).getTime();
+                const myMessageTimeStamp = new Date(myMessage.datetime).getTime();
+
+            const isGhostMoment = DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(myMessageTimeStamp, matchMessageReplyTimeStamp, 2);
             if (isGhostMoment) {
                 ghostsList.push(
                     {
                         number: amountOfGhosts,
-                        timeSinceLastMessageMS: matchMessageReply.timestamp - myMessage.timestamp,
+                        timeSinceLastMessageMS: matchMessageReplyTimeStamp - myMessageTimeStamp,
                         status: matchMessageReply.author === MessageAuthorEnum.Match ? GhostStatus.REPLIED : GhostStatus.NOT_REPLIED_TO_REMINDER
                     }
                 );
@@ -750,11 +767,12 @@ export class TinderController implements datingAppController {
 
         // 2. is the last message sent from me AND is it older or equal than 2 days?  = ghost moment
         const lastMessage: Message = matchMessages[matchMessages.length - 1];
-        if (lastMessage.author !== MessageAuthorEnum.Match && DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(lastMessage.timestamp, new Date().getTime(), 2)) {
+        const lastMessageTimeStamp = new Date(lastMessage.datetime).getTime();
+        if (lastMessage.author !== MessageAuthorEnum.Match && DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(lastMessageTimeStamp, new Date().getTime(), 2)) {
             ghostsList.push(
                 {
                     number: amountOfGhosts,
-                    timeSinceLastMessageMS: new Date().getTime() - lastMessage.timestamp,
+                    timeSinceLastMessageMS: new Date().getTime() - lastMessageTimeStamp,
                     status: GhostStatus.NOT_REPLIED
                 }
             );

@@ -1,7 +1,7 @@
 export interface Message {
     author: MessageAuthorEnum;
     message: string;
-    timestamp: number;
+    datetime: string;
 }
 
 export enum MessageAuthorEnum { Me = "me", Match = "match" }

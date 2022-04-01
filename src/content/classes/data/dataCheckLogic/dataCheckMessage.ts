@@ -1,5 +1,6 @@
 import { requiredProperty } from "src/content/interfaces/data/requiredProperty";
 import { validEntry } from "src/content/interfaces/data/validEntry";
+import { DateHelper } from "../../util/dateHelper";
 import { dataCheck } from "./dataCheck";
 
 export class dataCheckMessage extends dataCheck implements validEntry {
@@ -8,8 +9,8 @@ export class dataCheckMessage extends dataCheck implements validEntry {
             label: 'message', 
             type: 'string'
         }, {
-            label: 'timestamp', 
-            type: 'number'
+            label: 'datetime', 
+            type: 'string'
         }, {
             label: 'author', 
             type: 'string'
@@ -41,7 +42,7 @@ export class dataCheckMessage extends dataCheck implements validEntry {
             return true;
         }
         const isMessage = typeof listEntry[requiredPropertiesList[0].label] === 'string' ? true : false;
-        const hasTimestamp = typeof listEntry[requiredPropertiesList[1].label] === 'number' ? true : false;
+        const hasTimestamp = typeof listEntry[requiredPropertiesList[1].label] === 'string' && DateHelper.isValidDate(listEntry[requiredPropertiesList[1].label] as string) ? true : false;
         const hasAuthor = this._hasAuthor(<string>listEntry[requiredPropertiesList[2].label]);
         return isMessage && hasTimestamp && hasAuthor;
     }

@@ -398,7 +398,7 @@ export class DataFieldMessages extends DataField {
 
                     const isAllNewMessagesPresent = updatedMessagesList.every((newMessage:Message)=>{
                         const indexNewMessage = this.dataEntryList.findIndex((dataEntry)=>{
-                            return (dataEntry as unknown as Message).timestamp === newMessage.timestamp;
+                            return (dataEntry as unknown as Message).datetime === newMessage.datetime;
                         })
                         return indexNewMessage !== -1 ? true : false;
                     });
