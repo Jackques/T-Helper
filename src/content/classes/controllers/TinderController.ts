@@ -965,7 +965,21 @@ export class TinderController implements datingAppController {
                             this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields,
                                 (value: DataRecordValues) => {
                                     console.log(`Updated value to existing data record; label: ${value.label}, value: ${value.value}`);
-                                    dataRecord?.addDataToDataFields([value]);
+                                    const updatedValuesForDataFields: DataRecordValues[] = [value];
+
+                                    if(value.label === "Acquired-number" && value.value){
+                                        updatedValuesForDataFields.push({
+                                            label: 'Date-of-acquired-number',
+                                            value: new Date().toISOString()
+                                        });
+                                    }else if(value.label === "Acquired-number" && !value.value){
+                                        updatedValuesForDataFields.push({
+                                            label: 'Date-of-acquired-number',
+                                            value: null
+                                        });
+                                    }
+
+                                    dataRecord?.addDataToDataFields(updatedValuesForDataFields);
                                     console.log(`Updated dataRecord: `);
                                     console.dir(dataRecord);
                                 }, (submitType: SubmitType) => {
