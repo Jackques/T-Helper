@@ -217,9 +217,15 @@ export class DataRecord {
      */
     private isAllDataFieldsPresent(dataRecordValueList: DataRecordValues[]):boolean{
         return dataRecordValueList.every((dataRecordValue:DataRecordValues)=>{
-            return this.usedDataFields.findIndex((usedDataField:DataField)=>{
+            const indexDataFieldTitleInDataRecord = this.usedDataFields.findIndex((usedDataField:DataField)=>{
                 return usedDataField.title === dataRecordValue.label;
-            }) !== -1 ? true : false
+            });
+            if(indexDataFieldTitleInDataRecord !== -1){
+                return true;
+            }else{
+                console.error(`Cannot find data record value: ${dataRecordValue.label}. Please ensure the app is up to date and all fields from imported profile exist in dataRecord usedDataFields list`);
+                return false;
+            }
         })
     }
 
