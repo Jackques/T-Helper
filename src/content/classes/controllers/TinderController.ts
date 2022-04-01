@@ -108,16 +108,6 @@ export class TinderController implements datingAppController {
                 console.log(`Matches & match messages:`);
                 console.dir(matches);
 
-                //TODO: SET LIMIT HERE! REMOVE IF NO LONGER NECESSARY
-                if (matches && matches.length > 50) {
-                    matches = matches.filter((match, index) => {
-                        if (index <= 50) {
-                            return match
-                        }
-                    })
-                }
-                //TODO: SET LIMIT HERE! REMOVE IF NO LONGER NECESSARY
-
                 // eslint-disable-next-line no-debugger
                 // debugger;
 
