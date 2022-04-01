@@ -21,6 +21,8 @@ import { SubmitAction } from "src/background/requestInterceptor";
 import { DOMHelper } from "../util/DOMHelper";
 import { Message, MessageAuthorEnum } from "./../../../message.interface";
 import { MatchDetailsAPI } from "src/content/interfaces/http-requests/MatchDetailsAPI.interface";
+import { ghostMoment } from "src/content/interfaces/data/ghostMoment.interface";
+import { reminderAmountItem } from "src/content/interfaces/data/reminderAmountItem.interface";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
@@ -458,7 +460,7 @@ export class TinderController implements datingAppController {
             messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(retrievedMessagesFromMatch, match.match.person._id))
         }
 
-        dataFields.forEach((dataField) => {
+        dataFields.forEach((dataField, index, dataFields) => {
             switch (dataField.title) {
                 case 'System-no': {
                     if (!match) {
@@ -590,12 +592,17 @@ export class TinderController implements datingAppController {
                 case 'Vibe-conversation':
                     dataRecordValuesList.push({ 'label': 'Vibe-conversation', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break;
-                case 'How-many-ghosts':
+                case 'How-many-ghosts': {
+
+                    const dateAcquiredNumber: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-acquired-number')?.getValue() as string | null;
+                    const dateBlockedOrRemoved: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-unmatch')?.getValue() as string | null;
+
                     dataRecordValuesList.push({
                         'label': 'How-many-ghosts',
-                        'value': messagesDataField.hasMessages() ? this._getNumberOfGhosting(messagesDataField.getAllMessages(), match && match.match ? match.match : undefined) : []
+                        'value': messagesDataField.hasMessages() ? this._getNumberOfGhosting(messagesDataField.getAllMessages(), match && match.match ? match.match : undefined, dateAcquiredNumber, dateBlockedOrRemoved) : []
                     });
                     break;
+                }
                 case 'Acquired-number':
                     dataRecordValuesList.push({ 'label': 'Acquired-number', 'value': dataField.getValue() ? dataField.getValue() : null });
                     break
@@ -606,12 +613,17 @@ export class TinderController implements datingAppController {
                             'value': messagesDataField.hasMessages() ? this._getResponseSpeedMoments(messagesDataField.getAllMessages()) : []
                         });
                     break;
-                case 'Reminders-amount':
+                case 'Reminders-amount': {
+
+                    const dateAcquiredNumber: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-acquired-number')?.getValue() as string | null;
+                    const dateBlockedOrRemoved: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-unmatch')?.getValue() as string | null;
+
                     dataRecordValuesList.push(
                         {
                             'label': 'Reminders-amount',
-                            'value': messagesDataField.hasMessages() ? this._getReminderAmount(messagesDataField.getAllMessages()) : []
+                            'value': messagesDataField.hasMessages() ? this._getReminderAmount(messagesDataField.getAllMessages(), dateAcquiredNumber, dateBlockedOrRemoved) : []
                         });
+                    }
                     break;
                 case 'Match-wants-no-contact':
                     //todo: for deleted convo's by matches; does is there a property in the api response?
@@ -671,11 +683,19 @@ export class TinderController implements datingAppController {
         return messagesForDataRecord;
     }
 
-    private _getReminderAmount(matchMessages: Message[]): any[] {
-        const reminderAmountList: any = [];
+    private _getReminderAmount(matchMessages: Message[], dateAcquiredNumber?: string | null, dateBlockedOrRemoved?: string | null): reminderAmountItem[] {
+        const reminderAmountList: reminderAmountItem[] = [];
         let reminderAmount = 0;
 
         matchMessages.reduce((messagePrevious, messageNext, currentIndex, messageList) => {
+
+            const isMessagePreviousLaterThanAcquiredNumberDate: boolean = dateAcquiredNumber ? DateHelper.isDateLaterThanDate(messagePrevious.datetime, dateAcquiredNumber) : false;
+            const isMessagePreviousLaterThanBlockedDate: boolean = dateBlockedOrRemoved ? DateHelper.isDateLaterThanDate(messagePrevious.datetime, dateBlockedOrRemoved) : false;
+
+            if(isMessagePreviousLaterThanAcquiredNumberDate || isMessagePreviousLaterThanBlockedDate){
+                // date is later than acquired number date OR blocked or removed match date, thus should no longer add reminder item.
+                return messageNext;
+            }
 
             // 1. is there 2 days or more in between my last message and my other message? AND my match sent no message in between? = ghost moment
             if (messagePrevious.author !== MessageAuthorEnum.Match && messageNext.author !== MessageAuthorEnum.Match) {
@@ -733,41 +753,74 @@ export class TinderController implements datingAppController {
 
         return responseSpeedMoments;
     }
-    private _getNumberOfGhosting(matchMessages: Message[], match?: Match): any[] {
+    private _getNumberOfGhosting(matchMessages: Message[], match?: Match, dateAcquiredNumber?: string | null, dateBlockedOrRemoved?: string | null): ghostMoment[] {
 
         let amountOfGhosts = 0;
-        const ghostsList: any[] = [];
+        const ghostsList: ghostMoment[] = [];
 
         // if there are no messages from the other person at all, return 0
         if (!matchMessages.some(message => message.author === MessageAuthorEnum.Match)) {
             return ghostsList;
         }
 
-        matchMessages.reduce((myMessage, matchMessageReply) => {
+        matchMessages.reduce((formerMessage, laterMessage) => {
 
             // 1. is there 2 days or more in between my last message and her reply message? = ghost moment
             // if(myMessage.from !== matchPersonId && matchMessageReply.from === matchPersonId){
-                const matchMessageReplyTimeStamp = new Date(matchMessageReply.datetime).getTime();
-                const myMessageTimeStamp = new Date(myMessage.datetime).getTime();
 
-            const isGhostMoment = DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(myMessageTimeStamp, matchMessageReplyTimeStamp, 2);
-            if (isGhostMoment) {
-                ghostsList.push(
-                    {
-                        number: amountOfGhosts,
-                        timeSinceLastMessageMS: matchMessageReplyTimeStamp - myMessageTimeStamp,
-                        status: matchMessageReply.author === MessageAuthorEnum.Match ? GhostStatus.REPLIED : GhostStatus.NOT_REPLIED_TO_REMINDER
-                    }
-                );
-                amountOfGhosts = amountOfGhosts + 1;
-            }
-            // }
-            return matchMessageReply;
+                const isMatchMessageLaterThanAcquiredNumberDate: boolean = dateAcquiredNumber ? DateHelper.isDateLaterThanDate(formerMessage.datetime, dateAcquiredNumber) : false;
+                const isMyMessageLaterThanAcquiredNumberDate: boolean = dateAcquiredNumber ? DateHelper.isDateLaterThanDate(laterMessage.datetime, dateAcquiredNumber) : false;
+                if(isMatchMessageLaterThanAcquiredNumberDate || isMyMessageLaterThanAcquiredNumberDate){
+                    // date is later thasn acquired number date, thus should no longer add ghostMoments.
+                    return laterMessage;
+                }
+
+                const isMatchMessageLaterThanBlockedDate: boolean = dateBlockedOrRemoved ? DateHelper.isDateLaterThanDate(formerMessage.datetime, dateBlockedOrRemoved) : false;
+                const isMyMessageLaterThanBlockedDate: boolean = dateBlockedOrRemoved ? DateHelper.isDateLaterThanDate(laterMessage.datetime, dateBlockedOrRemoved) : false;
+                if(isMatchMessageLaterThanBlockedDate || isMyMessageLaterThanBlockedDate){
+                    // date is later than blocked or removed date, thus should no longer add ghostMoments.
+                    return laterMessage;
+                }
+
+                const matchMessageReplyTimeStamp = new Date(laterMessage.datetime).getTime();
+                const myMessageTimeStamp = new Date(formerMessage.datetime).getTime();
+
+                const isGhostMoment = DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(myMessageTimeStamp, matchMessageReplyTimeStamp, 2);
+                //todo: What if I ghost her!? she sends me message after message.. will get registered as a ghost moment..
+                if (isGhostMoment) {
+                    ghostsList.push(
+                        {
+                            number: amountOfGhosts,
+                            timeSinceLastMessageMS: matchMessageReplyTimeStamp - myMessageTimeStamp,
+                            status: laterMessage.author === MessageAuthorEnum.Match ? GhostStatus.REPLIED : GhostStatus.NOT_REPLIED_TO_REMINDER
+                        }
+                    );
+                    amountOfGhosts = amountOfGhosts + 1;
+                }
+            
+            return laterMessage;
         });
 
         // 2. is the last message sent from me AND is it older or equal than 2 days?  = ghost moment
         const lastMessage: Message = matchMessages[matchMessages.length - 1];
         const lastMessageTimeStamp = new Date(lastMessage.datetime).getTime();
+
+        const isLastMessageLaterThanAcquiredNumberDate: boolean = dateAcquiredNumber ? DateHelper.isDateLaterThanDate(lastMessage.datetime, dateAcquiredNumber) : false;
+        const isLastMessageLaterThanBlockedDate: boolean = dateBlockedOrRemoved ? DateHelper.isDateLaterThanDate(lastMessage.datetime, dateBlockedOrRemoved) : false;
+
+        if (dateBlockedOrRemoved && dateBlockedOrRemoved.length > 0) {
+            const lastGhostMoment = ghostsList.pop();
+            if(lastGhostMoment && lastGhostMoment.status === GhostStatus.NOT_REPLIED_TO_REMINDER){
+                lastGhostMoment.status = GhostStatus.BLOCKED;
+                ghostsList.push(lastGhostMoment);
+            }
+        }
+        
+        if(isLastMessageLaterThanAcquiredNumberDate || isLastMessageLaterThanBlockedDate){
+            // lastMessage date is later than blocked or removed date, thus should no longer add ghostMoments.
+            return ghostsList;
+        }
+
         if (lastMessage.author !== MessageAuthorEnum.Match && DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(lastMessageTimeStamp, new Date().getTime(), 2)) {
             ghostsList.push(
                 {
@@ -777,16 +830,6 @@ export class TinderController implements datingAppController {
                 }
             );
             amountOfGhosts = amountOfGhosts + 1;
-        }
-
-        //TODO TODO TODO: TEST THIS WITH BLOCKED MATCH! (TIP: J. is now a blocked match as of 3-1-2022?)
-        // 1. DOES THE 'DEAD' PROPERTY IN THE API RESPONSE REPRESENT A BLOCKED/REMOVED MATCH & THUS MESSAGES? -> no the closed property is match removed
-        // 2. DOES THE 'LAST ACTIVITY DATE' REPRESENT WHEN THE MATCH BLOCKED/REMOVED THE CHAT? -> nope
-        // 3. IF I HAVE GOTTEN HER NUMBER, THIS DOES NOT COUNT AS A GHOST
-        if (match && match.dead) {
-            const lastGhostMoment = ghostsList.pop();
-            lastGhostMoment.status = GhostStatus.BLOCKED;
-            ghostsList.push(lastGhostMoment);
         }
 
         return ghostsList;

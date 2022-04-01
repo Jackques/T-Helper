@@ -1,6 +1,11 @@
 import moment from 'moment';
+import { Message } from 'src/message.interface';
 
 export class DateHelper {
+    static isDateLaterThanDate(firstDateTime: string, secondDateTime: string): boolean {
+        const differenceBetweenDates = moment(firstDateTime).diff(secondDateTime);
+        return differenceBetweenDates > 0 ? true : false;
+    }
     static getAgeFromBirthDate(birthdate: string): number{
         if(DateHelper.isValidDate(birthdate)){
             return moment.duration(moment(new Date).diff(birthdate)).asYears();
@@ -11,7 +16,12 @@ export class DateHelper {
 
     static isValidDate(dateString: string): boolean {
         // hint: e.g. "2021-04-28T20:01:16.126Z" (ISO stringdates are valid dates)
-        return moment(dateString).isValid();
+        if(moment(dateString).isValid()){
+            return true;
+        }else{
+            console.error(`Datestring: ${dateString} is not a valid datetime string`);
+            return false;
+        }
     }
 
     static isDateBetweenGreaterThanAmountOfDays(dateOne: string, dateTwo: string, amountOfDays: number): boolean | undefined {
