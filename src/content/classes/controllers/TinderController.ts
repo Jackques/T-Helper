@@ -138,7 +138,7 @@ export class TinderController implements datingAppController {
                 this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved) => {
 
                     if (!hasMessagesBeenRetrieved) {
-                        console.error(`Somethign went wrong with getting messages! Check the network logs.`);
+                        console.error(`Something went wrong with getting messages! Check the network logs.`);
                         return reject();
                     }
 
@@ -473,7 +473,6 @@ export class TinderController implements datingAppController {
                             'tempId': match?.match?.person?._id ? match.match.person._id : ''
                         }
                     });
-                    // debugger;
                     break;
                 }
                 case 'No':
@@ -1306,38 +1305,6 @@ export class TinderController implements datingAppController {
     private getMatchIdFromMessageHrefSDtring(href: string): string {
         return href.substring(href.lastIndexOf('/') + 1);
     }
-
-    /*
-    public getIsVerifiedFromUI(): boolean {
-        const isVerifiedDOMNode: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div.recsPage div[aria-hidden="false"] path[fill="#1786ff"]');
-        return isVerifiedDOMNode ? true : false;
-    }
-
-    public getHasProfileTextFromUI(): boolean {
-        const profileTextDOMNode: HTMLElement = $('div[aria-hidden="false"] div.BreakWord').first()[0];
-        return profileTextDOMNode && profileTextDOMNode.textContent && profileTextDOMNode.textContent.length > 0 ? true : false;
-    }
-
-    public getPersonAgeFromUI(): number | null {
-        const ageDOMNode: HTMLElement = $('div[aria-hidden="false"] span[itemprop="age"]').first()[0];
-        if (ageDOMNode && ageDOMNode.textContent) {
-            return parseInt(ageDOMNode.textContent);
-        } else {
-            console.error(`Could not get age property. Please check the DOM settings`);
-            return null;
-        }
-    }
-
-    public getPersonNameFromUI(): string | null {
-        const nameDOMNode: HTMLElement = $('div[aria-hidden="false"] span[itemprop="name"]').first()[0];
-        if (nameDOMNode) {
-            return nameDOMNode.textContent;
-        } else {
-            console.error(`Could not get name property. Please check the DOM settings`);
-            return null;
-        }
-    }
-    */
 
     public getCurrentScreenByDOM(): ScreenNavStateCombo {
         const swipeIdentifier = '.recsToolbar';
