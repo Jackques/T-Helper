@@ -118,45 +118,44 @@ export class TinderController implements datingAppController {
 
                 this.updateDataTable(matches);
 
-                this.setUnupdatedMatchesToBlocked(matches, this.dataTable);
-
-                const dataRecordsWhereMessagesNeedToBeUpdated = this.dataTable.getAllDataRecordsWhereMessageNeedTobeUpdated();
-                if (dataRecordsWhereMessagesNeedToBeUpdated.length === 0) {
-                    return resolve();
-                }
-
-                this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved) => {
-
-                    if (!hasMessagesBeenRetrieved) {
-                        console.error(`Something went wrong with getting messages! Check the network logs.`);
-                        return reject();
+                this.setUnupdatedMatchesToBlocked(matches, this.dataTable).finally(()=>{
+                    const dataRecordsWhereMessagesNeedToBeUpdated = this.dataTable.getAllDataRecordsWhereMessageNeedTobeUpdated();
+                    if (dataRecordsWhereMessagesNeedToBeUpdated.length === 0) {
+                        return resolve();
                     }
+    
+                    this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved) => {
+    
+                        if (!hasMessagesBeenRetrieved) {
+                            console.error(`Something went wrong with getting messages! Check the network logs.`);
+                            return reject();
+                        }
+    
+                        // eslint-disable-next-line no-debugger
+                        // debugger;
+    
+                        const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
+                        dataRecords.forEach((dataRecord) => {
+                            const dataFields: DataField[] = dataRecord.getDataFields();
+    
+                            const systemId: string = dataRecord.getRecordPersonSystemId(this.nameController)
+                            const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
+                            const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
+                            this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
+                        });
+    
+                        // eslint-disable-next-line no-debugger
+                        // debugger;
+    
+                        return resolve();
 
-                    // eslint-disable-next-line no-debugger
-                    // debugger;
-
-                    const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
-                    dataRecords.forEach((dataRecord) => {
-                        const dataFields: DataField[] = dataRecord.getDataFields();
-
-                        const systemId: string = dataRecord.getRecordPersonSystemId(this.nameController)
-                        const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
-                        const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
-                        this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
+                    }).catch((error) => {
+                        console.dir(error);
+                        console.error(`Error occured getting matchMessages`);
+                    }).finally(()=>{
+                        console.log(`And here is my data table:`);
+                        console.dir(this.dataTable);
                     });
-
-
-
-                    // eslint-disable-next-line no-debugger
-                    // debugger;
-
-                    return resolve();
-                }).catch((error) => {
-                    console.dir(error);
-                    console.error(`Error occured getting matchMessages`);
-                }).finally(()=>{
-                    console.log(`And here is my data table:`);
-                    console.dir(this.dataTable);
                 });
 
                 // debugger;
@@ -1042,7 +1041,6 @@ export class TinderController implements datingAppController {
                                                 distanceInKM: this._convertDistanceMilesToKM(matchDetails?.results?.distance_mi)
                                             }]
                                         }
-                                        //TODO: ADD PERSON'S NAME, AGE, CITY, JOB, SCHOOL, GENDER, VERIFIED STATUS & INTERESTS TO GETTING DATA ABOUT THIS PERSON WHEN GETTING DISTANCE ON MESSAGING?
                                     ];
 
                                     dataRecord?.addDataToDataFields(dataForDataFields);
@@ -1134,7 +1132,6 @@ export class TinderController implements datingAppController {
                         this.requestHandler.getProfileDetailsStart(submitAction.personId).then((matchDetails: MatchDetailsAPI) => {
                             //todo: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
 
-                            //TODO TODO TODO: What.. if i match with a girl, get instant match, this datarecord will be added AND my app will instantly trry to get new matches?
                             const dataForDataFields: DataRecordValues[] = [
                                 {
                                     label: 'System-no',
@@ -1489,51 +1486,69 @@ export class TinderController implements datingAppController {
         return recordIndex;
     }
 
-    private setUnupdatedMatchesToBlocked(matches: ParsedResultMatch[], dataTable: DataTable): void {
-        const unupdatedMatchesList: DataRecord[] = dataTable.getAllDataRecords().filter((dataRecord) => {
-            const doesDataRecordNotHaveMatchListed = matches.findIndex((match) => {
-                return match.match.id === dataRecord.getRecordPersonSystemId('tinder') || match.match.person._id === dataRecord.getRecordPersonSystemId('tinder');
+    private setUnupdatedMatchesToBlocked(matches: ParsedResultMatch[], dataTable: DataTable): Promise<void> {
+        return new Promise<void>((resolve) => {
+            const unupdatedMatchesList: DataRecord[] = dataTable.getAllDataRecords().filter((dataRecord) => {
+                const doesDataRecordNotHaveMatchListed = matches.findIndex((match) => {
+                    return match.match.id === dataRecord.getRecordPersonSystemId('tinder') || match.match.person._id === dataRecord.getRecordPersonSystemId('tinder');
+                });
+
+                return doesDataRecordNotHaveMatchListed === -1 ? true : false;
             });
 
-            return doesDataRecordNotHaveMatchListed === -1 ? true : false;
-        });
+            for (let i = 0; i <= (unupdatedMatchesList.length - 1); i = i + 1) {
+                const unupdatedMatch = unupdatedMatchesList[i];
+                let presumedRequestsFired = 0;
+                let actualRequestsFired = 0;
 
-        for (let i = 0; i <= unupdatedMatchesList.length; i = i + 1) {
-            const unupdatedMatch = unupdatedMatchesList[i];
-
-            // do not update if dataField 'Blocked' is already set to true
-            const indexDataFieldBlocked: number = unupdatedMatch.getIndexOfDataFieldByTitle('Blocked-or-removed');
-            if (unupdatedMatch.usedDataFields[indexDataFieldBlocked].getValue()) {
-                return;
-            }
-
-            // do not update if dataField 'isMatch' is still false, since this person can still become a match in the future
-            const indexDataFieldIsMatch: number = unupdatedMatch.getIndexOfDataFieldByTitle('Is-match');
-            if (!unupdatedMatch.usedDataFields[indexDataFieldIsMatch].getValue()) {
-                return;
-            }
-
-            this.requestHandler.getMatchDetailsStart(unupdatedMatch.getRecordPersonSystemId('tinder')).then((matchDetails: Match) => {
-
-                // update dataField 'Blocked' to true
-                if(matchDetails?.closed){
-                    unupdatedMatch.addDataToDataFields([
-                        {
-                            label: 'Blocked-or-removed',
-                            value: true
-                        },
-                        {
-                            label: 'Date-of-unmatch',
-                            value: new Date().toISOString()
-                        }
-                    ]);
-    
-                    unupdatedMatch.setUpdateMessages(false);
+                // do not update if dataField 'Blocked' is already set to true
+                const indexDataFieldBlocked: number = unupdatedMatch.getIndexOfDataFieldByTitle('Blocked-or-removed');
+                let isDataFieldBlocked = false;
+                if (unupdatedMatch.usedDataFields[indexDataFieldBlocked].getValue()) {
+                    isDataFieldBlocked = true
                 }
 
-            })
+                // do not update if dataField 'isMatch' is still false, since this person can still become a match in the future
+                const indexDataFieldIsMatch: number = unupdatedMatch.getIndexOfDataFieldByTitle('Is-match');
+                let isDataFieldIsMatch = true;
+                if (!unupdatedMatch.usedDataFields[indexDataFieldIsMatch].getValue()) {
+                    isDataFieldIsMatch = false;
+                }
+                
+                if(isDataFieldBlocked || !isDataFieldIsMatch){
+                    if(i === (unupdatedMatchesList.length - 1)){
+                        resolve();
+                    }
+                    continue;
+                }
 
-        }
+                presumedRequestsFired = presumedRequestsFired + 1;
+                this.requestHandler.getMatchDetailsStart(unupdatedMatch.getRecordPersonSystemId('tinder')).then((matchDetails: Match) => {
+
+                    // update dataField 'Blocked' to true
+                    if(matchDetails?.closed){
+                        unupdatedMatch.addDataToDataFields([
+                            {
+                                label: 'Blocked-or-removed',
+                                value: true
+                            },
+                            {
+                                label: 'Date-of-unmatch',
+                                value: unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() ? unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() : (matchDetails.last_activity_date ? matchDetails.last_activity_date : new Date().toISOString())
+                            }
+                        ]);
+        
+                        unupdatedMatch.setUpdateMessages(false);
+                    }
+
+                    actualRequestsFired = actualRequestsFired + 1;
+                    if(presumedRequestsFired === actualRequestsFired){
+                        resolve();
+                    }
+                })
+
+            }
+        });
     }
 
     public disconnectAllUIWatchers(): boolean {
