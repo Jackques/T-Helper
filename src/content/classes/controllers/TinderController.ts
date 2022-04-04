@@ -1088,7 +1088,15 @@ export class TinderController implements datingAppController {
                 {
                     label: 'Attractiveness-score',
                     value: 6
-                }
+                },
+                {
+                    label: 'Seems-fake',
+                    value: false
+                },
+                {
+                    label: 'Seems-empty',
+                    value: false
+                },
             ]);
 
             // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
