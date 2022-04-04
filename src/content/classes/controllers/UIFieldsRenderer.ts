@@ -302,16 +302,19 @@ export class UIFieldsRenderer {
         $(`body`).off("blur", '#uiHelperFieldsContainer [id^="datafieldUI_"]');
         $(`body`).off("click", '[id^="submitAction_"]');
 
-        this.decoratedSubmitEventsDOMElementsList.forEach((decoratedSubmitElement)=>{ //todo: refactor this to normal for loop because async
-            $(decoratedSubmitElement).removeAttr('id');
-        });
+        for(let i=0; i <= (this.decoratedSubmitEventsDOMElementsList.length - 1); i = i+1){
+            $(this.decoratedSubmitEventsDOMElementsList[i]).removeAttr('id');
+        }
 
         this.valuesCallback = undefined;
         this.submitCallback = undefined;
 
         const helperFieldsContainer = $(`#uiHelperFields`);
-        if(helperFieldsContainer){
-            helperFieldsContainer.remove();
+        if(helperFieldsContainer.length > 0){
+            helperFieldsContainer.toArray().forEach((element: HTMLElement) => {
+                $(element).remove();
+            });
+            
         }else{
             console.error(`Cannot find helper fields container to remove. Please check reference to HTMLElement.`);
         }

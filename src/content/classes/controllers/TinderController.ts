@@ -1350,7 +1350,7 @@ export class TinderController implements datingAppController {
         return new Promise<ParsedResultMatch[]>((resolve, reject) => {
 
             if (useMock) {
-                
+
                 console.error(`Mock unavailable, please set a (new) mock first`);
                 
                 resolve([]);
@@ -1575,6 +1575,7 @@ export class TinderController implements datingAppController {
         this.watchersUIList.forEach((watcher: MutationObserver) => {
             watcher.disconnect();
             disconnectedWatchersAmount = disconnectedWatchersAmount + 1;
+            console.log('UI Watcher disconnected');
         });
         if (this.watchersUIList.length === disconnectedWatchersAmount) {
             this.watchersUIList.length = 0;
