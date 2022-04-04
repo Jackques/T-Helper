@@ -50,7 +50,7 @@
 
 /* additional styling for tinder to help with screen adjustments after helpers appear */
 .emoji-picker__wrapper {
-    left: -135px;
+    z-index: 2;
 }
 
 /* field helpers additional styling */
