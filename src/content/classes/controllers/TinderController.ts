@@ -1145,6 +1145,10 @@ export class TinderController implements datingAppController {
                                     value: personActionStatus
                                 },
                                 {
+                                    label: 'Last-updated',
+                                    value: new Date().toISOString()
+                                },
+                                {
                                     label: 'Is-match',
                                     value: false
                                 },
