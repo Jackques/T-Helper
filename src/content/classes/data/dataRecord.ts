@@ -103,7 +103,7 @@ export class DataRecord {
         new DataField('Date-of-unmatch', 'The datetime the match was removed', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         new DataField('Interested-in-sex', 'Wether this person has indicated to be interested in a hookup or not', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Potential-click', 'Wether the vibe of the conversation was good enough to say "we clicked"', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
-        new DataField('Did-i-unmatch', 'If i am going to/have unmatched an existing match', false, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Did-i-unmatch', 'If i am going to/have unmatched an existing match', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Notes', 'Any interesting notes on this person', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.TEXTAREA }, false, false, false, false, {baseType: 'string', customCheckClass: null}),
     ];
 
