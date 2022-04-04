@@ -1350,10 +1350,15 @@ export class TinderController implements datingAppController {
         return new Promise<ParsedResultMatch[]>((resolve, reject) => {
 
             if (useMock) {
-                const test: ParsedResultMatch[] = <ParsedResultMatch[]><unknown>matchMockTwo;
-                console.log(`Mock data (matches & messages):`);
-                console.log(matchMockTwo);
-                resolve(test);
+                
+                console.error(`Mock unavailable, please set a (new) mock first`);
+                
+                resolve([]);
+
+                // const test: ParsedResultMatch[] = <ParsedResultMatch[]><unknown>matchMockTwo;
+                // console.log(`Mock data (matches & messages):`);
+                // console.log(matchMockTwo);
+                // resolve(test);
             }
 
             if (requestHandler) {
