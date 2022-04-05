@@ -314,9 +314,6 @@ export class UIFieldsRenderer {
             helperFieldsContainer.toArray().forEach((element: HTMLElement) => {
                 $(element).remove();
             });
-            
-        }else{
-            console.error(`Cannot find helper fields container to remove. Please check reference to HTMLElement.`);
         }
     }
 
