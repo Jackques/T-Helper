@@ -546,14 +546,14 @@ export class TinderController implements datingAppController {
                     break;
                 }
                 case 'Attractiveness-score':
-                    dataRecordValuesList.push({ 'label': 'Attractiveness-score', 'value': dataField.getValue() ? dataField.getValue() : null });
+                    dataRecordValuesList.push({ 'label': 'Attractiveness-score', 'value': dataField.getValue() || dataField.getValue() === 0 ? dataField.getValue() : null });
                     break;
                 case 'Did-i-like':
-                    dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': dataField.getValue() ? dataField.getValue() : null });
+                    dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
                     break;
                 case 'Is-match':
-                    // if the data is ever parsed, it is obviously a match, otherwise it is not
-                    dataRecordValuesList.push({ 'label': 'Is-match', 'value': true });
+                    // if match.match.person is valid, then it is obviously a match, if not it's probably false thus use the value this field already has.
+                    dataRecordValuesList.push({ 'label': 'Is-match', 'value': match?.match?.person ? true : dataField.getValue() });
                     break;
                 case 'Date-match':
                     dataRecordValuesList.push({
@@ -578,7 +578,7 @@ export class TinderController implements datingAppController {
                     });
                     break;
                 case 'Vibe-conversation':
-                    dataRecordValuesList.push({ 'label': 'Vibe-conversation', 'value': dataField.getValue() ? dataField.getValue() : null });
+                    dataRecordValuesList.push({ 'label': 'Vibe-conversation', 'value': dataField.getValue() || dataField.getValue() === 0 ? dataField.getValue() : null });
                     break;
                 case 'How-many-ghosts': {
 
@@ -592,7 +592,7 @@ export class TinderController implements datingAppController {
                     break;
                 }
                 case 'Acquired-number':
-                    dataRecordValuesList.push({ 'label': 'Acquired-number', 'value': dataField.getValue() ? dataField.getValue() : null });
+                    dataRecordValuesList.push({ 'label': 'Acquired-number', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
                     break
                 case 'Response-speed':
                     dataRecordValuesList.push(
@@ -615,13 +615,13 @@ export class TinderController implements datingAppController {
                     break;
                 case 'Match-wants-no-contact':
                     //todo: for deleted convo's by matches; does is there a property in the api response?
-                    dataRecordValuesList.push({ 'label': 'Match-wants-no-contact', 'value': dataField.getValue() ? dataField.getValue() : null });
+                    dataRecordValuesList.push({ 'label': 'Match-wants-no-contact', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
                     break
                 case 'Interested-in-sex':
-                    dataRecordValuesList.push({ 'label': 'Interested-in-sex', 'value': dataField.getValue() ? dataField.getValue() : null });
+                    dataRecordValuesList.push({ 'label': 'Interested-in-sex', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
                     break
                 case 'Potential-click':
-                    dataRecordValuesList.push({ 'label': 'Potential-click', 'value': dataField.getValue() ? dataField.getValue() : null });
+                    dataRecordValuesList.push({ 'label': 'Potential-click', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
                     break
                 case 'Did-i-unmatch':
                     dataRecordValuesList.push({
