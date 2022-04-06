@@ -1562,7 +1562,10 @@ export class TinderController implements datingAppController {
                     if(presumedRequestsFired === actualRequestsFired){
                         resolve();
                     }
-                })
+                }).catch(()=>{
+                    const indexDataFieldName: number = unupdatedMatch.getIndexOfDataFieldByTitle('Name');
+                    console.log(`Failed to get matchDetails for profile with name: ${unupdatedMatch.usedDataFields[indexDataFieldName].getValue()}`);
+                });
 
             }
         });

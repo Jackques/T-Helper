@@ -220,16 +220,12 @@ export class RequestHandlerTinder implements RequestHandler {
             attempt();
         });
     }
-
-    // https://api.gotinder.com/like/5fccbf17a0848701001bb1f5?locale=nl
-    // const deId = '619ad9d05566a10100f92c62';
-    // id's above are for testing purposes
     
-    public getProfileDetails(xAuthToken: string, personId: string): Promise<MatchDetailsAPI> {
+    public getProfileDetails(xAuthToken: string, id: string): Promise<MatchDetailsAPI> {
         return new Promise<MatchDetailsAPI>((resolve, reject) => {
             const ms = Math.floor(Math.random() * 100) + 100;
             setTimeout(()=>{
-                fetch(`https://api.gotinder.com/user/${personId}`, {
+                fetch(`https://api.gotinder.com/user/${id}`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -237,8 +233,16 @@ export class RequestHandlerTinder implements RequestHandler {
                         'X-Auth-Token': xAuthToken
                     }
                     })
-                    .then(result => {
-                        return resolve(result.json())
+                    .then((result:Response) => {
+                        if(!result.ok && result.status === 404){
+                            console.info(`Match with id: ${id} returned a 404. Likely match has removed profile and as a result the match along with it.`);
+                            return resolve(result.json())
+                        }
+                        if(result.ok && result.status === 200){
+                            return resolve(result.json())
+                        }
+                        console.error(`Unknown response for ${id}. Please check the network logs.`);
+                        return reject();
                     })
                     .catch(error => {
                         return reject(error);
