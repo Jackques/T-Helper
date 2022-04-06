@@ -14,7 +14,12 @@ export class RequestHandlerTinder implements RequestHandler {
         this.xAuthToken = xAuthToken;
     }
 
-    private getRandomCoupleHunderdMS(): number {
+    public publicGetRandomCoupleHunderdMS(): number {
+        // for some reason,.. private classes dont work?
+        return Math.floor(Math.random() * 100) + 100;
+    }
+
+    private privategetRandomCoupleHunderdMS(): number {
         // for some reason,.. private classes dont work?
         return Math.floor(Math.random() * 100) + 100;
     }
@@ -287,6 +292,52 @@ export class RequestHandlerTinder implements RequestHandler {
                     })
             };
             attempt();
+        });
+    }
+
+    public getUpdates(): Promise<MatchDetailsAPI> {
+        return new Promise<MatchDetailsAPI>((resolve, reject) => {
+            const ms = Math.floor(Math.random() * 100) + 100;
+
+            const outsideTimeoutpublic = this.publicGetRandomCoupleHunderdMS();
+            const outsideTimeoutPrivate = this.privategetRandomCoupleHunderdMS();
+            debugger;
+            setTimeout(()=>{
+                debugger;
+                const insideTimeoutpublic = this.publicGetRandomCoupleHunderdMS();
+                const insideTimeoutprivate = this.privategetRandomCoupleHunderdMS();
+
+                console.log(`public outsideTimeout: ${outsideTimeoutpublic}`);
+                console.log(`public insideTimeout: ${insideTimeoutpublic}`);
+
+                console.log(`private outsideTimeout: ${outsideTimeoutPrivate}`);
+                console.log(`private insideTimeout: ${insideTimeoutprivate}`);
+
+                fetch(`https://api.gotinder.com/updates`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Auth-Token': "66f3b435-90e7-4566-a30c-beda047b261d"
+                    },
+                    body: JSON.stringify({
+                        'last_activity_date': '2013-11-20T16:25:27.479Z',
+                    })})
+                    .then((result:Response) => {
+                        debugger;
+                        if(!result.ok && result.status === 404){
+                            return resolve(result.json())
+                        }
+                        if(result.ok && result.status === 200){
+                            return resolve(result.json())
+                        }
+                        return reject();
+                    })
+                    .catch(error => {
+                        debugger;
+                        return reject(error);
+                    })
+            }, ms);
         });
     }
 }

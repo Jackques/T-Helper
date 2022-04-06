@@ -1539,10 +1539,25 @@ export class TinderController implements datingAppController {
                     continue;
                 }
 
+                this.requestHandler.getUpdates().then((dunno: any) => {
+                    debugger;
+                    console.log(dunno);
+                }).catch((dunnoerror: any)=>{
+                    debugger;
+                    console.log(dunnoerror);
+
+                });
+
                 presumedRequestsFired = presumedRequestsFired + 1;
                 this.requestHandler.getMatchDetailsStart(unupdatedMatch.getRecordPersonSystemId('tinder')).then((matchDetails: Match) => {
+                    debugger;
                     // TODO TODO TODO: add case for catching 404; is probably match removed profile?
                     // execute the same code below, BUT ALSO add 'match-seemingly-deleted-profile'
+                    // old matches who do not appear in the blocked list (get the blocked list by accessing /updates endpoint) have definitly blocked me, the rest simply has profile deleted ( i assume the latter is the case)
+                        //todo 1: remove a match, check if this match appears in the blocked list OR simply remains as a match but is now closed: true (when i remove a match)
+                        
+                        //note: Appelonia, Caroline & Anne (Food Quality Specialist") all return their respective data on this endpoint thus have blocked me. p.s. last activity date DOES seem to indictae blocked date
+                        //todo 2: add logic to get all (old) matches & blocked matches, add them to my app json (even when most data is by now unavailable.. yet the messages & systemid remains)
 
                     // update dataField 'Blocked' to true
                     if(matchDetails?.closed){
