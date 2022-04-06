@@ -1541,6 +1541,8 @@ export class TinderController implements datingAppController {
 
                 presumedRequestsFired = presumedRequestsFired + 1;
                 this.requestHandler.getMatchDetailsStart(unupdatedMatch.getRecordPersonSystemId('tinder')).then((matchDetails: Match) => {
+                    // TODO TODO TODO: add case for catching 404; is probably match removed profile?
+                    // execute the same code below, BUT ALSO add 'match-seemingly-deleted-profile'
 
                     // update dataField 'Blocked' to true
                     if(matchDetails?.closed){
