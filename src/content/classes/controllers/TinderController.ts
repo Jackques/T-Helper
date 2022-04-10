@@ -943,7 +943,7 @@ export class TinderController implements datingAppController {
                             }
 
                         });
-                        let uiRequiredDataFields: DataField[];
+                        let uiRequiredDataFields: DataField[] = [];
 
                         if (dataFields && dataFields.length > 0) {
                             uiRequiredDataFields = dataRecord.getDataFields(false, true, UIRequired.CHAT_ONLY);
@@ -1095,6 +1095,14 @@ export class TinderController implements datingAppController {
                 },
                 {
                     label: 'Seems-empty',
+                    value: false
+                },
+                {
+                    label: 'Seems-obese',
+                    value: false
+                },
+                {
+                    label: 'Seems-toppick',
                     value: false
                 }
             ]);
