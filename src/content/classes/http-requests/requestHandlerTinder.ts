@@ -264,7 +264,16 @@ export class RequestHandlerTinder implements RequestHandler {
                     }
                     })
                     .then(result => {
-                        return resolve(result.json())
+                        // debugger; 
+                        return resolve(result.json()) 
+
+                        // if(!result.ok && result.status === 404){ 
+                        //     return resolve(404) 
+                        // } 
+                        // if(result.ok && result.status === 200){ 
+                        //     return resolve(result.json()) 
+                        // } 
+                        // return reject(); 
                     })
                     .catch(error => {
                         return reject(error);
@@ -273,17 +282,24 @@ export class RequestHandlerTinder implements RequestHandler {
         });
     }
 
-    public async getMatchDetailsStart(systemId: string): Promise<Match> {
-        return new Promise<Match>((resolve, reject) => {
+    public async getMatchDetailsStart(systemId: string): Promise<Match | 404 | 500> {
+        return new Promise<Match | 404 | 500>((resolve, reject) => {
             const attempt = async () => {
                 await this.getMatchDetails(this.xAuthToken, systemId)
                     .then(async (matchData: MatchApi) => {
                         // console.log(profileData);
-                        resolve(matchData.data);
+                        // debugger;
+                        if(matchData.meta.status === 200 && matchData.data){
+                            return resolve(matchData.data);
+                        }else if(matchData.meta.status === 404){
+                            return resolve(404);
+                        }
+                        console.log(`Unexpected response in getMatchDetailsStart: ${matchData}`);
+                        return resolve(500);
                     })
                     .catch((e: Error) => {
                         // console.log(e);
-                        reject(e);
+                        return reject(e);
                     })
             };
             attempt();

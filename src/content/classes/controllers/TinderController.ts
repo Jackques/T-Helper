@@ -1096,7 +1096,7 @@ export class TinderController implements datingAppController {
                 {
                     label: 'Seems-empty',
                     value: false
-                },
+                }
             ]);
 
             // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
@@ -1531,8 +1531,14 @@ export class TinderController implements datingAppController {
                 if (!unupdatedMatch.usedDataFields[indexDataFieldIsMatch].getValue()) {
                     isDataFieldIsMatch = false;
                 }
+
+                const indexDataFieldSeeminglyDeletedProfile: number = unupdatedMatch.getIndexOfDataFieldByTitle('Seemingly-deleted-profile');
+                let hasDataFieldSeeminglyDeletedProfile = true;
+                if (!unupdatedMatch.usedDataFields[indexDataFieldSeeminglyDeletedProfile].getValue()) {
+                    hasDataFieldSeeminglyDeletedProfile = false;
+                }
                 
-                if(isDataFieldBlocked || !isDataFieldIsMatch){
+                if(isDataFieldBlocked || hasDataFieldSeeminglyDeletedProfile || !isDataFieldIsMatch){
                     if(i === (unupdatedMatchesList.length - 1)){
                         resolve();
                     }
@@ -1540,12 +1546,44 @@ export class TinderController implements datingAppController {
                 }
 
                 presumedRequestsFired = presumedRequestsFired + 1;
-                this.requestHandler.getMatchDetailsStart(unupdatedMatch.getRecordPersonSystemId('tinder')).then((matchDetails: Match) => {
-                    // TODO TODO TODO: add case for catching 404; is probably match removed profile?
-                    // execute the same code below, BUT ALSO add 'match-seemingly-deleted-profile'
+                const matchId = unupdatedMatch.getRecordPersonSystemId('tinder');
+                const matchName = unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Name')].getValue();
 
+                this.requestHandler.getMatchDetailsStart(unupdatedMatch.getRecordPersonSystemId('tinder')).then((matchDetails: Match | 404 | 500) => {
+                // this.requestHandler.getMatchDetailsStart("abc123").then((matchDetails: Match) => {
+                    // TODO TODO TODO: add case for catching 404; is probably match removed profile?
+                    // execute the same code below, BUT ALSO add 'match-seemingly-deleted-profile' or 'match-disappeared' (description; possibly means match deleted profile)
+                    // debugger;
                     // update dataField 'Blocked' to true
-                    if(matchDetails?.closed){
+
+                    if(matchDetails === 404){
+                        console.warn(`Matchdetails: ${matchName} with id: ${matchId} gave a 404. Probably deleted profile?`);
+
+                        unupdatedMatch.addDataToDataFields([
+                            {
+                                label: 'Blocked-or-removed',
+                                value: false
+                            },
+                            {
+                                label: 'Date-of-unmatch',
+                                value: new Date().toISOString()
+                            },
+                            {
+                                label: 'Seemingly-deleted-profile',
+                                value: true
+                            }
+                        ]);
+
+                        unupdatedMatch.setUpdateMessages(false);
+                    }
+
+                    if(matchDetails === 500){
+                        console.error(`Matchdetails: ${matchName} with id: ${matchId} gave a 500. Probably only removed me as match?`);
+                    }
+
+                    if(typeof matchDetails !== 'number' && matchDetails?.closed){
+                        console.warn(`Matchdetails: ${matchName} with id: ${matchId} gave a 200. Match deleted our match!`);
+
                         unupdatedMatch.addDataToDataFields([
                             {
                                 label: 'Blocked-or-removed',
@@ -1554,6 +1592,10 @@ export class TinderController implements datingAppController {
                             {
                                 label: 'Date-of-unmatch',
                                 value: unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() ? unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() : (matchDetails.last_activity_date ? matchDetails.last_activity_date : new Date().toISOString())
+                            },
+                            {
+                                label: 'Seemingly-deleted-profile',
+                                value: false
                             }
                         ]);
         
@@ -1566,7 +1608,7 @@ export class TinderController implements datingAppController {
                     }
                 }).catch(()=>{
                     const indexDataFieldName: number = unupdatedMatch.getIndexOfDataFieldByTitle('Name');
-                    console.log(`Failed to get matchDetails for profile with name: ${unupdatedMatch.usedDataFields[indexDataFieldName].getValue()}`);
+                    console.log(`Failed to get matchDetails for profile with name: ${unupdatedMatch.usedDataFields[indexDataFieldName].getValue()}. Please check if request adress is still correct.`);
                 });
 
             }
