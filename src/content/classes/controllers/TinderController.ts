@@ -1287,9 +1287,16 @@ export class TinderController implements datingAppController {
 
     private _getGender(genderCode: number): string {
         switch (genderCode) {
+            // update: despite this was shown in the unofficial online documentation (https://gist.github.com/rtt/10403467); 0 = male, 1 = female
+            // it does turn out when i get match details at least that -1 = female, 1 is male?
+            // it also turns out when i retrieve results from getMatches that 1 = female!? so.. -1 is male? or is both -1 and 1 female and 0 is male????
+            // todo: double check this for both gender, for every api where i get person object. 
             case 1:
                 return 'Female';
             case -1:
+                return 'Female';
+            case 0:
+                console.warn(`This profile will be assigned gender = 0, is male right?`);
                 return 'Male';
             default:
                 console.warn(`Tried to get gender by genderCode but genderCode was not recognized: ${genderCode}. Thus "Other" was inserted. Checking & updating genderCodes may be advised.`);
