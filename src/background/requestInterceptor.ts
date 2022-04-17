@@ -7,7 +7,7 @@ export class requestInterceptor {
 
   constructor() {
     chrome.webRequest.onBeforeRequest.addListener(
-      (details: chrome.webRequest.WebRequestFullDetails) => {
+      (details) => {
 
         if (!this.isTinderRequest(details)) {
           return;
