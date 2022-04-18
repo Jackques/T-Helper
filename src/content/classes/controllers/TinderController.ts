@@ -1139,16 +1139,20 @@ export class TinderController implements datingAppController {
                     const submitAction: SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
                     console.log(submitAction);
 
+                    let typeOfLikeOrPass = '';
                     if (submitAction !== undefined) {
                         let personActionStatus: boolean | undefined = undefined;
                         if (submitAction.submitType === PersonAction.LIKED_PERSON) {
                             personActionStatus = true;
+                            typeOfLikeOrPass = 'like';
                         }
                         if (submitAction.submitType === PersonAction.SUPER_LIKED_PERSON) {
                             personActionStatus = true;
+                            typeOfLikeOrPass = 'superlike';
                         }
                         if (submitAction.submitType === PersonAction.PASSED_PERSON) {
                             personActionStatus = false;
+                            typeOfLikeOrPass = 'pass';
                         }
 
                         if (personActionStatus === undefined) {
@@ -1169,6 +1173,10 @@ export class TinderController implements datingAppController {
                                 {
                                     label: 'Did-i-like',
                                     value: personActionStatus
+                                },
+                                {
+                                    label: 'Type-of-match-or-like',
+                                    value: typeOfLikeOrPass
                                 },
                                 {
                                     label: 'Last-updated',
