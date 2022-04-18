@@ -6,18 +6,24 @@
     //todo: refactor values below to (r)em's to make it flexible on any screen size instead of my desktop screens
     &--select {
         width: 350px;
-        height: 700px;
-        right: 200px;
-        top: 75px;
+        height: 100%;
+        left: 200px;
+        top: 0px;
     }
 
     &--chat {
-        height: 765px;
+        height: calc(100% - 170px);
         width: 300px;
-        top: auto;
-        bottom: 73px;
-        right: 515px;
+        top: 99px;
+        right: 0px;
     }
+
+    height: 708px;
+    right: 0px;
+    width: 40%;
+    overflow-y: scroll;
+    
+    top: 99px;
 }
 
 .loadingOverlay {
@@ -54,6 +60,7 @@
 }
 
 /* field helpers additional styling */
+
 .fieldContainer {
     margin-bottom: 15px;
 }

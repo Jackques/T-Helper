@@ -187,7 +187,7 @@ export class UIFieldsRenderer {
 
     public renderFieldsContainerForScreen(screen: ScreenNavStateCombo, additionalScreenAdjustmentCommands?: () => void): void {
         if(screen === ScreenNavStateCombo.Swipe){
-            $('body').prepend(`
+            $('body .recsCardboard__cardsContainer').prepend(`
                 <div id="uiHelperFields" class="uiHelperFieldsContainer uiHelperFieldsContainer--select">
                     <form id="uiHelperFieldsForm">
                         <div class="container">
@@ -203,7 +203,7 @@ export class UIFieldsRenderer {
         }
 
         if(screen === ScreenNavStateCombo.Chat){
-            $('body').prepend(`
+            $('body div.chat').prepend(`
             <div id="uiHelperFields" class="uiHelperFieldsContainer uiHelperFieldsContainer--chat">
                 <form id="uiHelperFieldsForm">
                     <div class="container">

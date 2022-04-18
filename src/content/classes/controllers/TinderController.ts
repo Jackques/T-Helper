@@ -936,7 +936,7 @@ export class TinderController implements datingAppController {
                             // $('div[id*="SC.chat"]').first().css('width', '730px');
                             const chatContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div[id*="SC.chat"]');
                             if (chatContainerDOM !== null) {
-                                $(chatContainerDOM).css('width', '730px');
+                                $(chatContainerDOM).css('padding-right', '315px');
                             } else {
                                 console.error(`Cannot find chat container DOM element. Please update the selectors.`);
                                 return;
@@ -1075,7 +1075,17 @@ export class TinderController implements datingAppController {
 
             const newDataRecord: DataRecord = new DataRecord();
 
-            this.uiRenderer.renderFieldsContainerForScreen(currentScreen);
+            this.uiRenderer.renderFieldsContainerForScreen(currentScreen, ()=>{
+
+                const swipeContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('.recsCardboard__cards');
+                if (swipeContainerDOM !== null) {
+                    $(swipeContainerDOM).css('position', 'absolute');
+                    $(swipeContainerDOM).css('left', '-200px');
+                } else {
+                    console.error(`Cannot find swipe container DOM element. Please update the selectors.`);
+                    return;
+                }
+            });
 
             const uiRequiredDataFields: DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
 
