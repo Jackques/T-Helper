@@ -1176,7 +1176,7 @@ export class TinderController implements datingAppController {
                                 },
                                 {
                                     label: 'Type-of-match-or-like',
-                                    value: typeOfLikeOrPass
+                                    value: [typeOfLikeOrPass]
                                 },
                                 {
                                     label: 'Last-updated',
