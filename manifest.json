@@ -46,6 +46,7 @@
     "webRequest",
     "webRequestBlocking",
     "*://developer.mozilla.org/",
-    "<all_urls>"
+    "<all_urls>",
+    "notifications"
   ]
 }

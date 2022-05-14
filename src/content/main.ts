@@ -24,8 +24,9 @@ export class Main {
         //console.log(`The main app constructor content works`);
 
         chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
-            console.assert(port.name === "knockknock");
+            console.log(`Content Port activated! ${port.name}`);
             port.onMessage.addListener((portMessage: PortMessage) => {
+                console.log(`Content Port received a message!`);
                 if (portMessage.messageSender === 'POPUP' && portMessage.action === 'INIT') {
                     //console.log(`I received the following message payload: `);
                     //console.dir(msg.payload);
@@ -54,23 +55,29 @@ export class Main {
                         this.setCloseButton();
                     }
                 }
-            });
-            port.onMessage.addListener((msg: PortMessage) => {
-                if (msg.messageSender === 'BACKGROUND' && msg.action === 'SUBMIT_ACTION') {
-                    console.log(`Received submit action from background script: `);
-                    console.dir(msg);
-                    const message = msg.payload as any[];
-                    this.dataStorage.addActionToDataStore(<SubmitAction>message[0]);
-                }
-            });
-            port.onMessage.addListener((msg: PortMessage) => {
-                if (msg.messageSender === 'POPUP' && msg.action === 'FILENAME') {
+                if (portMessage.messageSender === 'POPUP' && portMessage.action === 'FILENAME') {
                     console.log(`Received filename from popup: `);
-                    console.dir(msg);
-                    this.importedFile = new FileHelper(msg.payload as string);
+                    console.dir(portMessage);
+                    this.importedFile = new FileHelper(portMessage.payload as string);
                     this.setDownloadExportButton(this.dataTable, this.importedFile);
                 }
-            })
+            });
+
+        });
+        const port = chrome.runtime.connect({name: 'jack'});
+        port.onMessage.addListener((msg: PortMessage) => {
+            console.log(`i received a portmessage:`);
+            console.dir(msg);
+
+            if (msg.messageSender === 'BACKGROUND' && msg.action === 'SUBMIT_ACTION') {
+                console.log(`Received submit action from background script: `);
+                console.dir(msg);
+                const message = msg.payload as any[];
+                this.dataStorage.addActionToDataStore(<SubmitAction>message[0]);
+            }
+        });
+        port.onDisconnect.addListener(()=>{
+            
         });
     }
 
