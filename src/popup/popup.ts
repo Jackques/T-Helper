@@ -116,14 +116,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 //todo: also get tabid before even loading the .json/.csv
                 //todo: show error in popup html is tab is not tinder/happn/opther recognized datingapp
                 //todo: show error in popup html if port is disconnected (e.g. when navigating away from the tinder tab)
+
+                //todo: what if there are multiple tinder tabs open? 
+                //todo: what if i immediatly close the tinder tab once this processing is still ongoing?
             });
         }
 
         function connectToCurrentTab() {
             getCurrentTabId(function (currentTabId: number) {
-                const port = chrome.tabs.connect(currentTabId, <chrome.runtime.Port>{ name: "knockknock" });
-                port.postMessage(<PortMessage>{ 'messageSender': 'POPUP', 'action': 'FILENAME', 'payload': uploadedFile.getFileName() });
-                port.postMessage(<PortMessage>{ 'messageSender': 'POPUP', 'action': 'INIT', 'payload': inputDataList as any[] });
+                try{
+                    const port = chrome.tabs.connect(currentTabId, <chrome.runtime.Port>{ name: "knockknock" });
+                    port.postMessage(<PortMessage>{ 'messageSender': 'POPUP', 'action': 'FILENAME', 'payload': uploadedFile.getFileName() });
+                    port.postMessage(<PortMessage>{ 'messageSender': 'POPUP', 'action': 'INIT', 'payload': inputDataList as any[] });
+                    port.disconnect();
+                }catch(err: unknown){
+                    $('#errorText').text(`An error occured when attempting to send imported data to content script:${err}`);
+                    $('#errorText').removeClass('d-none');
+                    $('#errorText').show();
+                }
             });
         }
         connectToCurrentTab();
