@@ -19,10 +19,12 @@ export class Main {
     private dataStorage: dataStorage = new dataStorage();
     private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer();
     private importedFile: FileHelper | null = null;
+    private backgroundChannelPort: chrome.runtime.Port | null = null;
 
     constructor() {
         //console.log(`The main app constructor content works`);
 
+        // POPUP
         chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
             console.log(`Content Port activated! ${port.name}`);
             port.onMessage.addListener((portMessage: PortMessage) => {
@@ -63,21 +65,32 @@ export class Main {
                 }
             });
 
-        });
-        const port = chrome.runtime.connect({name: 'jack'});
-        port.onMessage.addListener((msg: PortMessage) => {
-            console.log(`i received a portmessage:`);
-            console.dir(msg);
-
-            if (msg.messageSender === 'BACKGROUND' && msg.action === 'SUBMIT_ACTION') {
-                console.log(`Received submit action from background script: `);
+            // BACKGROUND
+            this.backgroundChannelPort = chrome.runtime.connect({name: 'jack'});
+            this.backgroundChannelPort.onMessage.addListener((msg: PortMessage) => {
+                console.log(`i received a portmessage:`);
                 console.dir(msg);
-                const message = msg.payload as any[];
-                this.dataStorage.addActionToDataStore(<SubmitAction>message[0]);
-            }
-        });
-        port.onDisconnect.addListener(()=>{
-            
+
+                if (msg.messageSender === 'BACKGROUND' && msg.action === 'SUBMIT_ACTION') {
+                    console.log(`Received submit action from background script: `);
+                    console.dir(msg);
+                    const message = msg.payload as any[];
+                    this.dataStorage.addActionToDataStore(<SubmitAction>message[0]);
+                }
+            });
+            this.backgroundChannelPort.onDisconnect.addListener(()=>{
+                if(this.datingAppType.length > 0){
+                    const errorMessage = `The channel with the background script has been disconnected! Stop swiping immediately to prevent potential loss of data. Please check the background script extension logs.`;
+                    console.error(errorMessage);
+                    alert(errorMessage);
+                }
+
+                // log below will never run since when disconnect is called from content script it's own onDisconnect listener should never be called. 
+                // it is called when the backgroundscript is disconnected but i never existed the app, thus never giving the command to disconnected from here (where i made the connection), thus it should be treated as an error.
+                // thus if this console.log below is ever run, something is wrong.
+                console.error(`backgroundChannelPort was disconnected succesfully, but this log should never be shown. Something is wrong?`);
+            });
+
         });
     }
 
@@ -156,6 +169,14 @@ export class Main {
 
         this.dataTable.emptyDataTable();
         this.datingAppType = '';
+        try{
+            // todo: added code below in a try catch because IF backgroundscript was invalidated for some reason thus losing connection with my app (which is mostly in the content script)
+            // AND if i were to close my app, thus running the code below, thus disconnecting again.. i would get a Uncaught Error: Extension context invalidated. error.
+            // AND the loading spinner would yet again keep on loading forever 
+            this.backgroundChannelPort?.disconnect();
+        }catch(err: unknown){
+            console.error(err)
+        }
         const hasDatingAppControllerWatchersDisconnected = this.datingAppController?.disconnectAllUIWatchers();
         if(hasDatingAppControllerWatchersDisconnected){
             this.datingAppController = null;
