@@ -1,7 +1,27 @@
 import { PersonAction } from "../peronAction.enum";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
+import { DateHelper } from "../../src/content/classes/util/dateHelper";
 
 export class backgroundScriptErrorHelper {
+  public static storeRequestInBackgroundBackup(details: chrome.webRequest.WebRequestBodyDetails): void {
+    const maximumDaysBackupRequests = 3;
+    let listOfRequests: { timestamp: string; url: string; httpMethod: string; }[] = [];
+
+    const localStorageCurrentItem = localStorage.getItem('requests-backup');
+    if(localStorageCurrentItem !== null){
+      // for simplicity sake, i know for a fact that it will always return an array with objects with string key, values inside
+      listOfRequests = JSON.parse(localStorageCurrentItem) as { timestamp: string; url: string; httpMethod: string; }[];
+
+      //TODO: Should create check which filters out urls with the same text content (and only keep the most recent one). This will greatly help reduce the amount of data being stored as it may get big really soon!
+      listOfRequests = listOfRequests.filter((requestItem)=>{
+        return DateHelper.isDateBetweenGreaterThanAmountOfDays(requestItem.timestamp, new Date().toISOString(), maximumDaysBackupRequests) ? false : true;
+      });
+
+      localStorage.removeItem('requests-backup');
+    }
+    listOfRequests.push({timestamp: new Date().toISOString(), url: details.url, httpMethod: details.method});
+    localStorage.setItem('requests-backup', JSON.stringify(listOfRequests));
+  }
 
   public static setErrorInLocalStorage(personId: string, submitType: PersonAction | undefined, error: Error): void {
     let dataArrayToStore = [{
@@ -87,6 +107,10 @@ export class tinderRequestInterceptorHelper {
     return false;
   }
 
+  public isTinderOriginRequest(details: chrome.webRequest.WebRequestBodyDetails): boolean {
+    return details.url.startsWith('https://api.gotinder.com/') || details.initiator === 'https://tinder.com';
+  }
+
   public _getPersonIdFromUrl(url: string): string {
 
     let longestStringInArray = "";
@@ -161,6 +185,18 @@ export class requestInterceptor {
 
     // the line below logs all tinder requests because the app only responds to tinder requests according to the settings in the manifest.json
     // console.log(`%crequestInitiator: ${details.initiator}, Requesturl: ${details.url}`, 'color: red');
+    
+    // Ensure that only tinder webRequests will be processed
+    if(!globalThis.tinderRequestInterceptorHelper.isTinderOriginRequest(details)){
+      return;
+    }
+
+    // Stores all requests made by tinder 
+    // This action is preformed because of 2 reasons:
+    // 1. if for whatever reason the like/pass/superlike/whatever is not being sent to the contentscript, the swiped person datarecord will contain an tempId along the lines of; 'idNotRetrievedPleaseCheckBackgroundRequestsBackupsInLocalStorage'
+      // thus I can get the id from the localStorage for future reference
+    // 2. if the api for like/pass/superlike/whatever changes, i can look back at these logs and determine the new api without losing any data
+    backgroundScriptErrorHelper.storeRequestInBackgroundBackup(details);
 
     if (!globalThis.tinderRequestInterceptorHelper.isTinderSwipeRequest(details)) {
       return;
