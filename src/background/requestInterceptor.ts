@@ -174,7 +174,8 @@ export class requestInterceptor {
     let action: SubmitAction | undefined = undefined;
 
     switch (true) {
-      case details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[0]) || details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[1]) && details.url.includes('super'):
+      case (details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[0]) || details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[1])) && details.url.includes('super'):
+        // line above; either startwith /like or /superlike to be true AND must include words 'super'
         // superlike example: https://api.gotinder.com/like/57f2a33a6dda1f6b095088af/super?locale=nl
         action = {
           'submitType': PersonAction.SUPER_LIKED_PERSON,
