@@ -68,8 +68,6 @@ export class TinderController implements datingAppController {
                         //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
                         this.setSwipeHelperOnScreen();
 
-
-
                         // HINT: In order to scroll to the very bottom of the messageList in tinder;
                         /*
                         Use 
@@ -1114,7 +1112,19 @@ export class TinderController implements datingAppController {
                 {
                     label: 'Seems-toppick',
                     value: false
-                }
+                },
+                {
+                    label: 'Last-updated',
+                    value: new Date().toISOString()
+                },
+                {
+                    label: 'Is-match',
+                    value: false
+                },
+                {
+                    label: 'Date-liked-or-passed',
+                    value: new Date().toISOString()
+                },
             ]);
 
             // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
@@ -1125,16 +1135,21 @@ export class TinderController implements datingAppController {
                 console.dir(newDataRecord);
 
             }, (submitType: SubmitType) => {
-                console.log('Callback received a submit type!');
+                console.log('Callback received a submit type! But it will only be used if no response from background can be retrieved');
                 this.uiRenderer.setLoadingOverlay('loadingSwipeAction', true);
                 console.log(submitType);
 
                 console.log(this.dataStorage);
                 console.assert(this.dataStorage.popLastActionFromDataStore() === undefined);
 
-                // get (request) personid from backgroundscript (get response), after 3 sec
+                //todo: refactor all code below to use a promise, in which a set interval checks every 100ms orso if a dataStorage item is available then executes code as normal to a max of 60 sec
+                // OR even better; once submittype has been pressed, do nothing here, copy the code below to the backgroundscriptlistener? (let THAT code check if we are on swiping page, what is filled into the datafields etc.)
+                // OR EVEN BETTER YET; this code (except for when the timeout begins should always run first, sooner than my backgroundscript can receive a response..), so; create a new promise, add it to the dataStore, let the eventlistener from backgroundscript trigger the resolve, if no response comes make my script below (with timeout) trigger the reject after 1 min orso
+
+                // get (request) personid from backgroundscript (get response), after 1 sec
+                const ms = 1000;
                 setTimeout(() => {
-                    console.log('so.. is dataStore set?');
+                    console.log('this is what is found in dataStore after 1 sec: ');
                     console.log(this.dataStorage);
                     const submitAction: SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
                     console.log(submitAction);
@@ -1159,37 +1174,29 @@ export class TinderController implements datingAppController {
                             return;
                         }
 
+                        const dataForDataFields: DataRecordValues[] = [
+                            {
+                                label: 'System-no',
+                                value: {
+                                    appType: 'tinder',
+                                    tempId: submitAction.personId
+                                }
+                            },
+                            {
+                                label: 'Did-i-like',
+                                value: personActionStatus
+                            },
+                            {
+                                label: 'Type-of-match-or-like',
+                                value: [typeOfLikeOrPass]
+                            },
+                        ];
+                        newDataRecord.addDataToDataFields(dataForDataFields);
+
                         this.requestHandler.getProfileDetailsStart(submitAction.personId).then((matchDetails: MatchDetailsAPI) => {
                             //todo: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
 
                             const dataForDataFields: DataRecordValues[] = [
-                                {
-                                    label: 'System-no',
-                                    value: {
-                                        appType: 'tinder',
-                                        tempId: submitAction.personId
-                                    }
-                                },
-                                {
-                                    label: 'Did-i-like',
-                                    value: personActionStatus
-                                },
-                                {
-                                    label: 'Type-of-match-or-like',
-                                    value: [typeOfLikeOrPass]
-                                },
-                                {
-                                    label: 'Last-updated',
-                                    value: new Date().toISOString()
-                                },
-                                {
-                                    label: 'Is-match',
-                                    value: false
-                                },
-                                {
-                                    label: 'Date-liked-or-passed',
-                                    value: new Date().toISOString()
-                                },
                                 {
                                     label: 'Name',
                                     value: matchDetails?.results?.name ? matchDetails.results.name : 'Unknown name'
@@ -1239,16 +1246,64 @@ export class TinderController implements datingAppController {
                             }
 
                             newDataRecord.addDataToDataFields(dataForDataFields);
+                            
 
+                            //TODO:
+                            // 1. V Test when swiping and CAN retrieve all data if this still works
+                            // 2. V Test when swiping and CANNOT reach getProfileDetails endpoint if this still works
+                            // 3. V Test when swiping and CANNOT reach getProfileDetails endpoint NOR dataStorage has been set if this still works
+
+                            // BONUS: Add updated dataRecords to localStorage? or even simply use the FileSystemApi (the one exclusive to chrome, since my chrome extension is chrome exclusive anwyay..)
+                            // would be very usefull for temporary storing data if...
+                                // 1. my browser were to suddenly crash for whatever reason, or my entire computer
+                                // 2. for whatever reason i need to run (catch train?) thus aborting export for storing data records
+
+                            // works =
+                            // swiped profile is still added to the dataRecords
+                            // screen is still reset correctly
+                            // overlay is gone
+                            
+                        }).catch(()=>{
+                            console.error(`Swiped person received tempId, but could not get details of swiped person! Saving inserted info of record regardless`);
+                        }).finally(()=>{
                             this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
-
                             this.addUIHelpers(currentScreen, true);
-
                             this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
                         });
+                    }else{
+                        newDataRecord.addDataToDataFields([
+                            // set initial value to later be adjusted by ui control
+                            {
+                                label: 'System-no',
+                                value: {
+                                    appType: 'tinder',
+                                    tempId: `idNotRetrievedPleaseCheckBackgroundRequestsBackupsInLocalStorage-${new Date().toISOString()}`
+                                }
+                            },
+                            {
+                                label: 'Did-i-like',
+                                value: submitType === 'liked' ? true : false
+                            },
+                            {
+                                label: 'Type-of-match-or-like',
+                                value: [submitType]
+                            },
+                        ]);
+                        this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
+                        this.addUIHelpers(currentScreen, true);
+                        this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
+
+                        console.error(`Swiped person received no tempId! Saving inserted info of record regardless.. Don't forget to check background local storage requests backup to get the corresponding personid and to overwrite the tempId later!`);
+                        //todo: Should REALLY throw a important alert to notify myself what I need to pay extra attention!
                     }
-                }, 1000);
+                }, ms);
             });
+
+            //TODO TODO TODO:
+            // AM I SURE I DO NOT WANT TO ALWAYS STORE MY (ONLY) NEWLY MADE DATARECORDS IN LOCALSTORAGE JUST TO BE 100% SURE I DON'T LOSE ANY OF MY INSERTED DATA?
+            // AND TO REMOVE THESE RECORDS FROM LOCALSTORAGE AFTER E.G. 3 DAYS 
+            // I WOULD ONLY BE STORING DATA RECORDS I JUST MADE AFTER ALL, NOT ALL OF THE DATA OFF COURSE (IN CASE OF ERRORS; BROWSER CRASH, PC CRASH ETC. IT WOULD BE USEFULL)
+            // I COULD CREATE A SIMILAIR CLASS (OR REFACTOR THE CLASS) AND LOGIC I USE IN BACKGROUND SCRIPT
         }
 
         //todo: create view to show gathered info for all dataFields (thus also showing current value of; name, age, hasProfiletext etc.)
