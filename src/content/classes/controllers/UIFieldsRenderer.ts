@@ -12,8 +12,9 @@ export class UIFieldsRenderer {
         {
             name: 'sliderBootstrap',
             label: UIRequiredType.SLIDER,
-            getValueMethod: (htmlElement:HTMLInputElement): number => {
-                if(htmlElement){
+            getValueMethod: (htmlElement: HTMLInputElement | HTMLSelectElement): number => {
+                if(htmlElement && htmlElement.tagName === 'INPUT'){
+                    htmlElement = htmlElement as HTMLInputElement;
                     return htmlElement.valueAsNumber;
                 }
                 console.error(`Event target nog set`);
@@ -43,11 +44,12 @@ export class UIFieldsRenderer {
         {
             name: 'switchBootstrap',
             label: UIRequiredType.SWITCH,
-            getValueMethod: (htmlElement:HTMLInputElement): boolean => {
-                if(htmlElement){
+            getValueMethod: (htmlElement: HTMLInputElement | HTMLSelectElement): boolean => {
+                if(htmlElement && htmlElement.tagName === 'INPUT'){
+                    htmlElement = htmlElement as HTMLInputElement;
                     return htmlElement.checked ? true : false;
                 }
-                console.error(`Event target nog set`);
+                console.error(`Event target not (correctly) set`);
                 return false;
             },
             template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null):string => { 
@@ -63,8 +65,9 @@ export class UIFieldsRenderer {
         {
             name: 'inputBootstrap',
             label: UIRequiredType.ALPHANUMERIC_INPUT,
-            getValueMethod: (htmlElement:HTMLInputElement): string => {
-                if(htmlElement){
+            getValueMethod: (htmlElement:HTMLInputElement | HTMLSelectElement): string => {
+                if(htmlElement && htmlElement.tagName === 'INPUT'){
+                    htmlElement = htmlElement as HTMLInputElement;
                     return htmlElement.value;
                 }
                 console.error(`Event target nog set`);
@@ -80,10 +83,46 @@ export class UIFieldsRenderer {
                 </div>`}
         },
         {
+            name: 'multiselectBootstrap',
+            label: UIRequiredType.MULTISELECT,
+            getValueMethod: (htmlElement: HTMLInputElement | HTMLSelectElement): string[] => {
+                if(htmlElement && htmlElement.tagName === 'SELECT'){
+                    htmlElement = htmlElement as HTMLSelectElement;
+                    if(htmlElement.selectedOptions.length){
+                        return Array.from(htmlElement.selectedOptions).map(function (selectedOption: HTMLOptionElement) {
+                            return selectedOption.value;
+                        });
+                    }else{
+                        return [];
+                    }
+                }
+                console.error(`Event target (HTML Select Element) nog set`);
+                return [];
+            },
+            template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null, values: string[] | undefined):string => {
+                defaultValue = defaultValue === null || defaultValue === undefined ? '' : defaultValue; 
+                values = values && values.length > 0 ? values : [];
+                let multiSelectOptionsHTML = '';
+                values.forEach((value) => {multiSelectOptionsHTML += `<option value="${value}">${value}</option>`});
+
+                console.log(`values are: ${values}`);
+                console.log(`values in HTML options format are: ${multiSelectOptionsHTML}`);
+
+                return `
+                <div class="fieldContainer fieldContainer--multiselect">
+                    <label class="form-label select-label">${label}</label> 
+                    <br/>       
+                    <select id="${id}" data-type="${dataType}" data-templatename="multiselectBootstrap" data-recordref="${label}" class="select2" multiple="multiple">
+                                ${multiSelectOptionsHTML}
+                    </select>
+                </div>`}
+        },
+        {
             name: 'textareaBootstrap',
             label: UIRequiredType.TEXTAREA,
-            getValueMethod: (htmlElement:HTMLInputElement): string => {
-                if(htmlElement){
+            getValueMethod: (htmlElement: HTMLInputElement | HTMLSelectElement): string => {
+                if(htmlElement && htmlElement.tagName === 'TEXTAREA'){
+                    htmlElement = htmlElement as HTMLInputElement;
                     return htmlElement.value;
                 }
                 console.error(`Event target nog set`);
@@ -108,7 +147,7 @@ export class UIFieldsRenderer {
         const templateName = this._getTemplateName(<HTMLInputElement>event.currentTarget);
         const UIRecordRef = this._getUIRecordRef(<HTMLInputElement>event.currentTarget);
         if(dataType && templateName && UIRecordRef){
-            const value = this._getValueByTemplateName(templateName, <HTMLInputElement>event.currentTarget); //todo: use label instead of dataType for getting the value?
+            const value = this._getValueByTemplateName(templateName, event.currentTarget as HTMLInputElement | HTMLSelectElement); //todo: use label instead of dataType for getting the value?
             const newDataRecordValue: DataRecordValues = {
                 'label': UIRecordRef,
                 'value': value
@@ -152,7 +191,7 @@ export class UIFieldsRenderer {
           }
     }
     
-    private _getValueByTemplateName(templateName: string, HTMLInputElement: HTMLInputElement): unknown | undefined {
+    private _getValueByTemplateName(templateName: string, HTMLInputElement: HTMLInputElement | HTMLSelectElement): unknown | undefined {
         const indexTemplateByDataType = this.templatesList.findIndex( template => template.name === templateName);
         if(indexTemplateByDataType !== -1){
             return this.templatesList[indexTemplateByDataType].getValueMethod(HTMLInputElement);
@@ -225,6 +264,7 @@ export class UIFieldsRenderer {
         }
 
         $(`body`).on("blur", '#uiHelperFieldsContainer [id^="datafieldUI_"]', this.valuesEventHandler);
+        $(`body`).on("change", '#uiHelperFieldsContainer .select2', this.valuesEventHandler);
         $(`body`).on("click", '[id^="submitAction_"]', this.submitEventHandler);
     }
 
@@ -292,7 +332,16 @@ export class UIFieldsRenderer {
             const requiredTemplateIndex = this.templatesList.findIndex(template => template.label === dataField.UISetting.UIrequiredType);
             const dataFieldValue: string | number | boolean | null = dataField.getValue();
             // console.log(`RENDERING UI FIELD. DEFAULT VALUE FOR ${dataField.title} SHOULD BE: ${dataField.getValue()}`);
-            $('body').find('#uiHelperFieldsContainer').first().append(this.templatesList[requiredTemplateIndex].template(`datafieldUI_${index}`, dataField.title, dataField.dataLogic.baseType, dataFieldValue));
+            $('body').find('#uiHelperFieldsContainer').first().append(this.templatesList[requiredTemplateIndex].template(`datafieldUI_${index}`, dataField.title, dataField.dataLogic.baseType, dataFieldValue, dataField.options));
+        });
+
+        this.activateMultiSelectDropdown();
+    }
+
+    private activateMultiSelectDropdown(): void {
+        $(".select2").select2({
+            placeholder: 'Select an option',
+            width: '100%'
         });
     }
 

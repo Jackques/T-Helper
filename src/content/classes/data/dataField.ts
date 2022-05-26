@@ -5,7 +5,7 @@ import { GhostStatus } from "./dataItems/dataItemGhost";
 import { DateHelper } from "../util/dateHelper";
 
 export enum UIRequired { SELECT_ONLY = 'select_only', CHAT_ONLY = 'chat_only', ALL = 'all', NONE = 'none' }
-export enum UIRequiredType { TEXTAREA = 'textarea', ALPHANUMERIC_INPUT = 'alphanumeric-input', SLIDER = 'slider', SWITCH = 'switch' }
+export enum UIRequiredType { TEXTAREA = 'textarea', ALPHANUMERIC_INPUT = 'alphanumeric-input', SLIDER = 'slider', SWITCH = 'switch', MULTISELECT = 'multiselect' }
 
 export interface UISetting {
     UIrequired: UIRequired,
@@ -18,6 +18,7 @@ export class DataField {
     public emptyFieldAllowed: boolean;
     public UISetting: UISetting;
     public multipleDataEntry: boolean;
+    public options: string[];
     public mustBeUnique: boolean;
     public autoGather: boolean;
     public onlyGatherOnce: boolean;
@@ -28,12 +29,13 @@ export class DataField {
 
     private _uniqueIdentifier:uniqueEntryChecker = new uniqueEntryChecker();
 
-    constructor(title:string, description:string, emptyFieldAllowed:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer){
+    constructor(title:string, description:string, emptyFieldAllowed:boolean, UISetting:UISetting, multipleDataEntry:boolean, mustBeUnique:boolean, autoGather:boolean, onlyGatherOnce:boolean, dataLogic: logicContainer, options?: string[]){
         this.title = title;
         this.description = description;
         this.emptyFieldAllowed = emptyFieldAllowed;// why did i need this again? What the difference between this setting and the UISetting setting? Don;t i only need the UISetting setting? Idea; refactor this to a specific string keyword mentioning the required ui element needed e.g. 'radio'
         this.UISetting = UISetting; //determines if the fields is visible in UI
         this.multipleDataEntry = multipleDataEntry;
+        this.options = options ? options : [];
         this.mustBeUnique = mustBeUnique;
         this.autoGather = autoGather; //if true, then check in the provided dataSource if e.g. a numnber already exists. if not assign a new (increment from the former) number to this person
         this.onlyGatherOnce = onlyGatherOnce;
@@ -42,6 +44,10 @@ export class DataField {
 
         if(!this._isDataFieldValid()){
             console.error(`Data field ${this.title} is not valid. Check the logs and update.`);
+        }
+
+        if(!this.multipleDataEntry && this.options.length > 0){
+            console.error(`Data field ${this.title} is not valid. Options are provided while multiple data entry is set to false.`);
         }
     }
 
