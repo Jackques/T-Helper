@@ -111,9 +111,6 @@ export class UIFieldsRenderer {
                     multiSelectOptionsHTML += `<option value="${value}" ${selectedValues.includes(value) ? `selected` : ``}>${value}</option>`
                 });
 
-                console.log(`values are: ${values}`);
-                console.log(`values in HTML options format are: ${multiSelectOptionsHTML}`);
-
                 return `
                 <div class="fieldContainer fieldContainer--multiselect">
                     <label class="form-label select-label">${label}</label> 
