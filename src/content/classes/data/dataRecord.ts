@@ -106,9 +106,17 @@ export class DataRecord {
                     'is-mom',
                     'seems-prettier-in-real-life',
                     'is-prettier-in-real-life',
-                    'seems awesome personality',
+                    'seems-awesome-personality',
                     'has-awesome-personality',
-                    'has-big-*****-not-obese'
+                    'has-big-*****-not-obese',
+                    'unclear-or-no-fullbody',
+                    'is-tourist',
+                    'is-immigrant-or-expat',
+                    'non-caucasian-but-Dutch',
+                    'interested-in-ons',
+                    'interested-in-fwb',
+                    'interested-in-relationship-only',
+                    'interested-in-friends-only',
                 ]
                 ), 
         //todo: track wether the like given (or received?) is a normal like, superlike etc. Since the same concept also applies to toher dating apps,.. find a universal format for this.
