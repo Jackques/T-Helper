@@ -83,7 +83,7 @@ export class DataRecord {
         new DataField('Type-of-match-or-like', 'The type of match or like me and my match might have exchanged', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, true, false, {baseType: 'specialList', customCheckClass: new dataCheckListStrings()}),
         new DataField('Is-verified', 'Wether or not this person is verified', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Attractiveness-score', 'The attractiveness-level for this person', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SLIDER }, false, false, false, false, {baseType: 'number', customCheckClass: new dataAttractiveness()}), // NOTE! attractiveness rating on photo's can be 1, 2, 3, 6.5, 6, 7,5, 8 etc. but also: NAN (no photo available when there is litterally no photo?)
-            new DataField(
+        new DataField(
                 'Details-tags', 
                 'Details I assume or know about this person to be true', 
                 true, 
@@ -100,14 +100,10 @@ export class DataRecord {
                     customCheckClass: new dataCheckListStrings()
                 }, 
                 [
-                    'seems-bitchy', 
-                    'is-bitchy', 
                     'seems-mom', 
                     'is-mom',
                     'seems-prettier-in-real-life',
                     'is-prettier-in-real-life',
-                    'seems-awesome-personality',
-                    'has-awesome-personality',
                     'has-big-*****-not-obese',
                     'unclear-or-no-fullbody',
                     'is-tourist',
@@ -118,7 +114,45 @@ export class DataRecord {
                     'interested-in-relationship-only',
                     'interested-in-friends-only',
                 ]
-                ), 
+        ), 
+        new DataField(
+            'Vibe-tags', 
+            'The vibe or feeling I get from this person judging from their pictures & chat', 
+            true, 
+            { 
+                UIrequired: UIRequired.ALL, 
+                UIrequiredType: UIRequiredType.MULTISELECT 
+            }, 
+            false, 
+            false, 
+            false, 
+            false, 
+            {
+                baseType: 'stringList', 
+                customCheckClass: new dataCheckListStrings()
+            }, 
+            [
+                'seems-bitchy', 
+                'is-bitchy', 
+                'seems-awesome-personality',
+                'has-awesome-personality',
+                'seems-travelfreak',
+                'is-travelfreak',
+                'seems-boring',
+                'is-boring',
+                'seems-nerdy',
+                'is-nerdy',
+                'seems-sweet',
+                'is-sweet',
+                'seems-tokkie',
+                'is-tokkie',
+                'seems-airhead',
+                'is-airhead',
+                'seems-toughgirl',
+                'is-toughgirl',
+                'seems-interested-in-ons-fwb-etc'
+            ]
+    ), 
         //todo: track wether the like given (or received?) is a normal like, superlike etc. Since the same concept also applies to toher dating apps,.. find a universal format for this.
         new DataField('Did-i-like', 'Wether I liked/showed interest in this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Is-match', 'Wether we have a match/can talk/person liked me back or not', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
