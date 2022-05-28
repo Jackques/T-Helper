@@ -6,4 +6,4 @@ export interface logicContainer {
     customCheckClass: dataCheck | dataCheckSimple | null;
 }
 
-export type baseTypes = 'string' | 'number' | 'boolean' | 'list';
+export type baseTypes = 'string' | 'number' | 'boolean' | 'stringList' | 'specialList';

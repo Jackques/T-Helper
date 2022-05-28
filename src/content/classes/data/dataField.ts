@@ -45,16 +45,12 @@ export class DataField {
         if(!this._isDataFieldValid()){
             console.error(`Data field ${this.title} is not valid. Check the logs and update.`);
         }
-
-        if(!this.multipleDataEntry && this.options.length > 0){
-            console.error(`Data field ${this.title} is not valid. Options are provided while multiple data entry is set to false.`);
-        }
     }
 
     public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null | Record<string, unknown>[] {
         // console.log('uses getBaseValue from datafield');
 
-        if(this.dataLogic.baseType === 'list'){
+        if(this._isBaseTypeOfAllowedListType(this.dataLogic.baseType)){
             return this.dataEntryList;
         }
 
@@ -118,7 +114,7 @@ export class DataField {
             return;
         }
 
-        if(this.dataLogic.baseType === 'list'){
+        if(this._isBaseTypeOfAllowedListType(this.dataLogic.baseType)){
             const isArrayDataEntryList:Record<string, unknown>[] | null = this._getArrayDataEntryList(dataEntry)
 
             if(isArrayDataEntryList){
@@ -176,9 +172,7 @@ export class DataField {
             console.error(`dataEntry: ${dataEntry} for property: ${this.title} does not have a unique number.`)
         }
 
-        const typeDataEntry:"string" | "number" | "boolean" | "object" | null = this._getTypeOfValue(dataEntry);
-
-        if(this.dataLogic.customCheckClass !== null){
+        if(this.dataLogic.baseType === 'specialList' && this.dataLogic.customCheckClass !== null){
             if(this.dataLogic.customCheckClass.isValidEntry(dataEntry)){
                 return true;
             }
@@ -186,6 +180,7 @@ export class DataField {
             return false;
         }
 
+        const typeDataEntry: "string" | "number" | "boolean" | "object" | null = this._getTypeOfValue(dataEntry);
         switch (this.dataLogic.baseType) {
             case 'string': 
                 if(typeDataEntry === 'string'){
@@ -205,8 +200,17 @@ export class DataField {
                 }
                 console.error(`The data entry (${dataEntry}) provided for ${this.title} should be of type ${this.dataLogic.baseType} but was found to be of type ${this._getTypeOfValue(dataEntry)}`);
                 return false;
-            case 'list': 
-                console.error(`${this.title} lacks a checkMethod whilst baseType is a list. List datatype always requires a checkmethod.`);
+            case 'stringList': 
+                if(typeDataEntry === 'object' && Array.isArray(dataEntry)){
+                    if(this._isDataEntryValidForStringList(dataEntry)){
+                        return true;
+                    }
+                    return false;
+                }
+                console.error(`${this.title} has baseType set to 'stringList' but received a value which is not an array. Please check the data to ensure values provided to this datafield are always of type array.`);
+                return false;
+            case 'specialList': 
+                console.error(`Datafield ${this.title} has baseType 'specialList' but no customCheckClass assigned. Datafields with baseType 'specialList' must have a customCheckClass assigned to it.`);
                 return false;
             default: 
                 console.error(`The basetype provided for ${this.title} has an unknown type`);
@@ -225,7 +229,7 @@ export class DataField {
     private _isDataEntryEmpty(dataEntry: unknown){
         //todo: should refactor this to 1. convert unknown to a known type and 2. use a enum instead of true/false cause this aint working..
 
-        if(this.dataLogic.baseType === 'list' && dataEntry instanceof Array){
+        if(this._isBaseTypeOfAllowedListType(this.dataLogic.baseType) && dataEntry instanceof Array){
             return dataEntry.every((dataEntryItem)=>{
                 if(typeof dataEntryItem === 'object'){
                     return this._isObjectEntryEmpty(dataEntryItem as Record<string, unknown>);
@@ -319,6 +323,25 @@ export class DataField {
         return true;
     }
 
+    private _isDataEntryValidForStringList(dataEntry: unknown): boolean {
+        const providedDataEntryList = dataEntry as Array<unknown>;
+        if(!providedDataEntryList.every((providedDataEntry) => typeof providedDataEntry === 'string')){
+            console.error(`Field ${this.title} is of type list, but values provided in the array are not of type string. Non-string type lists are currently not supported.`);
+            return false;
+        }
+
+        const providedDataEntryStringList = dataEntry as Array<string>;
+        if(!providedDataEntryStringList.every((providedDataEntry) => this.options.includes(providedDataEntry))){
+            console.error(`Values in field ${this.title} do not match the options provided for this list datafield. Please check and update the values provided or include it into the options for this field.`);
+            return false;
+        }
+
+        return true;
+    }
+
+    private _isBaseTypeOfAllowedListType(baseType: string): boolean {
+        return baseType === 'specialList' || baseType === 'stringList';
+    }
 }
 
 export class DataFieldSystemNo extends DataField {

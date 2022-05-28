@@ -546,6 +546,11 @@ export class TinderController implements datingAppController {
                 case 'Attractiveness-score':
                     dataRecordValuesList.push({ 'label': 'Attractiveness-score', 'value': dataField.getValue() || dataField.getValue() === 0 ? dataField.getValue() : null });
                     break;
+                case 'Details-tags': {
+                    const currentValue = dataField.getValue() as Array<unknown>;
+                    dataRecordValuesList.push({ 'label': 'Details-tags', 'value': currentValue && currentValue.length > 0 ? dataField.getValue() : [] });
+                    break;
+                }
                 case 'Did-i-like':
                     dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
                     break;

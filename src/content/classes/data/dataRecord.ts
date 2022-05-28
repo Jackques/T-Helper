@@ -58,9 +58,9 @@ export class DataRecord {
     //todo: maybe needs a systemNo or something? Just like No but specifically for the system
     public usedDataFields:DataField[] = [
         //Mandatory data fields
-        new DataFieldSystemNo('System-no', 'The number the system of the datingapp assigned this person to', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: new dataCheckSystemId()}),
+        new DataFieldSystemNo('System-no', 'The number the system of the datingapp assigned this person to', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'specialList', customCheckClass: new dataCheckSystemId()}),
         new DataField('No', 'The number of the person for my app internaly', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, true, true, true, {baseType: 'number', customCheckClass: null}),
-        new DataFieldMessages('Messages', 'The messages sent between me and my match', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'list', customCheckClass: new dataCheckMessage()}),
+        new DataFieldMessages('Messages', 'The messages sent between me and my match', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'specialList', customCheckClass: new dataCheckMessage()}),
         new DataField('Last-updated', 'The datetime this record has been last updated (including messages)', false, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'string', customCheckClass: new dataCheckDate()}),
         
 
@@ -76,13 +76,41 @@ export class DataRecord {
         new DataField('Seems-empty', 'If a profile appear to have no identifying info whatsoever, maybe even simply a blank picture', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Seems-obese', 'If a profile seems to be very overweight to obese to worse than obese', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Seems-toppick', 'If a profile seems to be very attractive a normal person would never match with (i.e. instagram model like)', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
-        new DataFieldDistances('Distance-in-km', 'The reported distance of this person relative to me on a given datetime', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, false, false, {baseType: 'list', customCheckClass: new dataCheckDistances()}),
+        new DataFieldDistances('Distance-in-km', 'The reported distance of this person relative to me on a given datetime', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, false, false, {baseType: 'specialList', customCheckClass: new dataCheckDistances()}),
         new DataField('School', 'The claimed school this person attends/attended', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: null}),
         new DataField('Gender', 'The gender of this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: null}),
-        new DataField('Interests', 'The interests of this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckListStrings()}),
-        new DataField('Type-of-match-or-like', 'The type of match or like me and my match might have exchanged', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, true, false, {baseType: 'list', customCheckClass: new dataCheckListStrings()}),
+        new DataField('Interests', 'The interests of this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, true, false, {baseType: 'specialList', customCheckClass: new dataCheckListStrings()}),
+        new DataField('Type-of-match-or-like', 'The type of match or like me and my match might have exchanged', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, true, false, {baseType: 'specialList', customCheckClass: new dataCheckListStrings()}),
         new DataField('Is-verified', 'Wether or not this person is verified', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Attractiveness-score', 'The attractiveness-level for this person', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SLIDER }, false, false, false, false, {baseType: 'number', customCheckClass: new dataAttractiveness()}), // NOTE! attractiveness rating on photo's can be 1, 2, 3, 6.5, 6, 7,5, 8 etc. but also: NAN (no photo available when there is litterally no photo?)
+            new DataField(
+                'Details-tags', 
+                'Details I assume or know about this person to be true', 
+                true, 
+                { 
+                    UIrequired: UIRequired.ALL, 
+                    UIrequiredType: UIRequiredType.MULTISELECT 
+                }, 
+                false, 
+                false, 
+                false, 
+                false, 
+                {
+                    baseType: 'stringList', 
+                    customCheckClass: new dataCheckListStrings()
+                }, 
+                [
+                    'seems-bitchy', 
+                    'is-bitchy', 
+                    'seems-mom', 
+                    'is-mom',
+                    'seems-prettier-in-real-life',
+                    'is-prettier-in-real-life',
+                    'seems awesome personality',
+                    'has-awesome-personality',
+                    'has-big-*****-not-obese'
+                ]
+                ), 
         //todo: track wether the like given (or received?) is a normal like, superlike etc. Since the same concept also applies to toher dating apps,.. find a universal format for this.
         new DataField('Did-i-like', 'Wether I liked/showed interest in this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Is-match', 'Wether we have a match/can talk/person liked me back or not', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
@@ -91,11 +119,11 @@ export class DataRecord {
         new DataField('Match-responded', 'If this person responded to my first message', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Conversation-exists', 'If this person responded to each of my first 3 messages to this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Vibe-conversation', 'The feeling of how easy & fun it is to have a conversation with this person ranging from 1 (very responsive & fun) to 6 (hardly responsive & teeth pulling)', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SLIDER }, false, false, false, false, {baseType: 'number', customCheckClass: new dataConversationVibe()}),
-        new DataFieldGhostsList('How-many-ghosts', 'How many times this person did respond in a certain timeframe', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'list', customCheckClass: new dataCheckGhosts()}),
+        new DataFieldGhostsList('How-many-ghosts', 'How many times this person did respond in a certain timeframe', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'specialList', customCheckClass: new dataCheckGhosts()}),
         new DataField('Acquired-number', 'Did I get further contact details (e.g. phone number) from this person?', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Date-of-acquired-number', 'The datetime I received contact details from this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, false, false, {baseType: 'string', customCheckClass: new dataCheckDate()}),
-        new DataFieldReactionSpeedList('Response-speed', 'The moments of time between each response', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'list', customCheckClass: new dataCheckReactionSpeed()}), // de dagen & tijden tussen de eerste nieuwe berichten vanuit de ander
-        new DataFieldReminderList('Reminders-amount', 'The amount of reminders I sent and if they worked', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'list', customCheckClass: new dataCheckReminders()}),
+        new DataFieldReactionSpeedList('Response-speed', 'The moments of time between each response', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'specialList', customCheckClass: new dataCheckReactionSpeed()}), // de dagen & tijden tussen de eerste nieuwe berichten vanuit de ander
+        new DataFieldReminderList('Reminders-amount', 'The amount of reminders I sent and if they worked', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'specialList', customCheckClass: new dataCheckReminders()}),
         new DataField('Match-wants-no-contact', 'If this person indicated they did not wish further contact', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Blocked-or-removed', 'If this person certainly blocked my profile/removed us as match', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Date-of-unmatch', 'The datetime the match was removed', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'string', customCheckClass: new dataCheckDate()}),

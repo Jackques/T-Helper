@@ -88,22 +88,28 @@ export class UIFieldsRenderer {
             getValueMethod: (htmlElement: HTMLInputElement | HTMLSelectElement): string[] => {
                 if(htmlElement && htmlElement.tagName === 'SELECT'){
                     htmlElement = htmlElement as HTMLSelectElement;
-                    if(htmlElement.selectedOptions.length){
-                        return Array.from(htmlElement.selectedOptions).map(function (selectedOption: HTMLOptionElement) {
-                            return selectedOption.value;
-                        });
-                    }else{
-                        return [];
-                    }
+                    
+                    const selectedOptionsList = $(htmlElement).select2('data') as Record<string, string>[];
+                    const currentSelectedOptions = selectedOptionsList.map((data)=>{
+                        return data.text;
+                    });
+                    console.log(`My current selected options are: ${currentSelectedOptions.join(', ')}`);
+                    return currentSelectedOptions;
                 }
                 console.error(`Event target (HTML Select Element) nog set`);
                 return [];
             },
-            template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null, values: string[] | undefined):string => {
-                defaultValue = defaultValue === null || defaultValue === undefined ? '' : defaultValue; 
+            template: (id:string, label:string, dataType:string, selectedValues: string | number | boolean | string[] | null, values: string[] | undefined):string => {
+                if(!Array.isArray(selectedValues)){
+                    console.error(`Incorrect data value provided. Provided selectedValues is not an array`);
+                    return ``;
+                }
+                
                 values = values && values.length > 0 ? values : [];
                 let multiSelectOptionsHTML = '';
-                values.forEach((value) => {multiSelectOptionsHTML += `<option value="${value}">${value}</option>`});
+                values.forEach((value) => {
+                    multiSelectOptionsHTML += `<option value="${value}" ${selectedValues.includes(value) ? `selected` : ``}>${value}</option>`
+                });
 
                 console.log(`values are: ${values}`);
                 console.log(`values in HTML options format are: ${multiSelectOptionsHTML}`);
@@ -332,6 +338,7 @@ export class UIFieldsRenderer {
             const requiredTemplateIndex = this.templatesList.findIndex(template => template.label === dataField.UISetting.UIrequiredType);
             const dataFieldValue: string | number | boolean | null = dataField.getValue();
             // console.log(`RENDERING UI FIELD. DEFAULT VALUE FOR ${dataField.title} SHOULD BE: ${dataField.getValue()}`);
+            
             $('body').find('#uiHelperFieldsContainer').first().append(this.templatesList[requiredTemplateIndex].template(`datafieldUI_${index}`, dataField.title, dataField.dataLogic.baseType, dataFieldValue, dataField.options));
         });
 
@@ -341,6 +348,7 @@ export class UIFieldsRenderer {
     private activateMultiSelectDropdown(): void {
         $(".select2").select2({
             placeholder: 'Select an option',
+            closeOnSelect: false,
             width: '100%'
         });
     }
