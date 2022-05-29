@@ -172,6 +172,34 @@ export class DataRecord {
         new DataField('Seemingly-deleted-profile', 'If this person seemingly (i.e. request to match profile returns a 404) deleted their profile', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Interested-in-sex', 'Wether this person has indicated to be interested in a hookup or not', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Potential-click', 'Wether the vibe of the conversation was good enough to say "we clicked"', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField(
+            'Why-i-removed', 
+            'The reason why I removed or cancelled the (match) connection with this person', 
+            true, 
+            { 
+                UIrequired: UIRequired.CHAT_ONLY, 
+                UIrequiredType: UIRequiredType.MULTISELECT 
+            }, 
+            false, 
+            false, 
+            false, 
+            false, 
+            {
+                baseType: 'stringList', 
+                customCheckClass: new dataCheckListStrings()
+            }, 
+            [
+                'got-number', 
+                'match-never-responded', 
+                'nasty-person',
+                'recognized-or-dated-previously',
+                'matched-previously-on-datingapp-same-number',
+                'is-scammer',
+                'is-catfish',
+                'accidental-like',
+                'not-attracted-anymore'
+            ]
+        ),
         new DataField('Did-i-unmatch', 'If i am going to/have unmatched an existing match', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Notes', 'Any interesting notes on this person', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.TEXTAREA }, false, false, false, false, {baseType: 'string', customCheckClass: null}),
     ];

@@ -626,6 +626,11 @@ export class TinderController implements datingAppController {
                 case 'Potential-click':
                     dataRecordValuesList.push({ 'label': 'Potential-click', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
                     break
+                case 'Why-i-removed': {
+                    const currentValue = dataField.getValue() as Array<unknown>;
+                    dataRecordValuesList.push({ 'label': 'Why-i-removed', 'value': currentValue && currentValue.length > 0 ? dataField.getValue() : [] });
+                    break;
+                }
                 case 'Did-i-unmatch':
                     dataRecordValuesList.push({
                         'label': 'Did-i-unmatch',
@@ -1671,11 +1676,16 @@ export class TinderController implements datingAppController {
                     }
 
                     if(matchDetails === 500){
-                        console.error(`Matchdetails: ${matchName} with id: ${matchId} gave a 500. Probably only removed me as match?`);
+                        console.error(`Matchdetails: ${matchName} with id: ${matchId} request returned a 500. Probably only removed me as match?`);
                     }
 
                     if(typeof matchDetails !== 'number' && matchDetails?.closed){
-                        console.warn(`Matchdetails: ${matchName} with id: ${matchId} gave a 200. Match deleted our match!`);
+                        const indexUnmatchDatafield = unupdatedMatch.getIndexOfDataFieldByTitle('Did-i-unmatch');
+                        if(unupdatedMatch.usedDataFields[indexUnmatchDatafield].getValue()){
+                            console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. I (ME) deleted our match!`);
+                        }else{
+                            console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. Match deleted our match!`);
+                        }
 
                         unupdatedMatch.addDataToDataFields([
                             {
