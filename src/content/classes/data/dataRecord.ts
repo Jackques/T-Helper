@@ -76,6 +76,8 @@ export class DataRecord {
         new DataField('Seems-empty', 'If a profile appear to have no identifying info whatsoever, maybe even simply a blank picture', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Seems-obese', 'If a profile seems to be very overweight to obese to worse than obese', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Seems-toppick', 'If a profile seems to be very attractive a normal person would never match with (i.e. instagram model like)', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Liked-me-first-is-instant-match', 'If this person liked me first thus resulting in an instant match upon me liking this person. Must set this field manually, if the match is not instant then I liked the person first', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+
         new DataFieldDistances('Distance-in-km', 'The reported distance of this person relative to me on a given datetime', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, false, false, {baseType: 'specialList', customCheckClass: new dataCheckDistances()}),
         new DataField('School', 'The claimed school this person attends/attended', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: null}),
         new DataField('Gender', 'The gender of this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: null}),
@@ -152,7 +154,7 @@ export class DataRecord {
                 'is-toughgirl',
                 'seems-interested-in-ons-fwb-etc'
             ]
-    ), 
+        ),
         //todo: track wether the like given (or received?) is a normal like, superlike etc. Since the same concept also applies to toher dating apps,.. find a universal format for this.
         new DataField('Did-i-like', 'Wether I liked/showed interest in this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Is-match', 'Wether we have a match/can talk/person liked me back or not', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),

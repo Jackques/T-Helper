@@ -543,6 +543,13 @@ export class TinderController implements datingAppController {
                     });
                     break;
                 }
+                case 'Liked-me-first-is-instant-match': {
+                    dataRecordValuesList.push({
+                        'label': 'Liked-me-first-is-instant-match',
+                        'value': dataField.getValue() || dataField.getValue() === null ? dataField.getValue() : false
+                    });
+                    break;
+                }
                 case 'Attractiveness-score':
                     dataRecordValuesList.push({ 'label': 'Attractiveness-score', 'value': dataField.getValue() || dataField.getValue() === 0 ? dataField.getValue() : null });
                     break;
