@@ -558,6 +558,11 @@ export class TinderController implements datingAppController {
                     dataRecordValuesList.push({ 'label': 'Details-tags', 'value': currentValue && currentValue.length > 0 ? dataField.getValue() : [] });
                     break;
                 }
+                case 'Vibe-tags': {
+                    const currentValue = dataField.getValue() as Array<unknown>;
+                    dataRecordValuesList.push({ 'label': 'Vibe-tags', 'value': currentValue && currentValue.length > 0 ? dataField.getValue() : [] });
+                    break;
+                }
                 case 'Did-i-like':
                     dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
                     break;
@@ -624,7 +629,6 @@ export class TinderController implements datingAppController {
                     }
                     break;
                 case 'Match-wants-no-contact':
-                    //todo: for deleted convo's by matches; does is there a property in the api response?
                     dataRecordValuesList.push({ 'label': 'Match-wants-no-contact', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
                     break
                 case 'Interested-in-sex':
