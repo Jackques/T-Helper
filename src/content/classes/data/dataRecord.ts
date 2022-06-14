@@ -199,7 +199,9 @@ export class DataRecord {
                 'is-scammer',
                 'is-catfish',
                 'accidental-like',
-                'not-attracted-anymore'
+                'not-attracted-anymore',
+                'old-match-before-app-no-longer-attracted',
+                'old-match-before-app-match-never-responded'
             ]
         ),
         new DataField('Did-i-unmatch', 'If i am going to/have unmatched an existing match', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
