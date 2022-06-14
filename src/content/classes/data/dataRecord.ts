@@ -108,6 +108,8 @@ export class DataRecord {
                     'is-prettier-in-real-life',
                     'has-big-*****-not-obese',
                     'unclear-or-no-fullbody',
+                    'seems-chubby', 
+                    'is-chubby',
                     'seems-has-humor', 
                     'has-humor',
                     'seems-has-MY-humor',
