@@ -161,6 +161,7 @@ export class DataRecord {
                 'seems-interested-in-ons-fwb-etc'
             ]
         ),
+        new DataField('Seems-to-be-active', 'Wether a match showed signs of being active/online (i.e. updating pictures, updating profileText, etc.) despite potentially not responding', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         //todo: track wether the like given (or received?) is a normal like, superlike etc. Since the same concept also applies to toher dating apps,.. find a universal format for this.
         new DataField('Did-i-like', 'Wether I liked/showed interest in this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Is-match', 'Wether we have a match/can talk/person liked me back or not', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, false, {baseType: 'boolean', customCheckClass: null}),

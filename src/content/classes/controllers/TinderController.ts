@@ -563,6 +563,11 @@ export class TinderController implements datingAppController {
                     dataRecordValuesList.push({ 'label': 'Vibe-tags', 'value': currentValue && currentValue.length > 0 ? dataField.getValue() : [] });
                     break;
                 }
+                case 'Seems-to-be-active': {
+                    const hasMatchGivenResponse = this._hasMatchGivenResponse(messagesDataField.getAllMessages());
+                    dataRecordValuesList.push({ 'label': 'Seems-to-be-active', 'value': dataField.getValue() || hasMatchGivenResponse ? true : false });
+                    break;
+                }
                 case 'Did-i-like':
                     dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
                     break;
