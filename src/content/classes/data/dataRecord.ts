@@ -86,6 +86,7 @@ export class DataRecord {
         new DataField('Interests', 'The interests of this person', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, true, false, {baseType: 'specialList', customCheckClass: new dataCheckListStrings()}),
         new DataField('Type-of-match-or-like', 'The type of match or like me and my match might have exchanged', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, true, false, {baseType: 'specialList', customCheckClass: new dataCheckListStrings()}),
         new DataField('Is-verified', 'Wether or not this person is verified', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Amount-of-pictures', 'The amount of pictures this person uses on their profile at the time of matching', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'number', customCheckClass: null}),
         new DataField('Attractiveness-score', 'The attractiveness-level for this person', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SLIDER }, false, false, false, false, {baseType: 'number', customCheckClass: new dataAttractiveness()}), // NOTE! attractiveness rating on photo's can be 1, 2, 3, 6.5, 6, 7,5, 8 etc. but also: NAN (no photo available when there is litterally no photo?)
         new DataField(
                 'Details-tags', 

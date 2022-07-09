@@ -550,6 +550,9 @@ export class TinderController implements datingAppController {
                     });
                     break;
                 }
+                case 'Amount-of-pictures': 
+                    dataRecordValuesList.push({ 'label': 'Amount-of-pictures', 'value': dataField.getValue() === null && match?.match.person !== undefined ? this.getAmountOfPictures(match?.match.person) : null });
+                    break;
                 case 'Attractiveness-score':
                     dataRecordValuesList.push({ 'label': 'Attractiveness-score', 'value': dataField.getValue() || dataField.getValue() === 0 ? dataField.getValue() : null });
                     break;
@@ -1064,7 +1067,11 @@ export class TinderController implements datingAppController {
                                                 dateTime: new Date().toISOString(),
                                                 distanceInKM: this._convertDistanceMilesToKM(matchDetails?.results?.distance_mi)
                                             }]
-                                        }
+                                        },
+                                        {
+                                            label: 'Amount-of-pictures',
+                                            value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Amount-of-pictures')].getValue() ? dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Amount-of-pictures')].getValue() : this.getAmountOfPictures(matchDetails.results)
+                                        },
                                     ];
 
                                     dataRecord?.addDataToDataFields(dataForDataFields);
@@ -1732,6 +1739,17 @@ export class TinderController implements datingAppController {
 
             }
         });
+    }
+
+    private getAmountOfPictures(personDetails: Match["person"] | MatchDetailsAPI["results"]): number | null {
+        let amountOfPictures: null | number = null;
+                                                
+        try{
+            amountOfPictures = personDetails.photos.length;
+        } catch(err){
+            console.log(`Attempted to get amount of pictures for profile: ${personDetails.name} with id: ${personDetails._id} but failed due to error: ${err}`);
+        }
+        return amountOfPictures;
     }
 
     public disconnectAllUIWatchers(): boolean {
