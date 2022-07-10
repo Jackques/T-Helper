@@ -89,6 +89,34 @@ export class DataRecord {
         new DataField('Amount-of-pictures', 'The amount of pictures this person uses on their profile at the time of matching', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'number', customCheckClass: null}),
         new DataField('Attractiveness-score', 'The attractiveness-level for this person', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SLIDER }, false, false, false, false, {baseType: 'number', customCheckClass: new dataAttractiveness()}), // NOTE! attractiveness rating on photo's can be 1, 2, 3, 6.5, 6, 7,5, 8 etc. but also: NAN (no photo available when there is litterally no photo?)
         new DataField(
+            'Height', 
+            'The (estimated) height of this person', 
+            true, 
+            { 
+                UIrequired: UIRequired.ALL, 
+                UIrequiredType: UIRequiredType.MULTISELECT 
+            }, 
+            false, 
+            false, 
+            false, 
+            false, 
+            {
+                baseType: 'stringList', 
+                customCheckClass: new dataCheckListStrings()
+            }, 
+            [
+                'seems-short < 1.60m',
+                'is-short < 1.60m',
+                'seems-normal >= 1.60-1.70m',
+                'is-normal >= 1.60-1.70m',
+                'seems-tall > 1.70-1.80m',
+                'is-tall > 1.70-1.80m',
+                'seems-very-tall > 1.80m',
+                'is-very-tall > 1.80m',
+                'indetermineable-height'
+            ]
+        ), 
+        new DataField(
                 'Details-tags', 
                 'Details I assume or know about this person to be true', 
                 true, 
