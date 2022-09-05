@@ -275,7 +275,7 @@ export class UIFieldsRenderer {
 
         if(screen === ScreenNavStateCombo.Swipe){
             // const submitButtonDOMType_pass = $(".recsCardboard__cards div[class*=c-pink] button").first();
-            const submitButtonDOMType_pass = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*=c-pink] button");
+            const submitButtonDOMType_pass = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-nope-default)" )+"] button");
             if(submitButtonDOMType_pass !== null){
                 $(submitButtonDOMType_pass).attr('id', 'submitAction_passed');
                 this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_pass);
@@ -284,7 +284,7 @@ export class UIFieldsRenderer {
             }
 
             // const submitButtonDOMType_superlike = $(".recsCardboard__cards div[class*=c-superlike-blue] button").first();
-            const submitButtonDOMType_superlike = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*=c-superlike-blue] button");
+            const submitButtonDOMType_superlike = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-super-like-default)" )+"] button");
             if(submitButtonDOMType_superlike !== null){
                 $(submitButtonDOMType_superlike).attr('id', 'submitAction_superliked');
                 this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_superlike);
@@ -293,7 +293,7 @@ export class UIFieldsRenderer {
             }
 
             // const submitButtonDOMType_like = $(".recsCardboard__cards div[class*=c-like-green] button").first();
-            const submitButtonDOMType_like = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*=c-like-green] button");
+            const submitButtonDOMType_like = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-like-default)" )+"] button");
             if(submitButtonDOMType_like !== null){
                 $(submitButtonDOMType_like).attr('id', 'submitAction_liked');
                 this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_like);
