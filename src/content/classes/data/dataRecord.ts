@@ -79,6 +79,7 @@ export class DataRecord {
         new DataField('Is-uitblinker-for-Me', 'If a match is very physically attractive and/or has a great personality to a degree that I (the creator of this app) would normally never dream of matching with such a hot & cool person', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
 
         new DataField('Liked-me-first-is-instant-match', 'If this person liked me first thus resulting in an instant match upon me liking this person. Must set this field manually, if the match is not instant then I liked the person first', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Is-gold-match', 'If a match is thanks to Tinder gold or not', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
 
         new DataFieldDistances('Distance-in-km', 'The reported distance of this person relative to me on a given datetime', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, false, false, {baseType: 'specialList', customCheckClass: new dataCheckDistances()}),
         new DataField('School', 'The claimed school this person attends/attended', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, false, false, true, true, {baseType: 'string', customCheckClass: null}),

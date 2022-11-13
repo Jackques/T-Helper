@@ -550,6 +550,13 @@ export class TinderController implements datingAppController {
                     });
                     break;
                 }
+                case 'Is-gold-match': {
+                    dataRecordValuesList.push({
+                        'label': 'Is-gold-match',
+                        'value': dataField.getValue() || dataField.getValue() === null ? dataField.getValue() : false
+                    });
+                    break;
+                }
                 case 'Amount-of-pictures': 
                     dataRecordValuesList.push({ 'label': 'Amount-of-pictures', 'value': dataField.getValue() === null && match?.match.person !== undefined ? this.getAmountOfPictures(match?.match.person) : null });
                     break;
