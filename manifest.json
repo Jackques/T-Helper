@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Chrome Extension Starter",
   "version": "1.0.0",
   "description": "",
@@ -31,10 +31,7 @@
     }
   ],
   "background": {
-    "scripts": [
-      "background/index.js"
-    ],
-    "persistent": true
+    "service_worker": "background/index.js"
   },
   "devtools_page": "devtools/index.html",
   "options_page": "options/index.html",
