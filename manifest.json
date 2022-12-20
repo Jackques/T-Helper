@@ -8,7 +8,7 @@
     "48": "assets/icons/icon48.png",
     "128": "assets/icons/icon128.png"
   },
-  "browser_action": {
+  "action": {
     "default_icon": "assets/icons/icon16.png",
     "default_popup": "popup/index.html",
     "default_title": "Starter Popup"
@@ -35,18 +35,17 @@
   },
   "devtools_page": "devtools/index.html",
   "options_page": "options/index.html",
-  "web_accessible_resources": [
-    "assets/icons/*.png"
-  ],
   "permissions": [
     "tabs", 
     "activeTab",
+    "webRequest",
+    "notifications",
+    "storage"
+  ],
+  "host_permissions": [
     "https://api.gotinder.com/*",
     "http://api.gotinder.com/*",
-    "webRequest",
-    "webRequestBlocking",
     "*://developer.mozilla.org/",
-    "<all_urls>",
-    "notifications"
+    "<all_urls>"
   ]
 }
