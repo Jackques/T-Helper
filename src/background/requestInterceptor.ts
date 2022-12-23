@@ -1,13 +1,18 @@
 import { PersonAction } from "../peronAction.enum";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { DateHelper } from "../../src/content/classes/util/dateHelper";
+import { Storage } from "./Storage";
 
 export class backgroundScriptErrorHelper {
-  public static storeRequestInBackgroundBackup(details: chrome.webRequest.WebRequestBodyDetails): void {
+
+  private static localStorage = new Storage();
+
+  public static async storeRequestInBackgroundBackup(details: chrome.webRequest.WebRequestBodyDetails): Promise<void> {
     const maximumDaysBackupRequests = 3;
     let listOfRequests: { timestamp: string; url: string; httpMethod: string; }[] = [];
 
-    const localStorageCurrentItem = localStorage.getItem('requests-backup');
+    // const localStorageCurrentItem = localStorage.getItem('requests-backup'); // OLD
+    const localStorageCurrentItem = await this.localStorage.getItem('requests-backup');
     if(localStorageCurrentItem !== null){
       // for simplicity sake, i know for a fact that it will always return an array with objects with string key, values inside
       listOfRequests = JSON.parse(localStorageCurrentItem) as { timestamp: string; url: string; httpMethod: string; }[];
@@ -17,13 +22,19 @@ export class backgroundScriptErrorHelper {
         return DateHelper.isDateBetweenGreaterThanAmountOfDays(requestItem.timestamp, new Date().toISOString(), maximumDaysBackupRequests) ? false : true;
       });
 
-      localStorage.removeItem('requests-backup');
+      // localStorage.removeItem('requests-backup'); // OLD
+      this.localStorage.removeItem('requests-backup').catch(()=>{
+        console.warn(`Could not remove item from localStorage, please check the localStorage: ${listOfRequests}`);
+      });
     }
     listOfRequests.push({timestamp: new Date().toISOString(), url: details.url, httpMethod: details.method});
-    localStorage.setItem('requests-backup', JSON.stringify(listOfRequests));
+    // localStorage.setItem('requests-backup', JSON.stringify(listOfRequests)); // OLD
+    this.localStorage.setItem('requests-backup', JSON.stringify(listOfRequests)).catch(()=>{
+      console.warn(`Could not set item from localStorage, please check the localStorage: ${listOfRequests}`);
+    });
   }
 
-  public static setErrorInLocalStorage(personId: string, submitType: PersonAction | undefined, error: Error): void {
+  public static async setErrorInLocalStorage(personId: string, submitType: PersonAction | undefined, error: Error): Promise<void> {
     let dataArrayToStore = [{
       dateTimeISO: new Date().toISOString(),
       personId: personId,
@@ -32,16 +43,33 @@ export class backgroundScriptErrorHelper {
       errorStack: error.stack ? error.stack : ''
     }];
 
-    if (this.hasLocalStorageBackgroundScriptErrorSet()) {
+    if (await this.hasLocalStorageBackgroundScriptErrorSet()) {
 
-      const previousErrorsArray = JSON.parse(this.getPreviousErrorInLocalStorage());
+      const previousErrorsArray = JSON.parse(await this.getPreviousErrorInLocalStorage());
       dataArrayToStore = dataArrayToStore.concat(previousErrorsArray);
     }
 
-    localStorage.removeItem(`backgroundScriptError`);
-    try {
-      localStorage.setItem(`backgroundScriptError`, JSON.stringify(dataArrayToStore));
-    } catch (err: unknown) {
+    // localStorage.removeItem(`backgroundScriptError`);
+    
+    // try {
+    //   localStorage.setItem(`backgroundScriptError`, JSON.stringify(dataArrayToStore));
+    // } catch (err: unknown) {
+    //   const customError = this.retrieveErrorFromUnknownError(err);
+    //   const options: chrome.notifications.NotificationOptions = {
+    //     title: 'Error',
+    //     type: 'basic',
+    //     message: `Could not write to localStorage! Stop using the app immediatly to prevent further loss of data. Check console log of backgroundscript immediatly.`,
+    //     iconUrl: 'assets/alert-error.png'
+    //   }
+    //   chrome.notifications.create(`backgroundScriptError-${new Date().toISOString()}`, options);
+    //   console.error(`backgroundScriptError-${new Date().toISOString()}; ${customError.message}, ${customError}`);
+    // }
+
+    this.localStorage.removeItem(`backgroundScriptError`).catch(()=>{
+      console.warn(`Could not remove item from localStorage: ${`backgroundScriptError`}, please check the localStorage`);
+    });
+
+    this.localStorage.setItem('backgroundScriptError', JSON.stringify(dataArrayToStore)).catch((err)=>{
       const customError = this.retrieveErrorFromUnknownError(err);
       const options: chrome.notifications.NotificationOptions = {
         title: 'Error',
@@ -51,7 +79,7 @@ export class backgroundScriptErrorHelper {
       }
       chrome.notifications.create(`backgroundScriptError-${new Date().toISOString()}`, options);
       console.error(`backgroundScriptError-${new Date().toISOString()}; ${customError.message}, ${customError}`);
-    }
+    });
   }
 
   public static retrieveErrorFromUnknownError(err: unknown): Error {
@@ -67,8 +95,9 @@ export class backgroundScriptErrorHelper {
     return customError;
   }
 
-  private static getPreviousErrorInLocalStorage(): string {
-    const localStorageBackgroundScriptError: string | null = localStorage.getItem(`backgroundScriptError`);
+  private static async getPreviousErrorInLocalStorage(): Promise<string> {
+    // const localStorageBackgroundScriptError: string | null = localStorage.getItem(`backgroundScriptError`);
+    const localStorageBackgroundScriptError: string | null = await this.localStorage.getItem(`backgroundScriptError`);
     if (localStorageBackgroundScriptError === null) {
       return '';
     } else {
@@ -76,8 +105,8 @@ export class backgroundScriptErrorHelper {
     }
   }
 
-  private static hasLocalStorageBackgroundScriptErrorSet(): boolean {
-    return localStorage.getItem(`backgroundScriptError`) === null ? false : true;
+  private static async hasLocalStorageBackgroundScriptErrorSet(): Promise<boolean> {
+    return await this.localStorage.getItem(`backgroundScriptError`) === null ? false : true;
   }
 }
 
@@ -256,18 +285,20 @@ export class requestInterceptor {
       port.postMessage(message);
     } catch (err: unknown) {
       const customError = backgroundScriptErrorHelper.retrieveErrorFromUnknownError(err);
-      backgroundScriptErrorHelper.setErrorInLocalStorage(submitAction.personId, submitAction.submitType, customError);
+      backgroundScriptErrorHelper.setErrorInLocalStorage(submitAction.personId, submitAction.submitType, customError).finally(()=>{
 
-      const options: chrome.notifications.NotificationOptions = {
-        title: 'Warning',
-        type: 'basic',
-        message: `An error occured! But don't worry, your received data has been saved in your localStorage for future manual retrieval. Don't forget to inspect it when you are ready! Error: ${customError.message}. TIP: By requesting all the retrrieved user id's to the user endpoint I can still retrieve all the details of the profiles I swiped on!`,
-        iconUrl: 'assets/alert-warning.png'
-      }
-      chrome.notifications.create(`backgroundScriptError-${new Date().toISOString()}`, options);
+        const options: chrome.notifications.NotificationOptions = {
+          title: 'Warning',
+          type: 'basic',
+          message: `An error occured! But don't worry, your received data has been saved in your localStorage for future manual retrieval. Don't forget to inspect it when you are ready! Error: ${customError.message}. TIP: By requesting all the retrrieved user id's to the user endpoint I can still retrieve all the details of the profiles I swiped on!`,
+          iconUrl: 'assets/alert-warning.png'
+        }
+        chrome.notifications.create(`backgroundScriptError-${new Date().toISOString()}`, options);
+  
+        console.error(`An error: ${err} occured while attempting to send: ${message} to the content script. The message will be stored in localStorage, so please retrieve the data at a later point manually from localStorage.`);
+        console.info(`TIP: By requesting all the retrrieved user id's to the user endpoint I can still retrieve all the details of the profiles I swiped on`);
+      });
 
-      console.error(`An error: ${err} occured while attempting to send: ${message} to the content script. The message will be stored in localStorage, so please retrieve the data at a later point manually from localStorage.`);
-      console.info(`TIP: By requesting all the retrrieved user id's to the user endpoint I can still retrieve all the details of the profiles I swiped on`);
     }
 
   }
