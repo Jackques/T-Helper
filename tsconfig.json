@@ -32,6 +32,6 @@
     "./src"
   ],
   "files": [
-    "./vue-shims.d.ts", "./src/content/classes/data/SubmitType.ts"
+    "./vue-shims.d.ts", "./src/content/classes/data/SubmitType.ts", "src/background/SubmitAction.interface.ts", "./src/background/backgroundScriptErrorHelper.ts", "./src/background/tinderRequestInterceptorHelper.ts"
   ]
 }

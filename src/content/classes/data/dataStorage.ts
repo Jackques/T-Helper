@@ -1,4 +1,4 @@
-import { SubmitAction } from "src/background/requestInterceptor";
+import { SubmitAction } from "src/background/SubmitAction.interface";
 
 export class dataStorage {
     private dataStore:DataItem[] = [];

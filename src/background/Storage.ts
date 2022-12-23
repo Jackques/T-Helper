@@ -1,4 +1,4 @@
-export class Storage {
+export class LocalStorageFacade {
 
     private storage = chrome.storage.local;
 
