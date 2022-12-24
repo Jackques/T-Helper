@@ -11,7 +11,6 @@ export class backgroundScriptErrorHelper {
     const maximumDaysBackupRequests = 3;
     let listOfRequests: { timestamp: string; url: string; httpMethod: string; }[] = [];
 
-    // const localStorageCurrentItem = localStorage.getItem('requests-backup'); // OLD
     const localStorageCurrentItem = await this.localStorage.getItem('requests-backup');
     if (localStorageCurrentItem !== null) {
       // for simplicity sake, i know for a fact that it will always return an array with objects with string key, values inside
@@ -22,13 +21,11 @@ export class backgroundScriptErrorHelper {
         return DateHelper.isDateBetweenGreaterThanAmountOfDays(requestItem.timestamp, new Date().toISOString(), maximumDaysBackupRequests) ? false : true;
       });
 
-      // localStorage.removeItem('requests-backup'); // OLD
       this.localStorage.removeItem('requests-backup').catch(() => {
         console.warn(`Could not remove item from localStorage, please check the localStorage: ${listOfRequests}`);
       });
     }
     listOfRequests.push({ timestamp: new Date().toISOString(), url: details.url, httpMethod: details.method });
-    // localStorage.setItem('requests-backup', JSON.stringify(listOfRequests)); // OLD
     this.localStorage.setItem('requests-backup', JSON.stringify(listOfRequests)).catch(() => {
       console.warn(`Could not set item from localStorage, please check the localStorage: ${listOfRequests}`);
     });
@@ -49,20 +46,6 @@ export class backgroundScriptErrorHelper {
       dataArrayToStore = dataArrayToStore.concat(previousErrorsArray);
     }
 
-    // localStorage.removeItem(`backgroundScriptError`);
-    // try {
-    //   localStorage.setItem(`backgroundScriptError`, JSON.stringify(dataArrayToStore));
-    // } catch (err: unknown) {
-    //   const customError = this.retrieveErrorFromUnknownError(err);
-    //   const options: chrome.notifications.NotificationOptions = {
-    //     title: 'Error',
-    //     type: 'basic',
-    //     message: `Could not write to localStorage! Stop using the app immediatly to prevent further loss of data. Check console log of backgroundscript immediatly.`,
-    //     iconUrl: 'assets/alert-error.png'
-    //   }
-    //   chrome.notifications.create(`backgroundScriptError-${new Date().toISOString()}`, options);
-    //   console.error(`backgroundScriptError-${new Date().toISOString()}; ${customError.message}, ${customError}`);
-    // }
     this.localStorage.removeItem(`backgroundScriptError`).catch(() => {
       console.warn(`Could not remove item from localStorage: ${`backgroundScriptError`}, please check the localStorage`);
     });
@@ -94,7 +77,6 @@ export class backgroundScriptErrorHelper {
   }
 
   private static async getPreviousErrorInLocalStorage(): Promise<string> {
-    // const localStorageBackgroundScriptError: string | null = localStorage.getItem(`backgroundScriptError`);
     const localStorageBackgroundScriptError: string | null = await this.localStorage.getItem(`backgroundScriptError`);
     if (localStorageBackgroundScriptError === null) {
       return '';

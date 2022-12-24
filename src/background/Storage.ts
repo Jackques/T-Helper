@@ -3,10 +3,6 @@ export class LocalStorageFacade {
     private storage = chrome.storage.local;
 
     public getItem(key: string): Promise<string | null> {
-        // this.storage.get(["key"]).then((result) => {
-        //     console.log("Value currently is " + result.key);
-        //   });
-
         return new Promise<string | null>((resolve, reject) => {
           try{
             this.storage.get((items: {[key: string]: unknown;})=>{
@@ -16,13 +12,10 @@ export class LocalStorageFacade {
               if(storageKeys.length === 0){
                 return resolve(null);
               }else if(items[key]){
-                  // return resolve(items[key] as string);
-                  //todo: might want to add a check if items[key] is not a string, it will return null and throw an error or something
+                  //todo: might want to add a check if items[key] is not a string (despite i know 100% it always will be a string), it will return null and throw an error or something
                   return resolve(items[key] as string);
               }
               return resolve(null);
-              
-              // return typeof items[key] === 'string' ? items[key] : null;
             })
           }catch(error){
             reject(null);
