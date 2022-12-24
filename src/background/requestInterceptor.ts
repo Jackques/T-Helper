@@ -1,140 +1,8 @@
 import { PersonAction } from "../peronAction.enum";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
-import { DateHelper } from "../../src/content/classes/util/dateHelper";
-
-export class backgroundScriptErrorHelper {
-  public static storeRequestInBackgroundBackup(details: chrome.webRequest.WebRequestBodyDetails): void {
-    const maximumDaysBackupRequests = 3;
-    let listOfRequests: { timestamp: string; url: string; httpMethod: string; }[] = [];
-
-    const localStorageCurrentItem = localStorage.getItem('requests-backup');
-    if(localStorageCurrentItem !== null){
-      // for simplicity sake, i know for a fact that it will always return an array with objects with string key, values inside
-      listOfRequests = JSON.parse(localStorageCurrentItem) as { timestamp: string; url: string; httpMethod: string; }[];
-
-      //TODO: Should create check which filters out urls with the same text content (and only keep the most recent one). This will greatly help reduce the amount of data being stored as it may get big really soon!
-      listOfRequests = listOfRequests.filter((requestItem)=>{
-        return DateHelper.isDateBetweenGreaterThanAmountOfDays(requestItem.timestamp, new Date().toISOString(), maximumDaysBackupRequests) ? false : true;
-      });
-
-      localStorage.removeItem('requests-backup');
-    }
-    listOfRequests.push({timestamp: new Date().toISOString(), url: details.url, httpMethod: details.method});
-    localStorage.setItem('requests-backup', JSON.stringify(listOfRequests));
-  }
-
-  public static setErrorInLocalStorage(personId: string, submitType: PersonAction | undefined, error: Error): void {
-    let dataArrayToStore = [{
-      dateTimeISO: new Date().toISOString(),
-      personId: personId,
-      submitType: submitType,
-      errorMessage: error.message,
-      errorStack: error.stack ? error.stack : ''
-    }];
-
-    if (this.hasLocalStorageBackgroundScriptErrorSet()) {
-
-      const previousErrorsArray = JSON.parse(this.getPreviousErrorInLocalStorage());
-      dataArrayToStore = dataArrayToStore.concat(previousErrorsArray);
-    }
-
-    localStorage.removeItem(`backgroundScriptError`);
-    try {
-      localStorage.setItem(`backgroundScriptError`, JSON.stringify(dataArrayToStore));
-    } catch (err: unknown) {
-      const customError = this.retrieveErrorFromUnknownError(err);
-      const options: chrome.notifications.NotificationOptions = {
-        title: 'Error',
-        type: 'basic',
-        message: `Could not write to localStorage! Stop using the app immediatly to prevent further loss of data. Check console log of backgroundscript immediatly.`,
-        iconUrl: 'assets/alert-error.png'
-      }
-      chrome.notifications.create(`backgroundScriptError-${new Date().toISOString()}`, options);
-      console.error(`backgroundScriptError-${new Date().toISOString()}; ${customError.message}, ${customError}`);
-    }
-  }
-
-  public static retrieveErrorFromUnknownError(err: unknown): Error {
-    let customError;
-    if (err instanceof Error) {
-      customError = err as Error;
-    } else if (typeof err === 'object') {
-      customError = new Error(JSON.stringify(err));
-    } else {
-      const errorMessage = String(err);
-      customError = new Error(errorMessage);
-    }
-    return customError;
-  }
-
-  private static getPreviousErrorInLocalStorage(): string {
-    const localStorageBackgroundScriptError: string | null = localStorage.getItem(`backgroundScriptError`);
-    if (localStorageBackgroundScriptError === null) {
-      return '';
-    } else {
-      return localStorageBackgroundScriptError;
-    }
-  }
-
-  private static hasLocalStorageBackgroundScriptErrorSet(): boolean {
-    return localStorage.getItem(`backgroundScriptError`) === null ? false : true;
-  }
-}
-
-export class tinderRequestInterceptorHelper {
-
-  private requestsList: string[] = [];
-  public requestTinderSwipeUrlList = [
-    'https://api.gotinder.com/like/',
-    'https://api.gotinder.com/superlike/',
-    'https://api.gotinder.com/pass/'
-  ];
-
-  public isTinderSwipeRequest(details: chrome.webRequest.WebRequestHeadersDetails): boolean {
-    return this.requestTinderSwipeUrlList.some(swipeUrl =>
-      details.url.startsWith(swipeUrl)
-    );
-  }
-
-  public _isDifferentRequest(details: chrome.webRequest.WebRequestBodyDetails): boolean {
-    // console.log(`oke, we gaan eens checken of dit ontvangen request (${details.url}) al eens eerder is voorgekomen: ${this.requestsList}`);
-    if (!this.requestsList.includes(details.url)) {
-      this.requestsList.push(details.url);
-      // console.log(`Ik zal eens het ontvangen request (${details.url}) toevoegen: ${this.requestsList}`);
-      return true;
-    }
-    // console.log(`Hey! Ik heb dus alweer hetzelfde request ontvangen: ${details.url}. Deze zit toch al in mijn ${this.requestsList}`);
-    return false;
-  }
-
-  public isTinderOriginRequest(details: chrome.webRequest.WebRequestBodyDetails): boolean {
-    return details.url.startsWith('https://api.gotinder.com/') || details.initiator === 'https://tinder.com';
-  }
-
-  public _getPersonIdFromUrl(url: string): string {
-
-    let longestStringInArray = "";
-
-    // the personId string even without the '?locale=nl' part is always the longest with 24 characters
-    url.split('/').forEach((urlPart) => {
-      if (longestStringInArray.length < urlPart.length) {
-        longestStringInArray = urlPart;
-      }
-    });
-
-    if (longestStringInArray.length > 0) {
-      longestStringInArray = longestStringInArray.indexOf('?') !== -1 ? longestStringInArray.substring(0, longestStringInArray.indexOf('?')) : longestStringInArray;
-      longestStringInArray = longestStringInArray.indexOf('&') !== -1 ? longestStringInArray.substring(0, longestStringInArray.indexOf('&')) : longestStringInArray;
-      return longestStringInArray;
-    }
-    console.error(`Could not get personId from url. Please check the settings for retrieving personId from string`);
-    return url;
-  }
-
-}
-
-
-
+import { SubmitAction } from "./SubmitAction.interface";
+import { backgroundScriptErrorHelper } from "./backgroundScriptErrorHelper";
+import { tinderRequestInterceptorHelper } from "./tinderRequestInterceptorHelper";
 
 export class requestInterceptor {
 
@@ -256,25 +124,22 @@ export class requestInterceptor {
       port.postMessage(message);
     } catch (err: unknown) {
       const customError = backgroundScriptErrorHelper.retrieveErrorFromUnknownError(err);
-      backgroundScriptErrorHelper.setErrorInLocalStorage(submitAction.personId, submitAction.submitType, customError);
+      backgroundScriptErrorHelper.setErrorInLocalStorage(submitAction.personId, submitAction.submitType, customError).finally(()=>{
 
-      const options: chrome.notifications.NotificationOptions = {
-        title: 'Warning',
-        type: 'basic',
-        message: `An error occured! But don't worry, your received data has been saved in your localStorage for future manual retrieval. Don't forget to inspect it when you are ready! Error: ${customError.message}. TIP: By requesting all the retrrieved user id's to the user endpoint I can still retrieve all the details of the profiles I swiped on!`,
-        iconUrl: 'assets/alert-warning.png'
-      }
-      chrome.notifications.create(`backgroundScriptError-${new Date().toISOString()}`, options);
+        const options: chrome.notifications.NotificationOptions = {
+          title: 'Warning',
+          type: 'basic',
+          message: `An error occured! But don't worry, your received data has been saved in your localStorage for future manual retrieval. Don't forget to inspect it when you are ready! Error: ${customError.message}. TIP: By requesting all the retrrieved user id's to the user endpoint I can still retrieve all the details of the profiles I swiped on!`,
+          iconUrl: 'assets/alert-warning.png'
+        }
+        chrome.notifications.create(`backgroundScriptError-${new Date().toISOString()}`, options);
+  
+        console.error(`An error: ${err} occured while attempting to send: ${message} to the content script. The message will be stored in localStorage, so please retrieve the data at a later point manually from localStorage.`);
+        console.info(`TIP: By requesting all the retrrieved user id's to the user endpoint I can still retrieve all the details of the profiles I swiped on`);
+      });
 
-      console.error(`An error: ${err} occured while attempting to send: ${message} to the content script. The message will be stored in localStorage, so please retrieve the data at a later point manually from localStorage.`);
-      console.info(`TIP: By requesting all the retrrieved user id's to the user endpoint I can still retrieve all the details of the profiles I swiped on`);
     }
 
   }
 
-}
-
-export interface SubmitAction {
-  submitType: PersonAction | undefined,
-  personId: string
 }

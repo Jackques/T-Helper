@@ -1,6 +1,8 @@
 /* eslint-disable no-var */
 
-import { SubmitAction, tinderRequestInterceptorHelper, backgroundScriptErrorHelper } from "src/background/requestInterceptor";
+import { tinderRequestInterceptorHelper } from "src/background/tinderRequestInterceptorHelper";
+import { backgroundScriptErrorHelper } from "src/background/backgroundScriptErrorHelper";
+import { SubmitAction } from "src/background/SubmitAction.interface";
 
 declare global {
     var example: string;
