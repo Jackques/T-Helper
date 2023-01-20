@@ -1,7 +1,7 @@
 .uiHelperFieldsContainer{
     position: absolute;
     z-index: 2;
-    background-color: yellow;
+    background-color: grey;
 
     //todo: refactor values below to (r)em's to make it flexible on any screen size instead of my desktop screens
     &--select {
@@ -115,4 +115,8 @@
     right: 41%;
     height: 35px;
     width: 100px;
+}
+
+.select2-container--default .select2-selection--multiple li.select2-selection__choice {
+    background-color: #646464;
 }

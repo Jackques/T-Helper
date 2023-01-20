@@ -1,7 +1,7 @@
 .uiHelperFieldsContainer {
   position: absolute;
   z-index: 2;
-  background-color: yellow;
+  background-color: grey;
   height: 708px;
   right: 0px;
   width: 40%;
@@ -104,6 +104,10 @@
   right: 41%;
   height: 35px;
   width: 100px;
+}
+
+.select2-container--default .select2-selection--multiple li.select2-selection__choice {
+  background-color: #646464;
 }
 
 /*# sourceMappingURL=styles.css.map */
