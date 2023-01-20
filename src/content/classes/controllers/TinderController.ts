@@ -1686,6 +1686,7 @@ export class TinderController implements datingAppController {
 
                     if(matchDetails === 404){
                         console.warn(`Matchdetails: ${matchName} with id: ${matchId} gave a 404. Probably deleted profile?`);
+                        console.dir(unupdatedMatchesList[i]);
 
                         unupdatedMatch.addDataToDataFields([
                             {
@@ -1713,8 +1714,10 @@ export class TinderController implements datingAppController {
                         const indexUnmatchDatafield = unupdatedMatch.getIndexOfDataFieldByTitle('Did-i-unmatch');
                         if(unupdatedMatch.usedDataFields[indexUnmatchDatafield].getValue()){
                             console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. I (ME) deleted our match!`);
+                            console.warn(unupdatedMatchesList[i]);
                         }else{
                             console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. Match deleted our match!`);
+                            console.warn(unupdatedMatchesList[i]);
                         }
 
                         unupdatedMatch.addDataToDataFields([
