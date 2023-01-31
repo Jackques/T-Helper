@@ -13,7 +13,7 @@ module.exports = {
   globals: {
     chrome: true,
   },
-  collectCoverage: true,
+  collectCoverage: false,
   coverageThreshold: {
     global: {
       branches: 100,
