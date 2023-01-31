@@ -23,6 +23,7 @@ import { Message, MessageAuthorEnum } from "./../../../message.interface";
 import { MatchDetailsAPI } from "src/content/interfaces/http-requests/MatchDetailsAPI.interface";
 import { ghostMoment } from "src/content/interfaces/data/ghostMoment.interface";
 import { reminderAmountItem } from "src/content/interfaces/data/reminderAmountItem.interface";
+import { Reminder } from "../util/NeedsReminder";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
@@ -447,6 +448,11 @@ export class TinderController implements datingAppController {
             messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(retrievedMessagesFromMatch, match.match.person._id))
         }
 
+        const dateAcquiredNumber: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-acquired-number')?.getValue() as string | null;
+        const dateBlockedOrRemoved: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-unmatch')?.getValue() as string | null;
+
+        const reminder: Reminder = new Reminder(messagesDataField.getAllMessages(), dateAcquiredNumber, dateBlockedOrRemoved);
+
         dataFields.forEach((dataField, index, dataFields) => {
             switch (dataField.title) {
                 case 'System-no': {
@@ -557,6 +563,14 @@ export class TinderController implements datingAppController {
                     });
                     break;
                 }
+                case 'Needs-reminder': {
+                    dataRecordValuesList.push({
+                        'label': 'Needs-reminder',
+                        // 'value': !dataField.getValue() || dataField.getValue() === null ? Reminder.setNeedsReminder(match?.matchMessages) : false
+                        'value': messagesDataField.hasMessages() ? reminder.getNeedsReminder(messagesDataField.getAllMessages()) : false
+                    });
+                    break;
+                }
                 case 'Amount-of-pictures': 
                     dataRecordValuesList.push({ 'label': 'Amount-of-pictures', 'value': dataField.getValue() === null && match?.match.person !== undefined ? this.getAmountOfPictures(match?.match.person) : null });
                     break;
@@ -612,8 +626,8 @@ export class TinderController implements datingAppController {
                     break;
                 case 'How-many-ghosts': {
 
-                    const dateAcquiredNumber: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-acquired-number')?.getValue() as string | null;
-                    const dateBlockedOrRemoved: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-unmatch')?.getValue() as string | null;
+                    // const dateAcquiredNumber: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-acquired-number')?.getValue() as string | null;
+                    // const dateBlockedOrRemoved: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-unmatch')?.getValue() as string | null;
 
                     dataRecordValuesList.push({
                         'label': 'How-many-ghosts',
@@ -633,13 +647,14 @@ export class TinderController implements datingAppController {
                     break;
                 case 'Reminders-amount': {
 
-                    const dateAcquiredNumber: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-acquired-number')?.getValue() as string | null;
-                    const dateBlockedOrRemoved: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-unmatch')?.getValue() as string | null;
+                    // const dateAcquiredNumber: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-acquired-number')?.getValue() as string | null;
+                    // const dateBlockedOrRemoved: string | null = dataFields.find((dataField: DataField) => dataField.title === 'Date-of-unmatch')?.getValue() as string | null;
 
                     dataRecordValuesList.push(
                         {
                             'label': 'Reminders-amount',
-                            'value': messagesDataField.hasMessages() ? this._getReminderAmount(messagesDataField.getAllMessages(), dateAcquiredNumber, dateBlockedOrRemoved) : []
+                            // 'value': messagesDataField.hasMessages() ? this._getReminderAmount(messagesDataField.getAllMessages(), dateAcquiredNumber, dateBlockedOrRemoved) : []
+                            'value': messagesDataField.hasMessages() ? reminder.getReminderAmountItems() : []
                         });
                     }
                     break;
@@ -703,40 +718,6 @@ export class TinderController implements datingAppController {
             );
         });
         return messagesForDataRecord;
-    }
-
-    private _getReminderAmount(matchMessages: Message[], dateAcquiredNumber?: string | null, dateBlockedOrRemoved?: string | null): reminderAmountItem[] {
-        const reminderAmountList: reminderAmountItem[] = [];
-        let reminderAmount = 0;
-
-        matchMessages.reduce((messagePrevious, messageNext, currentIndex, messageList) => {
-
-            const isMessagePreviousLaterThanAcquiredNumberDate: boolean = dateAcquiredNumber ? DateHelper.isDateLaterThanDate(messagePrevious.datetime, dateAcquiredNumber) : false;
-            const isMessagePreviousLaterThanBlockedDate: boolean = dateBlockedOrRemoved ? DateHelper.isDateLaterThanDate(messagePrevious.datetime, dateBlockedOrRemoved) : false;
-
-            if(isMessagePreviousLaterThanAcquiredNumberDate || isMessagePreviousLaterThanBlockedDate){
-                // date is later than acquired number date OR blocked or removed match date, thus should no longer add reminder item.
-                return messageNext;
-            }
-
-            // 1. is there 2 days or more in between my last message and my other message? AND my match sent no message in between? = ghost moment
-            if (messagePrevious.author !== MessageAuthorEnum.Match && messageNext.author !== MessageAuthorEnum.Match) {
-                if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(messagePrevious.datetime).getTime(), new Date(messageNext.datetime).getTime(), 2)) {
-
-                    reminderAmountList.push({
-                        number: reminderAmount,
-                        datetimeMyLastMessage: messagePrevious.datetime,
-                        datetimeReminderSent: messageNext.datetime,
-                        textContentReminder: messageNext.message,
-                        hasGottenReply: messageList[(currentIndex + 1)]?.author === MessageAuthorEnum.Match ? true : false
-                    });
-                    reminderAmount = reminderAmount + 1;
-                }
-            }
-            return messageNext;
-        });
-
-        return reminderAmountList;
     }
 
     private _getResponseSpeedMoments(matchMessages: Message[]): any[] {
