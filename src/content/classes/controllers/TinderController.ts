@@ -566,7 +566,6 @@ export class TinderController implements datingAppController {
                 case 'Needs-reminder': {
                     dataRecordValuesList.push({
                         'label': 'Needs-reminder',
-                        // 'value': !dataField.getValue() || dataField.getValue() === null ? Reminder.setNeedsReminder(match?.matchMessages) : false
                         'value': messagesDataField.hasMessages() ? reminder.getNeedsReminder(messagesDataField.getAllMessages()) : false
                     });
                     break;
