@@ -1,3 +1,5 @@
+@import "buttons";
+
 .uiHelperFieldsContainer{
     position: absolute;
     z-index: 2;
@@ -91,30 +93,6 @@
     .form-floating textarea {
         height: 175px;
     }
-}
-
-.downloadButton {
-    display: inline-block;
-    position: absolute;
-    z-index: 1;
-    background-color: blue;
-    color: white;
-    top: 25px;
-    right: 35%;
-    height: 35px;
-    width: 100px;
-}
-
-.closeButton {
-    display: inline-block;
-    position: absolute;
-    z-index: 1;
-    background-color: red;
-    color: white;
-    top: 25px;
-    right: 41%;
-    height: 35px;
-    width: 100px;
 }
 
 .select2-container--default .select2-selection--multiple li.select2-selection__choice {

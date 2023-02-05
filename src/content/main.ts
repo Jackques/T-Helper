@@ -54,6 +54,7 @@ export class Main {
 
                         //todo: maybe should seperate out the logic for init app and actually getting the imported data?
                         this.datingAppController = this.initAppController(this.datingAppType, this.dataTable, this.dataStorage);
+                        this.setSendReminderButton();
                         this.setCloseButton();
                     }
                 }
@@ -161,6 +162,33 @@ export class Main {
                 }, 100);
             }
 
+        });
+    }
+
+    public setSendReminderButton(): void {
+        $('body').prepend(`
+            <button class="reminderButton" id="reminderButton">Send auto reminders</button>
+        `);
+
+        $(`body`).on("click", '[id="reminderButton"]', () => {
+            console.log("SEND REMINDER LIST");
+            const dataRecordsWhoNeedAutoReminder = this.dataTable.getAllDataRecords().filter((dataRecord) => {
+                return dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Needs-reminder")].getValue() === true;
+            });
+            const dataRecordsWhoNeedAutoReminderMap = dataRecordsWhoNeedAutoReminder.map((dataRecord) => {
+                return {
+                    "Name": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Name")].getValue(),
+                    "System-no": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("System-no")].getValue(),
+                    "Needs-reminder": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Needs-reminder")].getValue(),
+                    "Messages": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Messages")].getValue()
+                }
+            });
+    
+            // console.table([{firstname:"John", lastname:"Doe"}, {firstname:"Jack", lastname:"Snyder"}], ["firstname", "lastname"]);
+            console.table(dataRecordsWhoNeedAutoReminderMap, ["Name", "System-no", "Needs-reminder", "Messages"]);
+            console.log("SEND REMINDER LIST");
+            //todo: show modal overlay WITH container with unique id
+            // get DOM element with said id & send to needsReminder class? (or seperate class)
         });
     }
 
