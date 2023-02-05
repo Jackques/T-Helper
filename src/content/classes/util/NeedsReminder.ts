@@ -9,16 +9,16 @@ export class Reminder {
     private reminderAmountItem: reminderAmountItem[] = [];
     private dateAcquiredNumber: string | null = null;
     private dateBlockedOrRemoved: string | null = null;
+    private currentDateTimeNumber: number;
 
-    constructor(messages: Message[], dateAcquiredNumber: string | null, dateBlockedOrRemoved: string | null) {
+    constructor(messages: Message[], dateAcquiredNumber: string | null, dateBlockedOrRemoved: string | null, currentDateTimeNumber: number) {
         this.reminderAmountItem = this._getReminderAmount(messages, dateAcquiredNumber, dateBlockedOrRemoved);
         this.dateAcquiredNumber = dateAcquiredNumber;
         this.dateBlockedOrRemoved = dateBlockedOrRemoved;
+        this.currentDateTimeNumber = currentDateTimeNumber;
     }
 
     public getNeedsReminder(messages: Message[] | undefined): boolean {
-        // eslint-disable-next-line no-debugger
-        // debugger;
 
         if (messages === undefined) {
             console.error(`Could not read tinder messages for this match. Expected an array of tinder messages but received: ${messages}`);
@@ -31,12 +31,9 @@ export class Reminder {
         }
 
         // if has total of 3 reminders/messages EACH seperated by at least 2-3 days, return false
-        if (this.isLastReminderOverdue()) {
+        if (this.isLastReminderOverdue() || this.isLastMessageUnanswered(messages)) {
             return true;
         }
-        // if last reminder has been 2-3 days ago. return true;
-        // console.log('%c ' + 'check out my reminders list below me!', 'color: green; font-weight:bold') 
-        // console.dir(this.reminderAmountItem);
 
         return false;
     }
@@ -50,8 +47,18 @@ export class Reminder {
             return false;
         }
         const lastReminder = this.reminderAmountItem[this.reminderAmountItem.length - 1];
-        if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(lastReminder.datetimeReminderSent).getTime(), new Date().getTime(), this.minDaysBetweenReminders)) {
+        if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(lastReminder.datetimeReminderSent).getTime(), this.currentDateTimeNumber, this.minDaysBetweenReminders)) {
             return true;
+        }
+        return false;
+    }
+
+    private isLastMessageUnanswered(messages: Message[]): boolean {
+        if (messages.length > 0 && messages[messages.length - 1].author === MessageAuthorEnum.Me) {
+            if(DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(messages[messages.length - 1].datetime).getTime(), this.currentDateTimeNumber, this.minDaysBetweenReminders)){
+                return true;
+            }
+            return false;
         }
         return false;
     }
@@ -66,34 +73,6 @@ export class Reminder {
             return reminderAmountList;
         }
 
-        // old code to get reminders & type of reminders with
-        // matchMessages.reduce((messagePrevious, messageNext, currentIndex, messageList) => {
-
-        //     const isMessagePreviousLaterThanAcquiredNumberDate: boolean = dateAcquiredNumber ? DateHelper.isDateLaterThanDate(messagePrevious.datetime, dateAcquiredNumber) : false;
-        //     const isMessagePreviousLaterThanBlockedDate: boolean = dateBlockedOrRemoved ? DateHelper.isDateLaterThanDate(messagePrevious.datetime, dateBlockedOrRemoved) : false;
-
-        //     if(isMessagePreviousLaterThanAcquiredNumberDate || isMessagePreviousLaterThanBlockedDate){
-        //         // date is later than acquired number date OR blocked or removed match date, thus should no longer add reminder item.
-        //         return messageNext;
-        //     }
-
-        //     // 1. is there 2 days or more in between my last message and my other message? AND my match sent no message in between? = ghost moment
-        //     if (messagePrevious.author !== MessageAuthorEnum.Match && messageNext.author !== MessageAuthorEnum.Match) {
-        //         if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(messagePrevious.datetime).getTime(), new Date(messageNext.datetime).getTime(), 2)) {
-
-        //             reminderAmountList.push({
-        //                 number: reminderAmount,
-        //                 datetimeMyLastMessage: messagePrevious.datetime,
-        //                 datetimeReminderSent: messageNext.datetime,
-        //                 textContentReminder: messageNext.message,
-        //                 hasGottenReply: messageList[(currentIndex + 1)]?.author === MessageAuthorEnum.Match ? true : false
-        //             });
-        //             reminderAmount = reminderAmount + 1;
-        //         }
-        //     }
-        //     return messageNext;
-        // });
-
         matchMessages.forEach((message: Message, index: number, list: Message[]) => {
 
             const isMessagePreviousLaterThanAcquiredNumberDate: boolean = dateAcquiredNumber ? DateHelper.isDateLaterThanDate(message.datetime, dateAcquiredNumber) : false;
@@ -104,15 +83,9 @@ export class Reminder {
                 return;
             }
 
-            // 1. skip first message? or check if first message if from me or match? maybe wanna do something with that info? might leave a todo for this.
-            // DO HOWEVER; save this message as previous message in local variabele
             if (index === 0) {
                 previousMessage = message;
             } else {
-                // 2. check if, current message is later than > 2 days from previous message, check if last message is from me or match.. 
-                // if from me, and current message is also from me, add this message as reminder
-                // if next message is from match, set hasGottenReply to true on the reminder
-                // if from match, do nothing 
 
                 if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(previousMessage.datetime).getTime(), new Date(message.datetime).getTime(), this.minDaysBetweenReminders)) {
                     if (previousMessage.author === MessageAuthorEnum.Me && message.author === MessageAuthorEnum.Me) {
@@ -127,7 +100,6 @@ export class Reminder {
                     }
                 }
 
-                // 3. set current message as previous message
                 previousMessage = message;
             }
         });
