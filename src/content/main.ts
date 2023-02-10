@@ -10,6 +10,8 @@ import { RequestHandlerTinder } from './classes/http-requests/requestHandlerTind
 import { DataRecordValues } from './interfaces/data/dataRecordValues.interface';
 import { PortMessage } from './interfaces/portMessage.interface';
 import { UIFieldsRenderer } from './classes/controllers/UIFieldsRenderer';
+import { AutoReminder } from './classes/serrvices/AutoReminder';
+import { ReminderHttp } from './classes/data/ReminderHttp';
 
 export class Main {
     private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
@@ -18,6 +20,7 @@ export class Main {
     private dataTable: DataTable = new DataTable();
     private dataStorage: dataStorage = new dataStorage();
     private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer();
+    private autoReminder: AutoReminder = new AutoReminder();
     private importedFile: FileHelper | null = null;
     private backgroundChannelPort: chrome.runtime.Port | null = null;
 
@@ -175,20 +178,47 @@ export class Main {
             const dataRecordsWhoNeedAutoReminder = this.dataTable.getAllDataRecords().filter((dataRecord) => {
                 return dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Needs-reminder")].getValue() === true;
             });
+
             const dataRecordsWhoNeedAutoReminderMap = dataRecordsWhoNeedAutoReminder.map((dataRecord) => {
                 return {
                     "Name": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Name")].getValue(),
-                    "System-no": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("System-no")].getValue(),
+                    "System-no": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("System-no")].getValue({appType: this.datingAppType}),
+                    "tempId": dataRecord.getRecordPersonSystemId(this.datingAppType, true),
+                    "tempIdisHowManyCharacters": dataRecord.getRecordPersonSystemId(this.datingAppType, true).length,
+                    "AcquiredNumber": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Acquired-number")].getValue(),
                     "Needs-reminder": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Needs-reminder")].getValue(),
-                    "Messages": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Messages")].getValue()
+                    "Messages": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Messages")].getValue(),
+                    "English-only": (function(){
+                        const values: string[] = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Details-tags")].getValue() as string[];
+                        if(values.includes("is-tourist") || values.includes("is-immigrant-or-expat")){
+                            return true;
+                        }
+                        return false;
+                    }()),
                 }
             });
     
-            // console.table([{firstname:"John", lastname:"Doe"}, {firstname:"Jack", lastname:"Snyder"}], ["firstname", "lastname"]);
-            console.table(dataRecordsWhoNeedAutoReminderMap, ["Name", "System-no", "Needs-reminder", "Messages"]);
+            console.table(dataRecordsWhoNeedAutoReminderMap, ["Name", "System-no","tempId", "tempIdisHowManyCharacters", "Needs-reminder", "Messages", "AcquiredNumber", "English-only"]);
             console.log("SEND REMINDER LIST");
             //todo: show modal overlay WITH container with unique id
             // get DOM element with said id & send to needsReminder class? (or seperate class)
+            const reminderHttpList: ReminderHttp[] = dataRecordsWhoNeedAutoReminder.map((dataRecord: DataRecord)=>{
+                const tempId: string = dataRecord.getRecordPersonSystemId(this.datingAppType, true)
+                const name: string = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Name")].getValue() as string;
+                const englishOnly: boolean = (function(){
+                        const values: string[] = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Details-tags")].getValue() as string[];
+                        if(values.includes("is-tourist") || values.includes("is-immigrant-or-expat")){
+                            return true;
+                        }
+                        return false;
+                }());
+                return this.autoReminder.getReminderHttpMap(tempId, name, englishOnly);
+            });
+
+            console.log("Reminder list");
+            reminderHttpList.forEach((reminderHttp, index)=>{
+                console.log(index + " | Id: " + reminderHttp.getId() + " - " + reminderHttp.getMessage());
+            });
         });
     }
 

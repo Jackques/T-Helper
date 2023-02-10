@@ -1,70 +1,46 @@
-import { DataRecord } from "../data/dataRecord";
+import { ReminderHttp } from "../data/ReminderHttp";
+import { RandomNumber } from "../util/randomNumber";
+import { AutoReminderText } from "./AutoReminderText";
 
 export class AutoReminder {
 
-    private reminderMessageTextList = [
-        new AutoReminderText("Hey, ${name}, leef je nog?"),
-        new AutoReminderText("Ik snap wel dat jij bent overrompeld door mijn charmes en tijd nodig hebt om bij te komen ${name}. Geen probleem hoor, neem alle tijd die jij nodig hebt!"),
-        new AutoReminderText("${name}! Weet jij waar ik bang voor ben? Ghosts.."),
+    private reminderMessageTextListDutch = [
+        "Hey ${name}, leef je nog?",
+        "Nou ${name}, ben jij er nog?",
+        "Ik snap wel dat jij overrompeld bent door mijn charmes en tijd nodig hebt om bij te komen ${name}. Geen probleem hoor, neem alle tijd die jij nodig hebt!",
+        "${name}! Weet jij waar ik bang voor ben? Ghosts..",
+        "Heb ik soms een Ouija bord nodig om jou weer op te roepen na deze ghost 👻 ${name}?",
+        "${name}? 😲",
+        "${name}? 🥺",
+        "${name}! koffie zwart of liever een latte?",
+        "Jij neemt The Sound of Silence wel heel letterlijk he ${name}? Het is maar een liedje!",
+        "Ja ik vind chatten op tinder ook niks. Zullen wij dan maar eens wat gaan borrelen op in real life ${name}?",
     ];
 
-    public getRandomReminderHttpList(dataRecordList: DataRecord[]): ReminderHttp[] {
-        return dataRecordList.map((dataRecord)=>{
-            const id: string = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("System-no")].getValue(); //TODO: Will throw error! i'mn getting the system-id object, not the id itself
-            const message: string = this.getRandomReminderMessage(dataRecord);
+    private reminderMessageTextListEnglish = [
+        "Hey ${name}, are you still alive?",
+        "Well ${name}, you still there?",
+        "I get that my charmes are too much for you too handle and you need time to collect yourself in order to reply. Don't worry ${name}, take your time!",
+        "${name}! Do you know what i'm afraid of? Ghosts..",
+        "Do I need a Ouija board to summon you after this ghost 👻 ${name}?",
+        "${name}? 😲",
+        "${name}? 🥺",
+        "${name}! cofee black or do you prefer a latte?",
+        "You take The Sound of Silence very literally don't you ${name}? It's just a song!",
+        "Yeah I don't like chatting on tinder either. How about we just go for a drink in real life ${name}?",
+    ];
 
-            return new ReminderHttp(id, message);
-        });
+    public getReminderHttpMap(id: string, name: string, english: boolean): ReminderHttp {
+        return new ReminderHttp(id, this.getRandomReminderMessage(name, english));
+        //TODO TODO TODO: check if reminder exists in previous messages, if so.. choose another reminder!
+            // can use the reminder-amount field for this!? perfect! it contains the reminders in text!!!
     }
 
-    private getRandomReminderMessage(dataRecord: DataRecord): string {
-        const name = "sdhasd"; // todo: TEMPORARILY string to test interpolated text message, should be replaced by string retrieved by parameter
-
-        const reminderMessageTextListLength: number = this.reminderMessageTextList.length - 1;
-        return this.reminderMessageTextList[this.generateRandom(0, reminderMessageTextListLength)].getTextMessage(name);
-    }
-
-    private generateRandom(min = 0, max = 100): number {
-
-        // find diff
-        const difference = max - min;
-    
-        // generate random number 
-        let rand = Math.random();
-    
-        // multiply with difference 
-        rand = Math.floor( rand * difference);
-    
-        // add with min value 
-        rand = rand + min;
-    
-        return rand;
-    }
-}
-
-export class AutoReminderText {
-    private textMessage = "";
-
-    constructor(textMessage: string){
-        this.textMessage = textMessage;
-    }
-
-    public getTextMessage(name: string): string {
-        //todo: figure out how to interpolate string in here, 
-        // > maybe simply find & replace some special characters? characters with a certain string which correlates with what i'm trying to personalize? e.g. name = ${name}, age = ${age}
-        // e.g.: Hey ${name}, op ${age} moet jij toch geen mensen meer gaan ghosten?;)
-
-        //todo: add some randomized characters in here (beginning & end of string) to not alert tinder's copy-pasta message bot
-        return this.textMessage;
-    }
-}
-
-export class ReminderHttp {
-    private id: string;
-    private message: string;
-
-    constructor(id: string, message: string){
-        this.id = id; // todo: check if received id is valid for sending http request to
-        this.message = message;
+    private getRandomReminderMessage(name: string, english: boolean): string {
+        const reminderMessageTextListLength: number = this.reminderMessageTextListDutch.length - 1;
+        if(english){
+            return new AutoReminderText(this.reminderMessageTextListEnglish[RandomNumber.getRandomNumber(0, reminderMessageTextListLength)]).getTextMessage(name);
+        }
+        return new AutoReminderText(this.reminderMessageTextListDutch[RandomNumber.getRandomNumber(0, reminderMessageTextListLength)]).getTextMessage(name);
     }
 }

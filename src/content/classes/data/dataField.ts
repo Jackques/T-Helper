@@ -47,7 +47,7 @@ export class DataField {
         }
     }
 
-    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | number | boolean | null | Record<string, unknown>[] {
+    public getValue(optionalArgumentsObject?: Record<string, unknown>): string | string[] | number | boolean | null | Record<string, unknown>[] {
         // console.log('uses getBaseValue from datafield');
 
         if(this._isBaseTypeOfAllowedListType(this.dataLogic.baseType)){
