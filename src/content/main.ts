@@ -12,6 +12,7 @@ import { PortMessage } from './interfaces/portMessage.interface';
 import { UIFieldsRenderer } from './classes/controllers/UIFieldsRenderer';
 import { AutoReminder } from './classes/serrvices/AutoReminder';
 import { ReminderHttp } from './classes/data/ReminderHttp';
+import { ghostMoment } from './interfaces/data/ghostMoment.interface';
 
 export class Main {
     private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
@@ -205,6 +206,7 @@ export class Main {
             const reminderHttpList: ReminderHttp[] = dataRecordsWhoNeedAutoReminder.map((dataRecord: DataRecord)=>{
                 const tempId: string = dataRecord.getRecordPersonSystemId(this.datingAppType, true)
                 const name: string = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Name")].getValue() as string;
+                //todo: I should REALLY create a seperate helper util class for getting & setting special data classes e.g. Reminders-amount & How-many-ghosts
                 const englishOnly: boolean = (function(){
                         const values: string[] = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Details-tags")].getValue() as string[];
                         if(values.includes("is-tourist") || values.includes("is-immigrant-or-expat")){
@@ -212,7 +214,13 @@ export class Main {
                         }
                         return false;
                 }());
-                return this.autoReminder.getReminderHttpMap(tempId, name, englishOnly);
+                const reminderTextMessageList: string[] = (function(){
+                    const valuesRemindersAmount = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Reminders-amount")].getValue() as Record<string, number | string | boolean>[];
+                    return valuesRemindersAmount.map((valueRemindersAmount)=>{
+                        return valueRemindersAmount['textContentReminder'] as unknown as string;
+                    });
+                }());
+                return this.autoReminder.getReminderHttpMap(tempId, name, reminderTextMessageList, englishOnly);
             });
 
             console.log("Reminder list");

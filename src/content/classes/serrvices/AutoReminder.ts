@@ -30,17 +30,29 @@ export class AutoReminder {
         "Yeah I don't like chatting on tinder either. How about we just go for a drink in real life ${name}?",
     ];
 
-    public getReminderHttpMap(id: string, name: string, english: boolean): ReminderHttp {
-        return new ReminderHttp(id, this.getRandomReminderMessage(name, english));
+    public getReminderHttpMap(id: string, name: string, reminderTextMessageList: string[], english: boolean): ReminderHttp {
+        const randomReminderMessage: string = this.getRandomReminderMessage(name, reminderTextMessageList, english);
+        return new ReminderHttp(id, randomReminderMessage);
         //TODO TODO TODO: check if reminder exists in previous messages, if so.. choose another reminder!
             // can use the reminder-amount field for this!? perfect! it contains the reminders in text!!!
     }
 
-    private getRandomReminderMessage(name: string, english: boolean): string {
+    private getRandomReminderMessage(name: string, reminderTextMessageList: string[], english: boolean): string {
         const reminderMessageTextListLength: number = this.reminderMessageTextListDutch.length - 1;
+        const filteredReminderMessageTextList = this.getUnusedReminderTextMessageList(reminderTextMessageList, english);
+        return new AutoReminderText(filteredReminderMessageTextList[RandomNumber.getRandomNumber(0, reminderMessageTextListLength)]).getTextMessage(name);
+    }
+    private getUnusedReminderTextMessageList(reminderTextMessageList: string[], english: boolean): string[] {
+        const reminderMessageTextListEnglish = this.reminderMessageTextListEnglish;
+        const reminderMessageTextListDutch = this.reminderMessageTextListDutch;
+        // 1. compare if EVERY string in current received reminder.. equals one or more of the strings in the reminder list
+        // for this, to make a comparison; EACH current received reminder & the reminder from the reminderlist to compare must:
+            // 1. remove name from the string (replaced by ${name})
+            // 2. remove all spaces & dots
+            // 3. set all characters to lowercase
         if(english){
-            return new AutoReminderText(this.reminderMessageTextListEnglish[RandomNumber.getRandomNumber(0, reminderMessageTextListLength)]).getTextMessage(name);
+            return reminderMessageTextListEnglish;
         }
-        return new AutoReminderText(this.reminderMessageTextListDutch[RandomNumber.getRandomNumber(0, reminderMessageTextListLength)]).getTextMessage(name);
+        return reminderMessageTextListDutch;
     }
 }
