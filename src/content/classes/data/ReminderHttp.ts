@@ -2,6 +2,8 @@
 export class ReminderHttp {
     private id: string;
     private message: string;
+    private reminderSent = false;
+    private reminderSentError = "";
 
     constructor(id: string, message: string) {
 
@@ -22,5 +24,13 @@ export class ReminderHttp {
     }
     public getMessage(){
         return this.message;
+    }
+
+    public setReminderSent(){
+        this.reminderSent = true;
+    }
+
+    public setReminderSentError(errorMessage: string){
+        this.reminderSentError = errorMessage;
     }
 }
