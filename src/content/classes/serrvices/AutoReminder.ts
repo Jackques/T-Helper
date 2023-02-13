@@ -25,34 +25,62 @@ export class AutoReminder {
         "Do I need a Ouija board to summon you after this ghost 👻 ${name}?",
         "${name}? 😲",
         "${name}? 🥺",
-        "${name}! cofee black or do you prefer a latte?",
+        "${name}! coffee black or do you prefer a latte?",
         "You take The Sound of Silence very literally don't you ${name}? It's just a song!",
         "Yeah I don't like chatting on tinder either. How about we just go for a drink in real life ${name}?",
     ];
 
-    public getReminderHttpMap(id: string, name: string, reminderTextMessageList: string[], english: boolean): ReminderHttp {
-        const randomReminderMessage: string = this.getRandomReminderMessage(name, reminderTextMessageList, english);
+    public getReminderHttpMap(id: string, name: string, usedReminderTextMessageList: string[], english: boolean): ReminderHttp {
+        const randomReminderMessage: string = this.getRandomReminderMessage(name, usedReminderTextMessageList, english);
         return new ReminderHttp(id, randomReminderMessage);
-        //TODO TODO TODO: check if reminder exists in previous messages, if so.. choose another reminder!
-            // can use the reminder-amount field for this!? perfect! it contains the reminders in text!!!
     }
 
-    private getRandomReminderMessage(name: string, reminderTextMessageList: string[], english: boolean): string {
-        const reminderMessageTextListLength: number = this.reminderMessageTextListDutch.length - 1;
-        const filteredReminderMessageTextList = this.getUnusedReminderTextMessageList(reminderTextMessageList, english);
-        return new AutoReminderText(filteredReminderMessageTextList[RandomNumber.getRandomNumber(0, reminderMessageTextListLength)]).getTextMessage(name);
+    public getreminderMessageTextListDutch(): string[] {
+        return this.reminderMessageTextListDutch;
     }
-    private getUnusedReminderTextMessageList(reminderTextMessageList: string[], english: boolean): string[] {
-        const reminderMessageTextListEnglish = this.reminderMessageTextListEnglish;
-        const reminderMessageTextListDutch = this.reminderMessageTextListDutch;
-        // 1. compare if EVERY string in current received reminder.. equals one or more of the strings in the reminder list
-        // for this, to make a comparison; EACH current received reminder & the reminder from the reminderlist to compare must:
-            // 1. remove name from the string (replaced by ${name})
-            // 2. remove all spaces & dots
-            // 3. set all characters to lowercase
-        if(english){
-            return reminderMessageTextListEnglish;
+
+    public getreminderMessageTextListEnglish(): string[] {
+        return this.reminderMessageTextListEnglish;
+    }
+
+    private getRandomReminderMessage(name: string, usedReminderTextMessageList: string[], english: boolean): string {
+        const reminderMessageTextListLength: number = this.reminderMessageTextListDutch.length - 1;
+        const namedReminderMessageTextList: string[] = this.getNamedReminderMessageTextList(name, english);
+        const filteredReminderMessageTextList = this.getUnusedReminderTextMessageList(usedReminderTextMessageList, namedReminderMessageTextList);
+        return new AutoReminderText(filteredReminderMessageTextList[RandomNumber.getRandomNumber(0, reminderMessageTextListLength)]).getTextMessage();
+    }
+
+    private getNamedReminderMessageTextList(name: string, english: boolean): string[] {
+        if (english) {
+            return this.reminderMessageTextListEnglish.map((reminderMessageText) => {
+                return reminderMessageText.replace("${name}", name);
+            });
         }
-        return reminderMessageTextListDutch;
+        return this.reminderMessageTextListDutch.map((reminderMessageText) => {
+            return reminderMessageText.replace("${name}", name);
+        });
+    }
+
+    private getUnusedReminderTextMessageList(usedReminderTextMessageList: string[], namedReminderMessageTextList: string[]): string[] {
+        let unusedReminderMessageTextList: string[] = namedReminderMessageTextList;
+
+        //todo: potential problem; if name gets updated/replaced either by me or by match who updates profile.. the old reminder will NOT register as a 'used reminder' anymore
+        // thus, I should refactor name string to array string in order to track name changes and filter out used names in reminders
+        // for now.. I consider this too much of an edge case to be a problem (and using a reminder twice in such edge cases will not be THAT much of a problem)
+
+        usedReminderTextMessageList.forEach((reminderTextMessage) => {
+            unusedReminderMessageTextList = namedReminderMessageTextList.filter((reminderMessage) => {
+                return this.removeAvoidBotCharacters(reminderTextMessage) !== this.removeAvoidBotCharacters(reminderMessage);
+            });
+            console.log("does the foreach run before it is returned?");
+        });
+        console.log("or does it return before the foreach ran or finished running?");
+        return unusedReminderMessageTextList;
+    }
+
+    private removeAvoidBotCharacters(reminderTextMessage: string) {
+        // 3. remove all spaces & dots
+        // 4. set all characters to lowercase
+        return reminderTextMessage.replace(" ", "").replace(".", "").toLocaleLowerCase();
     }
 }
