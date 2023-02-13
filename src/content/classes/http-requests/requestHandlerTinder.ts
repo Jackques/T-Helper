@@ -5,6 +5,7 @@ import { RequestHandler } from 'src/content/interfaces/http-requests/RequestHand
 import { Matches } from '../../interfaces/tinder_api/matches.interface';
 import { ParsedResultMatch } from 'src/content/interfaces/controllers/ParsedResultMatch.interface';
 import { MatchDetailsAPI } from 'src/content/interfaces/http-requests/MatchDetailsAPI.interface';
+import { ReminderHttp } from '../data/ReminderHttp';
 
 export class RequestHandlerTinder implements RequestHandler {
 
@@ -303,6 +304,38 @@ export class RequestHandlerTinder implements RequestHandler {
                     })
             };
             attempt();
+        });
+    }
+
+    public async postReminderList(reminderHttpList: ReminderHttp[]): Promise<number> {
+        // 1. loop over list WITH TRADITIONAL LOOP to prevent async
+        reminderHttpList.forEach((reminderHttp)=>{
+            // 2. async & await for promise for individual match
+            return new Promise<number>((resolve, reject) => {
+                const ms = Math.floor(Math.random() * 100) + 100;
+                setTimeout(() => {
+                    fetch(`https://api.gotinder.com/v2/????/${reminderHttp.getId}?locale=nl`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Auth-Token': ms.toString()
+                        }
+                        })
+                        .then(result => {
+                            return resolve(result.json()) 
+                        })
+                        .catch(error => {
+                            return reject(error);
+                        })
+                });
+            })
+            .then((messageReceived: boolean) => {
+
+            })
+            .catch((error: Error)=>{
+
+            });
         });
     }
 }
