@@ -26,11 +26,11 @@ export class ReminderHttp {
         return this.message;
     }
 
-    public setReminderSent(){
+    public setReminderSent(): void {
         this.reminderSent = true;
     }
 
-    public setReminderSentError(errorMessage: string){
+    public setReminderSentError(errorMessage: string): void {
         this.reminderSentError = errorMessage;
     }
 }
