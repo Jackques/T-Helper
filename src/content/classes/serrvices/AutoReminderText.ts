@@ -1,6 +1,5 @@
 import { RandomNumber } from "../util/randomNumber";
 
-
 export class AutoReminderText {
     private textMessage = "";
 
@@ -8,12 +7,7 @@ export class AutoReminderText {
         this.textMessage = textMessage;
     }
 
-    public getTextMessage(name: string): string {
-        // e.g.: Hey ${name}, on ${age} you shouldn't be ghosting people?;)
-        if (!name || name.length <= 0) {
-            name = "";
-        }
-        this.textMessage = this.textMessage.replace("${name}", name);
+    public getTextMessage(): string {
         return this.addRandomCharacters(this.textMessage);
     }
 
