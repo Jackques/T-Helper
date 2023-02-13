@@ -210,6 +210,7 @@ export class Main {
                 const englishOnly: boolean = (function(){
                         const values: string[] = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Details-tags")].getValue() as string[];
                         if(values.includes("is-tourist") || values.includes("is-immigrant-or-expat")){
+                            //todo: when a match is 'is-tourist' or 'is-immigrant' they are automatically seen as 'english'. Preferably I would like to have a 'language' dataField per profile so I can manually set it to English with Dutch being the default language
                             return true;
                         }
                         return false;
