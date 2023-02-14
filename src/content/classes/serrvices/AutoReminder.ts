@@ -44,43 +44,56 @@ export class AutoReminder {
     }
 
     private getRandomReminderMessage(name: string, usedReminderTextMessageList: string[], english: boolean): string {
-        const reminderMessageTextListLength: number = this.reminderMessageTextListDutch.length - 1;
         const namedReminderMessageTextList: string[] = this.getNamedReminderMessageTextList(name, english);
         const filteredReminderMessageTextList = this.getUnusedReminderTextMessageList(usedReminderTextMessageList, namedReminderMessageTextList);
-        return new AutoReminderText(filteredReminderMessageTextList[RandomNumber.getRandomNumber(0, reminderMessageTextListLength)]).getTextMessage();
+        const filteredReminderMessageTextListLength: number = filteredReminderMessageTextList.length - 1;
+        return new AutoReminderText(filteredReminderMessageTextList[RandomNumber.getRandomNumber(0, filteredReminderMessageTextListLength)]).getTextMessage();
     }
 
     private getNamedReminderMessageTextList(name: string, english: boolean): string[] {
         if (english) {
             return this.reminderMessageTextListEnglish.map((reminderMessageText) => {
-                return reminderMessageText.replace("${name}", name);
+                // return reminderMessageText.replaceAll("${name}", name);
+                return reminderMessageText.replace(/\${name}/g, name);
             });
         }
         return this.reminderMessageTextListDutch.map((reminderMessageText) => {
-            return reminderMessageText.replace("${name}", name);
+            // return reminderMessageText.replaceAll("${name}", name);
+            return reminderMessageText.replace(/\${name}/, name);
         });
     }
 
     private getUnusedReminderTextMessageList(usedReminderTextMessageList: string[], namedReminderMessageTextList: string[]): string[] {
-        let unusedReminderMessageTextList: string[] = namedReminderMessageTextList;
+        const availableReminderMessageTextList: string[] = namedReminderMessageTextList;
+        // .map((usedReminderTextMessage)=>{
+        //     return this.removeAvoidBotCharacters(usedReminderTextMessage);
+        // });
+        // const formattedNamedReminderMessageTextList = namedReminderMessageTextList.map((usedReminderTextMessage)=>{
+        //     return this.removeAvoidBotCharacters(usedReminderTextMessage);
+        // });
 
         //todo: potential problem; if name gets updated/replaced either by me or by match who updates profile.. the old reminder will NOT register as a 'used reminder' anymore
         // thus, I should refactor name string to array string in order to track name changes and filter out used names in reminders
         // for now.. I consider this too much of an edge case to be a problem (and using a reminder twice in such edge cases will not be THAT much of a problem)
 
         usedReminderTextMessageList.forEach((reminderTextMessage) => {
-            unusedReminderMessageTextList = namedReminderMessageTextList.filter((reminderMessage) => {
-                return this.removeAvoidBotCharacters(reminderTextMessage) !== this.removeAvoidBotCharacters(reminderMessage);
-            });
+
+            // find if reminderTextMessage is part of the namedReminder.. list
+            const indexReminderTextMessage = availableReminderMessageTextList.findIndex((availableNamedReminderMessageText)=>{ return this.removeAvoidBotCharacters(availableNamedReminderMessageText) === this.removeAvoidBotCharacters(reminderTextMessage)});
+            // if so, remove
+            if(indexReminderTextMessage !== -1){
+                availableReminderMessageTextList.splice(indexReminderTextMessage, 1);
+            }
             console.log("does the foreach run before it is returned?");
         });
         console.log("or does it return before the foreach ran or finished running?");
-        return unusedReminderMessageTextList;
+        return availableReminderMessageTextList;
     }
 
     private removeAvoidBotCharacters(reminderTextMessage: string) {
         // 3. remove all spaces & dots
         // 4. set all characters to lowercase
-        return reminderTextMessage.replace(" ", "").replace(".", "").toLocaleLowerCase();
+        // return reminderTextMessage.replaceAll(" ", "").replaceAll(".", "").toLocaleLowerCase();
+        return reminderTextMessage.replace(/ /g, "").replace(/\./g, "").toLocaleLowerCase();
     }
 }
