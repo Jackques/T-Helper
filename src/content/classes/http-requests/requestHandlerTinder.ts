@@ -307,10 +307,11 @@ export class RequestHandlerTinder implements RequestHandler {
         });
     }
 
-    public async postReminderList(reminderHttpList: ReminderHttp[]): Promise<number> {
+    public async postReminderList(reminderHttpList: ReminderHttp[]): Promise<ReminderHttp[]> {
         // 1. loop over list WITH TRADITIONAL LOOP to prevent async
         reminderHttpList.forEach((reminderHttp)=>{
             // 2. async & await for promise for individual match
+            // CODE BELOW NEEDS TO BE IN A FUNCTION SO I CAN USE THE SYNC AWAIT
             return new Promise<number>((resolve, reject) => {
                 const ms = Math.floor(Math.random() * 100) + 100;
                 setTimeout(() => {
