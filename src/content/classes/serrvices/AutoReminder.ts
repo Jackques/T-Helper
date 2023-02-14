@@ -84,9 +84,9 @@ export class AutoReminder {
             if(indexReminderTextMessage !== -1){
                 availableReminderMessageTextList.splice(indexReminderTextMessage, 1);
             }
-            console.log("does the foreach run before it is returned?");
+            // console.log("does the foreach run before it is returned?");
         });
-        console.log("or does it return before the foreach ran or finished running?");
+        // console.log("or does it return before the foreach ran or finished running?");
         return availableReminderMessageTextList;
     }
 
