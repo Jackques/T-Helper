@@ -6,7 +6,6 @@ import { TinderController } from './classes/controllers/TinderController';
 import { DataRecord } from './classes/data/dataRecord';
 import { dataStorage } from './classes/data/dataStorage';
 import { DataTable } from './classes/data/dataTable';
-import { RequestHandlerTinder } from './classes/http-requests/requestHandlerTinder';
 import { DataRecordValues } from './interfaces/data/dataRecordValues.interface';
 import { PortMessage } from './interfaces/portMessage.interface';
 import { UIFieldsRenderer } from './classes/controllers/UIFieldsRenderer';
@@ -228,6 +227,7 @@ export class Main {
             reminderHttpList.forEach((reminderHttp, index)=>{
                 console.log(index + " | Id: " + reminderHttp.getId() + " - " + reminderHttp.getMessage());
             });
+            this.datingAppController?.getReminders(reminderHttpList);
         });
     }
 
@@ -254,8 +254,10 @@ export class Main {
     private removeButtonsFromUI(): void {
         $(`body`).off("click", '[id="downloadButton"]');
         $(`body`).off("click", '[id="closeButton"]');
+        $(`body`).off("click", '[id="reminderButton"]');
 
         $('body #downloadButton').remove();
         $('body #closeButton').remove();
+        $('body #reminderButton').remove();
     }
 }
