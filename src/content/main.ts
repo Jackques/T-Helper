@@ -83,6 +83,19 @@ export class Main {
                     const errorMessage = `The channel with the background script has been disconnected! Stop swiping immediately to prevent potential loss of data. Please check the background script extension logs.`;
                     console.error(errorMessage);
                     alert(errorMessage);
+
+                    //todo todo todo:
+                    /* might this be the problem?
+                    https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension
+                    https://medium.com/whatfix-techblog/service-worker-in-browser-extensions-a3727cd9117a
+                    e.g;
+                    1. have a timer count down, is it after ~5 tries always about 5 min or 30 sec before the disconnect?
+                    2. check network tab; are there any calls being made?
+                    3. try the keepAlive solution with setinterval maybe?
+                    4. does this event even prevent the service worker/background script from;
+                        a. intercepting a request?
+                        b. sending the contents of the intercepted request back to the content script?
+                    */
                 }
 
                 // log below will never run since when disconnect is called from content script it's own onDisconnect listener should never be called. 
