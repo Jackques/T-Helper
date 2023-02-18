@@ -1,3 +1,39 @@
+.downloadButton {
+  display: inline-block;
+  position: absolute;
+  z-index: 1;
+  background-color: blue;
+  color: white;
+  top: 25px;
+  right: 35%;
+  height: 35px;
+  width: 100px;
+}
+
+.closeButton {
+  display: inline-block;
+  position: absolute;
+  z-index: 1;
+  background-color: red;
+  color: white;
+  top: 25px;
+  right: 41%;
+  height: 35px;
+  width: 100px;
+}
+
+.reminderButton {
+  display: inline-block;
+  position: absolute;
+  z-index: 1;
+  background-color: purple;
+  color: white;
+  top: 25px;
+  right: 48%;
+  height: 35px;
+  width: 175px;
+}
+
 .uiHelperFieldsContainer {
   position: absolute;
   z-index: 2;
@@ -82,32 +118,16 @@
   height: 175px;
 }
 
-.downloadButton {
-  display: inline-block;
-  position: absolute;
-  z-index: 1;
-  background-color: blue;
-  color: white;
-  top: 25px;
-  right: 35%;
-  height: 35px;
-  width: 100px;
-}
-
-.closeButton {
-  display: inline-block;
-  position: absolute;
-  z-index: 1;
-  background-color: red;
-  color: white;
-  top: 25px;
-  right: 41%;
-  height: 35px;
-  width: 100px;
-}
-
 .select2-container--default .select2-selection--multiple li.select2-selection__choice {
   background-color: #646464;
+}
+
+.status-container {
+  background-color: #ffffff6b;
+  margin-top: 15px;
+  padding: 15px;
+  min-width: 250px;
+  border-radius: 25px;
 }
 
 /*# sourceMappingURL=styles.css.map */

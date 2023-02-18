@@ -5,6 +5,7 @@ import { RequestHandler } from 'src/content/interfaces/http-requests/RequestHand
 import { Matches } from '../../interfaces/tinder_api/matches.interface';
 import { ParsedResultMatch } from 'src/content/interfaces/controllers/ParsedResultMatch.interface';
 import { MatchDetailsAPI } from 'src/content/interfaces/http-requests/MatchDetailsAPI.interface';
+import { ReminderHttp } from '../data/ReminderHttp';
 
 export class RequestHandlerTinder implements RequestHandler {
 
@@ -220,11 +221,11 @@ export class RequestHandlerTinder implements RequestHandler {
             attempt();
         });
     }
-    
+
     public getProfileDetails(xAuthToken: string, id: string): Promise<MatchDetailsAPI> {
         return new Promise<MatchDetailsAPI>((resolve, reject) => {
             const ms = Math.floor(Math.random() * 100) + 100;
-            setTimeout(()=>{
+            setTimeout(() => {
                 fetch(`https://api.gotinder.com/user/${id}`, {
                     method: 'GET',
                     credentials: 'include',
@@ -232,13 +233,13 @@ export class RequestHandlerTinder implements RequestHandler {
                         'Content-Type': 'application/json',
                         'X-Auth-Token': xAuthToken
                     }
-                    })
-                    .then((result:Response) => {
-                        if(!result.ok && result.status === 404){
+                })
+                    .then((result: Response) => {
+                        if (!result.ok && result.status === 404) {
                             console.info(`Match with id: ${id} returned a 404. Likely match has removed profile and as a result the match along with it.`);
                             return resolve(result.json())
                         }
-                        if(result.ok && result.status === 200){
+                        if (result.ok && result.status === 200) {
                             return resolve(result.json())
                         }
                         console.error(`Unknown response for ${id}. Please check the network logs.`);
@@ -262,10 +263,10 @@ export class RequestHandlerTinder implements RequestHandler {
                         'Content-Type': 'application/json',
                         'X-Auth-Token': xAuthToken
                     }
-                    })
+                })
                     .then(result => {
                         // debugger; 
-                        return resolve(result.json()) 
+                        return resolve(result.json())
 
                         // if(!result.ok && result.status === 404){ 
                         //     return resolve(404) 
@@ -289,9 +290,9 @@ export class RequestHandlerTinder implements RequestHandler {
                     .then(async (matchData: MatchApi) => {
                         // console.log(profileData);
                         // debugger;
-                        if(matchData.meta.status === 200 && matchData.data){
+                        if (matchData.meta.status === 200 && matchData.data) {
                             return resolve(matchData.data);
-                        }else if(matchData.meta.status === 404){
+                        } else if (matchData.meta.status === 404) {
                             return resolve(404);
                         }
                         console.log(`Unexpected response in getMatchDetailsStart: ${matchData}`);
@@ -304,5 +305,72 @@ export class RequestHandlerTinder implements RequestHandler {
             };
             attempt();
         });
+    }
+
+    public async postReminderList(reminderHttpList: ReminderHttp[], progressCallBack?: Function): Promise<ReminderHttp[]> {
+        for (let i = 0; i < reminderHttpList.length; i++) {
+            console.log(`%cPOSTLIST - Now sending reminder to: ${i} - ${reminderHttpList[i].getId()}`, `color: red`);
+            let result = await this.postReminderWithTimeout(reminderHttpList[i]);
+            if(!result){
+                const errorText = "";
+                reminderHttpList[i].setReminderSentError(errorText);
+            }
+            reminderHttpList[i].setReminderSent();
+            if(progressCallBack){
+                progressCallBack(i, reminderHttpList.length, `Sent reminder to ${reminderHttpList[i].getName()}`);
+            }
+            console.log(`%cPOSTLIST - Reminder has been sent, going to send a new one now!`, `color: red`);
+        }
+        console.log(`%cPOSTLIST - this probably returns earlier than the reminders are actually sent`, `color: red; background: white`);
+        return reminderHttpList;
+    }
+
+    private async postReminderWithTimeout(reminderHttp: ReminderHttp): Promise<boolean | Error> {
+        // debugger;
+        return new Promise<boolean | Error>((resolve, reject) => {
+            console.log(`POSTTIMEOUT - Going to send reminder with a delay for: ${reminderHttp.getId()}! Brace yourselves!`);
+            const ms = Math.floor(Math.random() * 100) + 100;
+            setTimeout(() => {
+                this.postReminder(reminderHttp)
+                .then(result => {
+                    // if(){
+                    //     //todo todo todo: some logi her to check if result.json() really is what we want
+                    // }
+                    return resolve(true);
+                })
+                .catch(error => {
+                    reminderHttp.setReminderSentError(error);
+                    return reject(error);
+                });
+                console.log(`POSTTIMEOUT - Reminder with delay sent!`);
+            }, ms);
+        });
+    }
+
+    private async postReminder(reminderHttp: ReminderHttp): Promise<unknown | Error> {
+        console.log(`POSTFETCH - Actually sending reminder now!`);
+        // debugger;
+            try {
+                // const result_2 = await fetch(`https://api.gotinder.com/user/matches/${reminderHttp.getId()}?locale=nl`, {
+                const result_2 = await fetch(`https://jsonplaceholder.typicode.com/posts`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Auth-Token': this.xAuthToken
+                },
+                body: JSON.stringify({
+                    'message': reminderHttp.getMessage()
+                })
+            });
+            console.dir(result_2.json());
+            console.log(`POSTFETCH - Reminder for: ${reminderHttp.getId()} has been sent succesfully!`);
+            // debugger;
+            return true;
+        } catch (error) {
+            console.log(`POSTFETCH - Reminder for: ${reminderHttp.getId()} got error!`);
+            debugger;
+            return error;
+        }
     }
 }

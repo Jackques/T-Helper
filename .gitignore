@@ -7,3 +7,5 @@ coverage
 src/content/classes/mocks/
 
 exampleFiles/
+
+.vscode/

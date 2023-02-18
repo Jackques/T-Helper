@@ -6,10 +6,12 @@ import { TinderController } from './classes/controllers/TinderController';
 import { DataRecord } from './classes/data/dataRecord';
 import { dataStorage } from './classes/data/dataStorage';
 import { DataTable } from './classes/data/dataTable';
-import { RequestHandlerTinder } from './classes/http-requests/requestHandlerTinder';
 import { DataRecordValues } from './interfaces/data/dataRecordValues.interface';
 import { PortMessage } from './interfaces/portMessage.interface';
 import { UIFieldsRenderer } from './classes/controllers/UIFieldsRenderer';
+import { AutoReminder } from './classes/serrvices/AutoReminder';
+import { ReminderHttp } from './classes/data/ReminderHttp';
+import { ghostMoment } from './interfaces/data/ghostMoment.interface';
 
 export class Main {
     private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
@@ -18,6 +20,7 @@ export class Main {
     private dataTable: DataTable = new DataTable();
     private dataStorage: dataStorage = new dataStorage();
     private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer();
+    private autoReminder: AutoReminder = new AutoReminder();
     private importedFile: FileHelper | null = null;
     private backgroundChannelPort: chrome.runtime.Port | null = null;
 
@@ -54,6 +57,7 @@ export class Main {
 
                         //todo: maybe should seperate out the logic for init app and actually getting the imported data?
                         this.datingAppController = this.initAppController(this.datingAppType, this.dataTable, this.dataStorage);
+                        this.setSendReminderButton();
                         this.setCloseButton();
                     }
                 }
@@ -177,6 +181,69 @@ export class Main {
         });
     }
 
+    public setSendReminderButton(): void {
+        $('body').prepend(`
+            <button class="reminderButton" id="reminderButton">Send auto reminders</button>
+        `);
+
+        $(`body`).on("click", '[id="reminderButton"]', () => {
+            console.log("SEND REMINDER LIST");
+            const dataRecordsWhoNeedAutoReminder = this.dataTable.getAllDataRecords().filter((dataRecord) => {
+                return dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Needs-reminder")].getValue() === true;
+            });
+
+            const dataRecordsWhoNeedAutoReminderMap = dataRecordsWhoNeedAutoReminder.map((dataRecord) => {
+                return {
+                    "Name": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Name")].getValue(),
+                    "System-no": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("System-no")].getValue({appType: this.datingAppType}),
+                    "tempId": dataRecord.getRecordPersonSystemId(this.datingAppType, true),
+                    "tempIdisHowManyCharacters": dataRecord.getRecordPersonSystemId(this.datingAppType, true).length,
+                    "AcquiredNumber": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Acquired-number")].getValue(),
+                    "Needs-reminder": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Needs-reminder")].getValue(),
+                    "Messages": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Messages")].getValue(),
+                    "English-only": (function(){
+                        const values: string[] = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Details-tags")].getValue() as string[];
+                        if(values.includes("is-tourist") || values.includes("is-immigrant-or-expat")){
+                            return true;
+                        }
+                        return false;
+                    }()),
+                }
+            });
+    
+            console.table(dataRecordsWhoNeedAutoReminderMap, ["Name", "System-no","tempId", "tempIdisHowManyCharacters", "Needs-reminder", "Messages", "AcquiredNumber", "English-only"]);
+            console.log("SEND REMINDER LIST");
+            //todo: show modal overlay WITH container with unique id
+            // get DOM element with said id & send to needsReminder class? (or seperate class)
+            const reminderHttpList: ReminderHttp[] = dataRecordsWhoNeedAutoReminder.map((dataRecord: DataRecord)=>{
+                const tempId: string = dataRecord.getRecordPersonSystemId(this.datingAppType, true)
+                const name: string = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Name")].getValue() as string;
+                //todo: I should REALLY create a seperate helper util class for getting & setting special data classes e.g. Reminders-amount & How-many-ghosts
+                const englishOnly: boolean = (function(){
+                        const values: string[] = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Details-tags")].getValue() as string[];
+                        if(values.includes("is-tourist") || values.includes("is-immigrant-or-expat")){
+                            //todo: when a match is 'is-tourist' or 'is-immigrant' they are automatically seen as 'english'. Preferably I would like to have a 'language' dataField per profile so I can manually set it to English with Dutch being the default language
+                            return true;
+                        }
+                        return false;
+                }());
+                const reminderTextMessageList: string[] = (function(){
+                    const valuesRemindersAmount = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Reminders-amount")].getValue() as Record<string, number | string | boolean>[];
+                    return valuesRemindersAmount.map((valueRemindersAmount)=>{
+                        return valueRemindersAmount['textContentReminder'] as unknown as string;
+                    });
+                }());
+                return this.autoReminder.getReminderHttpMap(tempId, name, reminderTextMessageList, englishOnly);
+            });
+
+            console.log("Reminder list");
+            reminderHttpList.forEach((reminderHttp, index)=>{
+                console.log(index + " | Id: " + reminderHttp.getId() + " - " + reminderHttp.getMessage());
+            });
+            this.datingAppController?.getReminders(reminderHttpList);
+        });
+    }
+
     private deleteAppState(): void {
         this.dataStorage = new dataStorage();
 
@@ -200,8 +267,10 @@ export class Main {
     private removeButtonsFromUI(): void {
         $(`body`).off("click", '[id="downloadButton"]');
         $(`body`).off("click", '[id="closeButton"]');
+        $(`body`).off("click", '[id="reminderButton"]');
 
         $('body #downloadButton').remove();
         $('body #closeButton').remove();
+        $('body #reminderButton').remove();
     }
 }
