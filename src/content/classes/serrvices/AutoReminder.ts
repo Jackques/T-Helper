@@ -32,7 +32,7 @@ export class AutoReminder {
 
     public getReminderHttpMap(id: string, name: string, usedReminderTextMessageList: string[], english: boolean): ReminderHttp {
         const randomReminderMessage: string = this.getRandomReminderMessage(name, usedReminderTextMessageList, english);
-        return new ReminderHttp(id, randomReminderMessage);
+        return new ReminderHttp(id, name, randomReminderMessage);
     }
 
     public getreminderMessageTextListDutch(): string[] {

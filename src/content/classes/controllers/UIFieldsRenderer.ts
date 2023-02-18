@@ -420,4 +420,46 @@ export class UIFieldsRenderer {
         
     }
 
+    public setLoadingOverlayProgress(uniqueId: string, currentNumber: number, totalNumber: number, statusText: string){
+        if(!uniqueId || uniqueId.length === 0){
+            console.error(`uniqueId is not set`);
+            return;
+        }
+
+        if($(`#${uniqueId}`).length === 0){
+            // if loader is not found, do nothing
+            return;
+        }
+
+        if(currentNumber < 0 || totalNumber < 0){
+            console.error(`CurrentNumber or totalNumber input may not be less than 0`);
+            return;
+        }
+
+        if(totalNumber < currentNumber){
+            console.error(`TotalNumber ${totalNumber} cannot be less than currentNumber: ${currentNumber}`);
+        }
+
+        if($(`#${uniqueId} .loadingOverlayContainer .progress`).length === 0){
+            $(`body #${uniqueId} .loadingOverlayContainer`).append(`
+                <div class="status-container">
+                    <div class="status-text-container">
+                        <p class="status-text">${statusText}</p>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: ${this.getPercentageOfTotal(currentNumber, totalNumber)}%" aria-valuenow="${this.getPercentageOfTotal(currentNumber, totalNumber)}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            `);
+        }else{
+            $(`#${uniqueId} .loadingOverlayContainer .status-text`).text(statusText);
+            $(`#${uniqueId} .loadingOverlayContainer .progress-bar`).css( "width", `${this.getPercentageOfTotal(currentNumber, totalNumber)}%`);
+        }
+    }
+
+    private getPercentageOfTotal(currentValue: number, totalValue: number): number {
+        // return totalValue / 100 * currentValue;
+        return currentValue / totalValue * 100;
+    }
+
 }

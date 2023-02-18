@@ -24,6 +24,7 @@ import { MatchDetailsAPI } from "src/content/interfaces/http-requests/MatchDetai
 import { ghostMoment } from "src/content/interfaces/data/ghostMoment.interface";
 import { reminderAmountItem } from "src/content/interfaces/data/reminderAmountItem.interface";
 import { Reminder } from "../util/NeedsReminder";
+import { ReminderHttp } from "../data/ReminderHttp";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
@@ -1755,6 +1756,20 @@ export class TinderController implements datingAppController {
             this.watchersUIList.length = 0;
         }
         return this.watchersUIList.length === 0 ? true : false;
+    }
+
+    public getReminders(reminderHttpList: ReminderHttp[]){
+        //todo: show overlay
+        this.uiRenderer.setLoadingOverlay('reminderOverlay', true);
+        this.requestHandler.postReminderList(reminderHttpList, (currentIndex: number, totalLength: number, statusText: string)=>{
+            console.log(`${currentIndex}, / ${totalLength} - ${statusText}`);
+            this.uiRenderer.setLoadingOverlayProgress('reminderOverlay', currentIndex, totalLength, statusText);
+        }).then((reminderHttpList)=>{
+            console.dir(reminderHttpList);
+            debugger;
+            //todo: hide overlay
+            this.uiRenderer.setLoadingOverlay('reminderOverlay', false);
+        });
     }
 
 }
