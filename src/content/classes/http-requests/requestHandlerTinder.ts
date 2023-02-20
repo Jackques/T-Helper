@@ -309,7 +309,7 @@ export class RequestHandlerTinder implements RequestHandler {
 
     public async postReminderList(reminderHttpList: ReminderHttp[], progressCallBack?: Function): Promise<ReminderHttp[]> {
         for (let i = 0; i < reminderHttpList.length; i++) {
-            console.log(`%cPOSTLIST - Now sending reminder to: ${i} - ${reminderHttpList[i].getId()}`, `color: red`);
+            console.log(`%cPOSTLIST - Now sending reminder to: ${i} - ${reminderHttpList[i].getTempId()}`, `color: red`);
             let result = await this.postReminderWithTimeout(reminderHttpList[i]);
             if(!result){
                 const errorText = "";
@@ -328,14 +328,11 @@ export class RequestHandlerTinder implements RequestHandler {
     private async postReminderWithTimeout(reminderHttp: ReminderHttp): Promise<boolean | Error> {
         // debugger;
         return new Promise<boolean | Error>((resolve, reject) => {
-            console.log(`POSTTIMEOUT - Going to send reminder with a delay for: ${reminderHttp.getId()}! Brace yourselves!`);
+            console.log(`POSTTIMEOUT - Going to send reminder with a delay for: ${reminderHttp.getTempId()}! Brace yourselves!`);
             const ms = Math.floor(Math.random() * 100) + 100;
             setTimeout(() => {
                 this.postReminder(reminderHttp)
                 .then(result => {
-                    // if(){
-                    //     //todo todo todo: some logi her to check if result.json() really is what we want
-                    // }
                     return resolve(true);
                 })
                 .catch(error => {
@@ -349,10 +346,8 @@ export class RequestHandlerTinder implements RequestHandler {
 
     private async postReminder(reminderHttp: ReminderHttp): Promise<unknown | Error> {
         console.log(`POSTFETCH - Actually sending reminder now!`);
-        // debugger;
             try {
-                // const result_2 = await fetch(`https://api.gotinder.com/user/matches/${reminderHttp.getId()}?locale=nl`, {
-                const result_2 = await fetch(`https://jsonplaceholder.typicode.com/posts`, {
+                const result_2 = await fetch(`https://api.gotinder.com/user/matches/${reminderHttp.getCompleteId()}?locale=nl`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -360,16 +355,17 @@ export class RequestHandlerTinder implements RequestHandler {
                     'X-Auth-Token': this.xAuthToken
                 },
                 body: JSON.stringify({
-                    'message': reminderHttp.getMessage()
+                    "userId": reminderHttp.getMyId(),
+                    "otherId":reminderHttp.getTempId(),
+                    "matchId":reminderHttp.getCompleteId(),
+                    "message": reminderHttp.getMessage()
                 })
             });
             console.dir(result_2.json());
-            console.log(`POSTFETCH - Reminder for: ${reminderHttp.getId()} has been sent succesfully!`);
-            // debugger;
+            console.log(`POSTFETCH - Reminder for: ${reminderHttp.getTempId()} has been sent succesfully!`);
             return true;
         } catch (error) {
-            console.log(`POSTFETCH - Reminder for: ${reminderHttp.getId()} got error!`);
-            debugger;
+            console.log(`POSTFETCH - Reminder for: ${reminderHttp.getTempId()} got error!`);
             return error;
         }
     }

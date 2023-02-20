@@ -213,10 +213,9 @@ export class Main {
     
             console.table(dataRecordsWhoNeedAutoReminderMap, ["Name", "System-no","tempId", "tempIdisHowManyCharacters", "Needs-reminder", "Messages", "AcquiredNumber", "English-only"]);
             console.log("SEND REMINDER LIST");
-            //todo: show modal overlay WITH container with unique id
-            // get DOM element with said id & send to needsReminder class? (or seperate class)
-            const reminderHttpList: ReminderHttp[] = dataRecordsWhoNeedAutoReminder.map((dataRecord: DataRecord)=>{
-                const tempId: string = dataRecord.getRecordPersonSystemId(this.datingAppType, true)
+            let reminderHttpList: ReminderHttp[] = dataRecordsWhoNeedAutoReminder.map((dataRecord: DataRecord)=>{
+                const tempId: string = dataRecord.getRecordPersonSystemId(this.datingAppType, true);
+                const completeId: string = dataRecord.getRecordPersonSystemId(this.datingAppType, false);
                 const name: string = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Name")].getValue() as string;
                 //todo: I should REALLY create a seperate helper util class for getting & setting special data classes e.g. Reminders-amount & How-many-ghosts
                 const englishOnly: boolean = (function(){
@@ -233,12 +232,13 @@ export class Main {
                         return valueRemindersAmount['textContentReminder'] as unknown as string;
                     });
                 }());
-                return this.autoReminder.getReminderHttpMap(tempId, name, reminderTextMessageList, englishOnly);
+                return this.autoReminder.getReminderHttpMap(tempId, completeId, name, reminderTextMessageList, englishOnly);
             });
+            reminderHttpList = [reminderHttpList[0], reminderHttpList[1], reminderHttpList[2], reminderHttpList[3], reminderHttpList[4]];
 
             console.log("Reminder list");
             reminderHttpList.forEach((reminderHttp, index)=>{
-                console.log(index + " | Id: " + reminderHttp.getId() + " - " + reminderHttp.getMessage());
+                console.log(index + " | TempId: " + reminderHttp.getTempId() + " - CompleteId: "+reminderHttp.getCompleteId() + " - MyId: "+reminderHttp.getMyId() + " - " + reminderHttp.getMessage());
             });
             this.datingAppController?.getReminders(reminderHttpList);
         });
@@ -254,7 +254,7 @@ export class Main {
             // AND if i were to close my app, thus running the code below, thus disconnecting again.. i would get a Uncaught Error: Extension context invalidated. error.
             // AND the loading spinner would yet again keep on loading forever 
             this.backgroundChannelPort?.disconnect();
-        }catch(err: unknown){
+        }catch(err){
             console.error(err)
         }
         const hasDatingAppControllerWatchersDisconnected = this.datingAppController?.disconnectAllUIWatchers();

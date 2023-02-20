@@ -1,35 +1,45 @@
 
 export class ReminderHttp {
-    private id: string;
+    private tempId: string;
+    private completeId: string;
     private name: string;
     private message: string;
     private reminderSent = false;
     private reminderSentError = "";
 
-    constructor(id: string, name: string, message: string) {
+    constructor(tempId: string, completeid: string, name: string, message: string) {
 
-        if(!id || id.length <= 0){
-            console.error(`Datarecord with id: ${id} does not appear to have a valid id`); 
+        if(!tempId || tempId.length <= 0){
+            console.error(`Datarecord with id: ${tempId} does not appear to have a valid id`);
         }
 
         if(!message || message.length <= 0){
             console.error(`Message is invalid. Message: ${message}`);
         }
 
-        this.id = id;
+        this.tempId = tempId;
+        this.completeId = completeid;
         this.name = name;
         this.message = message;
     }
 
-    public getId(){
-        return this.id;
+    public getTempId(): string {
+        return this.tempId;
     }
 
-    public getName(){
+    public getCompleteId(): string {
+        return this.completeId;
+    }
+
+    public getMyId(): string {
+        return this.completeId.replace(this.getTempId(), "");
+    }
+
+    public getName(): string {
         return this.name;
     }
     
-    public getMessage(){
+    public getMessage(): string {
         return this.message;
     }
 

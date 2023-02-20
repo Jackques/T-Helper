@@ -12,14 +12,14 @@ describe('Auto Reminder Test', () => {
         const usedReminderTextMessageList: string[] = [];
         const isEnglish = false;
         const reminderHttp: ReminderHttp = new AutoReminder().getReminderHttpMap(id, name, usedReminderTextMessageList, isEnglish);
-        expect(reminderHttp.getId()).toEqual(id);
+        expect(reminderHttp.getTempId()).toEqual(id);
         expect(reminderHttp.getMessage().includes(name)).toEqual(true);
     });
     it('Test - Get Reminder HTTP no reminders sent yet but English', () => {
         const usedReminderTextMessageList: string[] = [];
         const isEnglish = true;
         const reminderHttp: ReminderHttp = new AutoReminder().getReminderHttpMap(id, name, usedReminderTextMessageList, isEnglish);
-        expect(reminderHttp.getId()).toEqual(id);
+        expect(reminderHttp.getTempId()).toEqual(id);
         expect(reminderHttp.getMessage().includes(name)).toEqual(true);
     });
 
@@ -28,14 +28,14 @@ describe('Auto Reminder Test', () => {
         const usedReminderTextMessageList: string[] = ["Hoi, ben je daar?"];
         const isEnglish = false;
         const reminderHttp: ReminderHttp = new AutoReminder().getReminderHttpMap(id, name, usedReminderTextMessageList, isEnglish);
-        expect(reminderHttp.getId()).toEqual(id);
+        expect(reminderHttp.getTempId()).toEqual(id);
         expect(reminderHttp.getMessage().includes(name)).toEqual(true);
     });
     it('Test - Get Reminder HTTP no matching reminders sent yet and English', () => {
         const usedReminderTextMessageList: string[] = ["Hello, are you there?"];
         const isEnglish = false;
         const reminderHttp: ReminderHttp = new AutoReminder().getReminderHttpMap(id, name, usedReminderTextMessageList, isEnglish);
-        expect(reminderHttp.getId()).toEqual(id);
+        expect(reminderHttp.getTempId()).toEqual(id);
         expect(reminderHttp.getMessage().includes(name)).toEqual(true);
     });
 
@@ -49,7 +49,7 @@ describe('Auto Reminder Test', () => {
 
         const isEnglish = false;
         const reminderHttp: ReminderHttp = new AutoReminder().getReminderHttpMap(id, name, usedReminderTextMessageList, isEnglish);
-        expect(reminderHttp.getId()).toEqual(id);
+        expect(reminderHttp.getTempId()).toEqual(id);
         expect(reminderHttp.getMessage().includes(name)).toEqual(true);
     });
     it('Test - Get Reminder HTTP one matching reminders sent and English', () => {
@@ -61,7 +61,7 @@ describe('Auto Reminder Test', () => {
 
         const isEnglish = true;
         const reminderHttp: ReminderHttp = new AutoReminder().getReminderHttpMap(id, name, usedReminderTextMessageList, isEnglish);
-        expect(reminderHttp.getId()).toEqual(id);
+        expect(reminderHttp.getTempId()).toEqual(id);
         expect(reminderHttp.getMessage().includes(name)).toEqual(true);
     });
 
@@ -84,7 +84,7 @@ describe('Auto Reminder Test', () => {
 
         const isEnglish = false;
         const reminderHttp: ReminderHttp = new AutoReminder().getReminderHttpMap(id, name, usedReminderTextMessageList, isEnglish);
-        expect(reminderHttp.getId()).toEqual(id);
+        expect(reminderHttp.getTempId()).toEqual(id);
 
         const message = reminderHttp.getMessage();
         expect(message.includes(name)).toEqual(true);
@@ -110,7 +110,7 @@ describe('Auto Reminder Test', () => {
 
         const isEnglish = true;
         const reminderHttp: ReminderHttp = new AutoReminder().getReminderHttpMap(id, name, usedReminderTextMessageList, isEnglish);
-        expect(reminderHttp.getId()).toEqual(id);
+        expect(reminderHttp.getTempId()).toEqual(id);
 
         const message = reminderHttp.getMessage();
         expect(message.includes(name)).toEqual(true);
@@ -132,7 +132,7 @@ describe('Auto Reminder Test', () => {
 
         const isEnglish = false;
         const reminderHttp: ReminderHttp = new AutoReminder().getReminderHttpMap(id, name, usedReminderTextMessageList, isEnglish);
-        expect(reminderHttp.getId()).toEqual(id);
+        expect(reminderHttp.getTempId()).toEqual(id);
 
         const message = reminderHttp.getMessage();
         expect(message.includes(name)).toEqual(true);
@@ -153,7 +153,7 @@ describe('Auto Reminder Test', () => {
 
         const isEnglish = true;
         const reminderHttp: ReminderHttp = new AutoReminder().getReminderHttpMap(id, name, usedReminderTextMessageList, isEnglish);
-        expect(reminderHttp.getId()).toEqual(id);
+        expect(reminderHttp.getTempId()).toEqual(id);
 
         const message = reminderHttp.getMessage();
         expect(message.includes(name)).toEqual(true);

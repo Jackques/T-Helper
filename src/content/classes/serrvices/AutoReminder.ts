@@ -30,9 +30,9 @@ export class AutoReminder {
         "Yeah I don't like chatting on tinder either. How about we just go for a drink in real life ${name}?",
     ];
 
-    public getReminderHttpMap(id: string, name: string, usedReminderTextMessageList: string[], english: boolean): ReminderHttp {
+    public getReminderHttpMap(tempId: string, completeId: string, name: string, usedReminderTextMessageList: string[], english: boolean): ReminderHttp {
         const randomReminderMessage: string = this.getRandomReminderMessage(name, usedReminderTextMessageList, english);
-        return new ReminderHttp(id, name, randomReminderMessage);
+        return new ReminderHttp(tempId, completeId, name, randomReminderMessage);
     }
 
     public getreminderMessageTextListDutch(): string[] {
