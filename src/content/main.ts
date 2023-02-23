@@ -23,6 +23,7 @@ export class Main {
     private autoReminder: AutoReminder = new AutoReminder();
     private importedFile: FileHelper | null = null;
     private backgroundChannelPort: chrome.runtime.Port | null = null;
+    private keepAliveIntervalNumber: number | null = null;
 
     constructor() {
         //console.log(`The main app constructor content works`);
@@ -59,6 +60,7 @@ export class Main {
                         this.datingAppController = this.initAppController(this.datingAppType, this.dataTable, this.dataStorage);
                         this.setSendReminderButton();
                         this.setCloseButton();
+                        this.keepAliveIntervalNumber = this.activateKeepAlive();
                     }
                 }
                 if (portMessage.messageSender === 'POPUP' && portMessage.action === 'FILENAME') {
@@ -245,6 +247,11 @@ export class Main {
     }
 
     private deleteAppState(): void {
+        if(this.keepAliveIntervalNumber != null){
+            clearInterval(this.keepAliveIntervalNumber);
+            this.keepAliveIntervalNumber = null;
+        }
+
         this.dataStorage = new dataStorage();
 
         this.dataTable.emptyDataTable();
@@ -272,5 +279,12 @@ export class Main {
         $('body #downloadButton').remove();
         $('body #closeButton').remove();
         $('body #reminderButton').remove();
+    }
+
+    private activateKeepAlive() {
+        return setInterval(()=>{
+            //console.log("sending keep alive");
+            this.backgroundChannelPort?.postMessage("keepAlive");
+        },4000)
     }
 }

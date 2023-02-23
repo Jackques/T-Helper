@@ -31,6 +31,11 @@ export class requestInterceptor {
       console.error(`beforeRequestInterceptor listener is not set. Please check the code.`);
       return;
     }
+    globalThis.port.onMessage.addListener((message, port)=>{
+      // keep alive? since this service worker (previously; background script) terminates after ~5 min;
+      // https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension
+      console.log(`Message is: ${message}, and port is: ${port.name}`);
+    });
 
     globalThis.port.onDisconnect.addListener(() => {
 
