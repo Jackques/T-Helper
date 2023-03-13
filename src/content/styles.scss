@@ -98,6 +98,12 @@
 .select2-container--default .select2-selection--multiple li.select2-selection__choice {
     background-color: #646464;
 }
+.select2-dropdown.select2-dropdown--below {
+    background-color: #bdbdbd;
+}
+.select2-container--default .select2-results__option--selected {
+    color: #686868;
+}
 
 .status-container {
     background-color: #ffffff6b;
