@@ -5,7 +5,8 @@ import { DateHelper, DateHelperTimeStamp } from "./dateHelper";
 export class Reminder {
 
     private maxNumberReminders = 3; // if I sent a match a maximum of 3 reminder over a long period of time, EVEN IF she responded at some point, do not send any more reminders
-    private minDaysBetweenReminders = 4;
+    private minDaysBetweenReminders = 2;
+    private minDaysForSendingReminder = 4;
     private reminderAmountItem: reminderAmountItem[] = [];
     private dateAcquiredNumber: string | null = null;
     private dateBlockedOrRemoved: string | null = null;
@@ -42,20 +43,10 @@ export class Reminder {
         return this.reminderAmountItem;
     }
 
-    // private isLastReminderOverdue(): boolean {
-    //     if (this.reminderAmountItem.length <= 0) {
-    //         return false;
-    //     }
-    //     const lastReminder = this.reminderAmountItem[this.reminderAmountItem.length - 1];
-    //     if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(lastReminder.datetimeReminderSent).getTime(), this.currentDateTimeNumber, this.minDaysBetweenReminders)) {
-    //         return true;
-    //     }
-    //     return false;
-    // }
     private isLastReminderOverdue(messages: Message[]): boolean {
         const lastReminder: Message = this.getMostRecentMessages(messages);
 
-        if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(lastReminder.datetime).getTime(), this.currentDateTimeNumber, this.minDaysBetweenReminders)) {
+        if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(lastReminder.datetime).getTime(), this.currentDateTimeNumber, this.minDaysForSendingReminder)) {
             return true;
         }
         return false;
@@ -73,7 +64,7 @@ export class Reminder {
 
     private isLastMessageUnanswered(messages: Message[]): boolean {
         if (messages.length > 0 && messages[messages.length - 1].author === MessageAuthorEnum.Me) {
-            if(DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(messages[messages.length - 1].datetime).getTime(), this.currentDateTimeNumber, this.minDaysBetweenReminders)){
+            if(DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(messages[messages.length - 1].datetime).getTime(), this.currentDateTimeNumber, this.minDaysForSendingReminder)){
                 return true;
             }
             return false;
