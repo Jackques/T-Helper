@@ -5,7 +5,7 @@ import { DateHelper, DateHelperTimeStamp } from "./dateHelper";
 export class Reminder {
 
     private maxNumberReminders = 3; // if I sent a match a maximum of 3 reminder over a long period of time, EVEN IF she responded at some point, do not send any more reminders
-    private minDaysBetweenReminders = 3;
+    private minDaysBetweenReminders = 4;
     private reminderAmountItem: reminderAmountItem[] = [];
     private dateAcquiredNumber: string | null = null;
     private dateBlockedOrRemoved: string | null = null;
@@ -31,7 +31,7 @@ export class Reminder {
         }
 
         // if has total of 3 reminders/messages EACH seperated by at least 2-3 days, return false
-        if (this.isLastReminderOverdue() || this.isLastMessageUnanswered(messages)) {
+        if (this.isLastReminderOverdue(messages) || this.isLastMessageUnanswered(messages)) {
             return true;
         }
 
@@ -42,15 +42,33 @@ export class Reminder {
         return this.reminderAmountItem;
     }
 
-    private isLastReminderOverdue(): boolean {
-        if (this.reminderAmountItem.length <= 0) {
-            return false;
-        }
-        const lastReminder = this.reminderAmountItem[this.reminderAmountItem.length - 1];
-        if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(lastReminder.datetimeReminderSent).getTime(), this.currentDateTimeNumber, this.minDaysBetweenReminders)) {
+    // private isLastReminderOverdue(): boolean {
+    //     if (this.reminderAmountItem.length <= 0) {
+    //         return false;
+    //     }
+    //     const lastReminder = this.reminderAmountItem[this.reminderAmountItem.length - 1];
+    //     if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(lastReminder.datetimeReminderSent).getTime(), this.currentDateTimeNumber, this.minDaysBetweenReminders)) {
+    //         return true;
+    //     }
+    //     return false;
+    // }
+    private isLastReminderOverdue(messages: Message[]): boolean {
+        const lastReminder: Message = this.getMostRecentMessages(messages);
+
+        if (DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(new Date(lastReminder.datetime).getTime(), this.currentDateTimeNumber, this.minDaysBetweenReminders)) {
             return true;
         }
         return false;
+    }
+
+    private getMostRecentMessages(messages: Message[]): Message {
+        let mostRecentMessage: Message = messages[messages.length - 1];
+        for (let i = 0; i < messages.length; i++) {
+            if(!DateHelper.isDateLaterThanDate(mostRecentMessage.datetime, messages[i].datetime)){
+                mostRecentMessage = messages[i];
+            }
+        }
+        return mostRecentMessage;
     }
 
     private isLastMessageUnanswered(messages: Message[]): boolean {
