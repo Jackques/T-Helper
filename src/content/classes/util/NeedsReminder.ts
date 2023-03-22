@@ -31,8 +31,12 @@ export class Reminder {
             return false;
         }
 
+        if(!this.isLastMessageUnanswered(messages)){
+            return false;
+        }
+
         // if has total of 3 reminders/messages EACH seperated by at least 2-3 days, return false
-        if (this.isLastReminderOverdue(messages) || this.isLastMessageUnanswered(messages)) {
+        if (this.isLastReminderOverdue(messages)) {
             return true;
         }
 
