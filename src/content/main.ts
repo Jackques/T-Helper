@@ -236,7 +236,9 @@ export class Main {
                 }());
                 return this.autoReminder.getReminderHttpMap(tempId, completeId, name, reminderTextMessageList, englishOnly);
             });
-            reminderHttpList = [reminderHttpList[0], reminderHttpList[1], reminderHttpList[2], reminderHttpList[3], reminderHttpList[4]];
+
+            // Send remidners to max. 5 persons at a time
+            reminderHttpList =  reminderHttpList.length >= 5 ? [reminderHttpList[0], reminderHttpList[1], reminderHttpList[2], reminderHttpList[3], reminderHttpList[4]] : reminderHttpList;
 
             console.log("Reminder list");
             reminderHttpList.forEach((reminderHttp, index)=>{
