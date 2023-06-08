@@ -16,8 +16,8 @@ _And, of course, the `./manifest.json` file describing its configuration._
 
 ## Environment
 
-* Node.js >=12.0.0
-* NPM >= 6.0.0
+* Node.js >=12.0.0 (works on node version 14.17.0 32bit)
+* NPM >= 6.0.0 (works on v6.14.13)
 
 _Most probably it will work with earlier versions too but I didn't test it._
 
