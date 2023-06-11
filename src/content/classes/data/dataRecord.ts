@@ -154,6 +154,9 @@ export class DataRecord {
                     'interested-in-fwb',
                     'interested-in-relationship-only',
                     'interested-in-friends-only',
+                    'does-not-want-(more)-children',
+                    'has-multiple-children',
+                    'has-kid'
                 ]
         ), 
         new DataField(
@@ -241,7 +244,10 @@ export class DataRecord {
                 'accidental-like',
                 'not-attracted-anymore',
                 'old-match-before-app-no-longer-attracted',
-                'old-match-before-app-match-never-responded'
+                'old-match-before-app-match-never-responded',
+                'is-empty',
+                'has-(multiple)-children',
+                'does-not-want-(more)-children'
             ]
         ),
         new DataField('Did-i-unmatch', 'If i am going to/have unmatched an existing match', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
