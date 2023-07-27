@@ -12,6 +12,7 @@ import { UIFieldsRenderer } from './classes/controllers/UIFieldsRenderer';
 import { AutoReminder } from './classes/serrvices/AutoReminder';
 import { ReminderHttp } from './classes/data/ReminderHttp';
 import { ghostMoment } from './interfaces/data/ghostMoment.interface';
+import { HappnController } from './classes/controllers/HappnController';
 
 export class Main {
     private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
@@ -132,8 +133,9 @@ export class Main {
             case "tinder":
                 return new TinderController('api', dataTable, dataStorage);
             case "happn":
-                alert('Happn is not yet supported');
-                return undefined;
+                return new HappnController('api', dataTable, dataStorage);
+                // alert('Happn is not yet supported');
+                // return undefined;
             default:
                 alert('Unsupported app');
                 return null;
