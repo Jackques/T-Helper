@@ -59,7 +59,7 @@ export class TinderController implements datingAppController {
         if (this.dataRetrievalMethod === 'api' || this.dataRetrievalMethod === 'dom') {
             if (this.dataRetrievalMethod === 'api') {
                 //todo: update this to actually get the getCredentials, put in a constant, and check if the constant is filled with a correct string value
-                this.hasCredentials = this.getCredentials();
+                this.hasCredentials = this.setCredentials();
                 if (this.hasCredentials) {
 
                     //todo: test to see if auth token works by using a simple request first?
@@ -910,7 +910,7 @@ export class TinderController implements datingAppController {
         }
     }
 
-    public getCredentials(): boolean {
+    public setCredentials(): boolean {
         const tinderXAuthToken: string | null = localStorage.getItem('TinderWeb/APIToken');
         if (tinderXAuthToken && tinderXAuthToken.length > 0) {
             this.xAuthToken = tinderXAuthToken;
