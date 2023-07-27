@@ -27,7 +27,7 @@
         "vendor/select2-4.1.0/select2.min.css",
         "content/styles.css"
       ],
-      "matches": ["*://tinder.com/*"]
+      "matches": ["*://tinder.com/*", "*://happn.app/*"]
     }
   ],
   "background": {

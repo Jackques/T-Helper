@@ -462,7 +462,7 @@ export class TinderController implements datingAppController {
                     }
                     dataRecordValuesList.push({
                         'label': 'System-no', 'value': {
-                            'appType': 'tinder',
+                            'appType': this.nameController,
                             'id': match && match.match && match.match.id ? match.match.id : systemId,
                             'tempId': match?.match?.person?._id ? match.match.person._id : ''
                         }
