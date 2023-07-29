@@ -135,33 +135,33 @@ export class HappnController implements datingAppController {
                             return resolve();
                         }
 
-                        this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved) => {
+                        // this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved) => {
 
-                            if (!hasMessagesBeenRetrieved) {
-                                console.error(`Something went wrong with getting messages! Check the network logs.`);
-                                return reject();
-                            }
+                        //     if (!hasMessagesBeenRetrieved) {
+                        //         console.error(`Something went wrong with getting messages! Check the network logs.`);
+                        //         return reject();
+                        //     }
 
-                            // eslint-disable-next-line no-debugger
-                            // debugger;
+                        //     // eslint-disable-next-line no-debugger
+                        //     // debugger;
 
-                            const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
-                            dataRecords.forEach((dataRecord) => {
-                                const dataFields: DataField[] = dataRecord.getDataFields();
+                        //     const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
+                        //     dataRecords.forEach((dataRecord) => {
+                        //         const dataFields: DataField[] = dataRecord.getDataFields();
 
-                                const systemId: string = dataRecord.getRecordPersonSystemId(this.nameController)
-                                const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
-                                const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
-                                this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
-                            });
+                        //         const systemId: string = dataRecord.getRecordPersonSystemId(this.nameController)
+                        //         const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
+                        //         const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
+                        //         this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
+                        //     });
 
-                        }).catch((error) => {
-                            console.dir(error);
-                            console.error(`Error occured getting matchMessages`);
-                        }).finally(()=>{
-                            console.log(`And here is my data table:`);
-                            console.dir(this.dataTable);
-                        });
+                        // }).catch((error) => {
+                        //     console.dir(error);
+                        //     console.error(`Error occured getting matchMessages`);
+                        // }).finally(()=>{
+                        //     console.log(`And here is my data table:`);
+                        //     console.dir(this.dataTable);
+                        // });
                         
                     });
 
