@@ -15,7 +15,7 @@ import { ghostMoment } from './interfaces/data/ghostMoment.interface';
 import { HappnController } from './classes/controllers/HappnController';
 
 export class Main {
-    private datingAppController: TinderController | undefined | null; //todo: should remove undefined/null properties in the future
+    private datingAppController: TinderController | HappnController | undefined | null; //todo: should remove undefined/null properties in the future
     private datingAppType = '';
 
     private dataTable: DataTable = new DataTable();
@@ -46,12 +46,18 @@ export class Main {
                         //for every entry i the list received in payload
                         //todo: CURRENTLY; i ASSUME the dataTable will be empty (which it most likely is), but maybe i would want to check here if prior data already exists, thus updating data rather than creating new records
                         const importedRecords = portMessage.payload as any[];
-                        importedRecords.forEach((msg: DataRecordValues[]) => {
+                        importedRecords.forEach((msg: DataRecordValues[], index, arr) => {
                             const newDataRecord = new DataRecord();
 
                             const isDataAddedSuccesfully: boolean = newDataRecord.addDataToDataFields(msg);
                             if (isDataAddedSuccesfully && this.dataTable !== null) {
-                                this.dataTable.addNewDataRecord(newDataRecord, this.datingAppType);
+                                const isImportedDataRecordAddedDataTable = this.dataTable.addNewDataRecord(newDataRecord, this.datingAppType);
+                                if(!isImportedDataRecordAddedDataTable){
+                                    console.warn(`${console.count('ImportedDataRecord')} | Imported data record: ${newDataRecord} was NOT added to dataTable: ${this.dataTable}`);
+                                    if(index === (arr.length - 1)){
+                                        console.countReset('ImportedDataRecord');
+                                    }
+                                }
                             } else {
                                 console.error(`Error adding data from import. Please check data fields from import and error log.`);
                             }
@@ -110,7 +116,6 @@ export class Main {
                 // thus if this console.log below is ever run, something is wrong.
                 console.error(`backgroundChannelPort was disconnected succesfully, but this log should never be shown. Something is wrong?`);
             });
-
         });
     }
 
@@ -150,7 +155,7 @@ export class Main {
 
         $(`body`).on("click", '[id="downloadButton"]', () => {
             const element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8, ' + encodeURIComponent(dataTable.getRecordValuesObject()));
+            element.setAttribute('href', 'data:text/plain;charset=utf-8, ' + encodeURIComponent(dataTable.getRecordValuesObject(this.datingAppType)));
             element.setAttribute('download', fileHelper.getUpdateFileName());
             document.body.appendChild(element);
             element.click();
@@ -197,11 +202,12 @@ export class Main {
             });
 
             const dataRecordsWhoNeedAutoReminderMap = dataRecordsWhoNeedAutoReminder.map((dataRecord) => {
+                const tempId = dataRecord.getRecordPersonSystemId(this.datingAppType, true);
                 return {
                     "Name": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Name")].getValue(),
                     "System-no": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("System-no")].getValue({appType: this.datingAppType}),
-                    "tempId": dataRecord.getRecordPersonSystemId(this.datingAppType, true),
-                    "tempIdisHowManyCharacters": dataRecord.getRecordPersonSystemId(this.datingAppType, true).length,
+                    "tempId": tempId,
+                    "tempIdisHowManyCharacters": tempId ? tempId.length : null,
                     "AcquiredNumber": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Acquired-number")].getValue(),
                     "Needs-reminder": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Needs-reminder")].getValue(),
                     "Messages": dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Messages")].getValue(),
@@ -217,34 +223,40 @@ export class Main {
     
             console.table(dataRecordsWhoNeedAutoReminderMap, ["Name", "System-no","tempId", "tempIdisHowManyCharacters", "Needs-reminder", "Messages", "AcquiredNumber", "English-only"]);
             console.log("SEND REMINDER LIST");
-            let reminderHttpList: ReminderHttp[] = dataRecordsWhoNeedAutoReminder.map((dataRecord: DataRecord)=>{
-                const tempId: string = dataRecord.getRecordPersonSystemId(this.datingAppType, true);
-                const completeId: string = dataRecord.getRecordPersonSystemId(this.datingAppType, false);
-                const name: string = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Name")].getValue() as string;
-                //todo: I should REALLY create a seperate helper util class for getting & setting special data classes e.g. Reminders-amount & How-many-ghosts
-                const englishOnly: boolean = (function(){
-                        const values: string[] = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Details-tags")].getValue() as string[];
-                        if(values.includes("is-tourist") || values.includes("is-immigrant-or-expat")){
-                            //todo: when a match is 'is-tourist' or 'is-immigrant' they are automatically seen as 'english'. Preferably I would like to have a 'language' dataField per profile so I can manually set it to English with Dutch being the default language
-                            return true;
-                        }
-                        return false;
-                }());
-                const reminderTextMessageList: string[] = (function(){
-                    const valuesRemindersAmount = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Reminders-amount")].getValue() as Record<string, number | string | boolean>[];
-                    return valuesRemindersAmount.map((valueRemindersAmount)=>{
-                        return valueRemindersAmount['textContentReminder'] as unknown as string;
-                    });
-                }());
-                return this.autoReminder.getReminderHttpMap(tempId, completeId, name, reminderTextMessageList, englishOnly);
+            let reminderHttpList: (ReminderHttp | null)[] = dataRecordsWhoNeedAutoReminder.map((dataRecord: DataRecord)=>{
+                const tempId: string | null = dataRecord.getRecordPersonSystemId(this.datingAppType, true);
+                const completeId: string | null = dataRecord.getRecordPersonSystemId(this.datingAppType, false);
+                if(!tempId || !completeId){
+                    console.warn(`Could not esthablish send reminders record; tempId is: ${tempId}, completeId is: ${completeId}`);
+                    return null;
+                }else{
+                    const name: string = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Name")].getValue() as string;
+                    //todo: I should REALLY create a seperate helper util class for getting & setting special data classes e.g. Reminders-amount & How-many-ghosts
+                    const englishOnly: boolean = (function(){
+                            const values: string[] = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Details-tags")].getValue() as string[];
+                            if(values.includes("is-tourist") || values.includes("is-immigrant-or-expat")){
+                                //todo: when a match is 'is-tourist' or 'is-immigrant' they are automatically seen as 'english'. Preferably I would like to have a 'language' dataField per profile so I can manually set it to English with Dutch being the default language
+                                return true;
+                            }
+                            return false;
+                    }());
+                    const reminderTextMessageList: string[] = (function(){
+                        const valuesRemindersAmount = dataRecord.usedDataFields[dataRecord.getIndexOfDataFieldByTitle("Reminders-amount")].getValue() as Record<string, number | string | boolean>[];
+                        return valuesRemindersAmount.map((valueRemindersAmount)=>{
+                            return valueRemindersAmount['textContentReminder'] as unknown as string;
+                        });
+                    }());
+                    return this.autoReminder.getReminderHttpMap(tempId, completeId, name, reminderTextMessageList, englishOnly);
+                }
             });
+            reminderHttpList = reminderHttpList.filter(reminder => !!reminder); // should filter out all the null values if any exist
 
             // Send remidners to max. 5 persons at a time
-            reminderHttpList =  reminderHttpList.length >= 5 ? [reminderHttpList[0], reminderHttpList[1], reminderHttpList[2], reminderHttpList[3], reminderHttpList[4]] : reminderHttpList;
+            reminderHttpList = reminderHttpList.length >= 5 ? [reminderHttpList[0], reminderHttpList[1], reminderHttpList[2], reminderHttpList[3], reminderHttpList[4]] : reminderHttpList;
 
             console.log("Reminder list");
             reminderHttpList.forEach((reminderHttp, index)=>{
-                console.log(index + " | TempId: " + reminderHttp.getTempId() + " - CompleteId: "+reminderHttp.getCompleteId() + " - MyId: "+reminderHttp.getMyId() + " - " + reminderHttp.getMessage());
+                console.log(index + " | TempId: " + reminderHttp?.getTempId() + " - CompleteId: "+reminderHttp?.getCompleteId() + " - MyId: "+reminderHttp?.getMyId() + " - " + reminderHttp?.getMessage());
             });
             this.datingAppController?.getReminders(reminderHttpList);
         });

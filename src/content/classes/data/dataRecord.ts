@@ -288,7 +288,7 @@ export class DataRecord {
         }
     }
 
-    public getRecordPersonSystemId(appType: string, onlyTempId?: boolean): string {
+    public getRecordPersonSystemId(appType: string, onlyTempId?: boolean): string | null {
         const labelPersonSystemid = 'System-no';
         const valueDataField:unknown | null = this.getValueOfDataFieldByTitle(labelPersonSystemid, {'appType': appType});
         if(valueDataField !== null && typeof valueDataField === 'object'){
@@ -300,9 +300,9 @@ export class DataRecord {
                     return value as string;
                 }
             }
-            return '';
+            return null;
         }
-        return '';
+        return null;
     }
 
     public getNoDataRecord(): number | null {
@@ -391,12 +391,13 @@ export class DataRecord {
         }
     }
 
-    public getRecordValueObject(): Record<string, unknown> {
+    public getRecordValueObject(appType: string): Record<string, unknown> {
         const result: Record<string, unknown> = {};
         this.usedDataFields.forEach((usedDataField)=>{
 
             if(usedDataField instanceof DataFieldSystemNo){
-                result[usedDataField.title] = usedDataField.getValue({appType: 'tinder'});
+                // result[usedDataField.title] = usedDataField.getValue({appType: 'tinder'});
+                result[usedDataField.title] = usedDataField.getValue({appType: appType});
             }else{
                 // since JSON.stringify() removes any object key-value which contains undefined, it's better to set these values as null
                 result[usedDataField.title] = usedDataField.getValue() === undefined ? null : usedDataField.getValue();

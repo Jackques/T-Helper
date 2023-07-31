@@ -8,6 +8,8 @@
     right: 35%;
     height: 35px;
     width: 100px;
+
+    z-index: 99999;
 }
 
 .closeButton {
@@ -20,6 +22,8 @@
     right: 41%;
     height: 35px;
     width: 100px;
+
+    z-index: 99999;
 }
 
 .reminderButton {
@@ -32,4 +36,6 @@
     right: 48%;
     height: 35px;
     width: 175px;
+
+    z-index: 99999;
 }

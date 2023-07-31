@@ -31,13 +31,17 @@ export class DataTable {
     }
 
     public addNewDataRecord(dataRecord: DataRecord, appType: string): boolean {
-
+        const systemId = dataRecord.getRecordPersonSystemId(appType);
+        if(!systemId){
+            console.warn(`Could not get systemId from dataRecord. Result of systemid is: ${systemId}, dataRecord: ${dataRecord}`);
+            return false;
+        }
         // Update dataTable doubles; 
         // if record already exists with the same personId/matchid; 
         // choose the one with newer lastUpdated date
-        const indexExistingRecord = this.getRecordIndexBySystemId(dataRecord.getRecordPersonSystemId(appType), appType);
+        const indexExistingRecord = this.getRecordIndexBySystemId(systemId, appType);
         if(indexExistingRecord !== -1){
-            console.warn(`A record with the same system person id already exists in the dataTable. Record systemid: ${dataRecord.getRecordPersonSystemId(appType)}`);
+            console.warn(`A record with the same system person id already exists in the dataTable. Record systemid: ${systemId.length > 0 ? systemId : 'EMPTY STRING'}, indexExistingRecord: ${indexExistingRecord}`);
             const existingRecordLastUpdated = this.dataRecords[indexExistingRecord].getValueLastUpdated();
             const newRecordLastUpdated = dataRecord.getValueLastUpdated();
 
@@ -58,7 +62,7 @@ export class DataTable {
 
             // if dataRecord has an invalid number, show warn
             if (currentRecordNo !== (this.dataRecordAmount + 1)) {
-                console.warn(`Invalid data record number: ${dataRecord.getNoDataRecord()} for record: ${dataRecord}. Data record number must be incremented from the current data record amount: ${this.dataRecordAmount}`);
+                console.info(`Invalid data record number: ${dataRecord.getNoDataRecord()} for record: ${dataRecord}. Data record will be provided with a new number, incremented from the current data record amount: ${this.dataRecordAmount}`);
             }
 
             dataRecord.setNoDataRecord(this.dataRecordAmount + 1);
@@ -93,9 +97,9 @@ export class DataTable {
         })
     }
 
-    public getRecordValuesObject(): string {
+    public getRecordValuesObject(appType: string): string {
        const valuesDataRecords: Record<string, string | unknown>[] = this.dataRecords.map((dataRecord: DataRecord)=>{
-            return dataRecord.getRecordValueObject();
+            return dataRecord.getRecordValueObject(appType);
        }); 
        return JSON.stringify(valuesDataRecords);
     }

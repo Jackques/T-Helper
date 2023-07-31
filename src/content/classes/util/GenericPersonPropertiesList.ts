@@ -28,7 +28,7 @@ class GenericPersonProperty {
     
     public addGenericPersonProperty(key: string, value: unknown, valueAsString: string): void {
         if(value === null && valueAsString !== 'null'){
-            console.warn(`Person property: ${key} has been added but value is: ${value}, whilst valueAsString is set as: ${valueAsString}`);
+            console.info(`Person property: ${key} has been added but value is: ${value}, whilst valueAsString is set as: ${valueAsString}`);
         }
         if(!valueAsString || valueAsString.length === 0){
             console.error(`A person property value type cannot be of falsey value or empty string`);

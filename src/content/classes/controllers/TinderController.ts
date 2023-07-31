@@ -138,10 +138,15 @@ export class TinderController implements datingAppController {
                         dataRecords.forEach((dataRecord) => {
                             const dataFields: DataField[] = dataRecord.getDataFields();
     
-                            const systemId: string = dataRecord.getRecordPersonSystemId(this.nameController)
-                            const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
-                            const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
-                            this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
+                            const systemId: string | null = dataRecord.getRecordPersonSystemId(this.nameController)
+                            if(!systemId){
+                                console.warn(`Could not update messages because systemid for this record was: ${systemId}`);
+                            }else{
+                                const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
+                                const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
+                                this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
+                            }
+
                         });
     
                         // eslint-disable-next-line no-debugger
@@ -995,7 +1000,7 @@ export class TinderController implements datingAppController {
 
                             const distanceDataField = dataRecord.usedDataFields[indexDataFieldDistance] as DataFieldDistances;
                             const hasRecentDistanceEntry = distanceDataField.containsRecordWithinHours(12);
-                            const personId = dataRecord.getRecordPersonSystemId(this.nameController, true);
+                            const personId: string | null = dataRecord.getRecordPersonSystemId(this.nameController, true);
 
                             if (hasRecentDistanceEntry === false && personId && personId.length > 0) {
                                 this.requestHandler.getProfileDetailsStart(personId).then((matchDetails: MatchDetailsAPI) => {
@@ -1319,12 +1324,6 @@ export class TinderController implements datingAppController {
                     }
                 }, ms);
             });
-
-            //TODO TODO TODO:
-            // AM I SURE I DO NOT WANT TO ALWAYS STORE MY (ONLY) NEWLY MADE DATARECORDS IN LOCALSTORAGE JUST TO BE 100% SURE I DON'T LOSE ANY OF MY INSERTED DATA?
-            // AND TO REMOVE THESE RECORDS FROM LOCALSTORAGE AFTER E.G. 3 DAYS 
-            // I WOULD ONLY BE STORING DATA RECORDS I JUST MADE AFTER ALL, NOT ALL OF THE DATA OFF COURSE (IN CASE OF ERRORS; BROWSER CRASH, PC CRASH ETC. IT WOULD BE USEFULL)
-            // I COULD CREATE A SIMILAIR CLASS (OR REFACTOR THE CLASS) AND LOGIC I USE IN BACKGROUND SCRIPT
         }
 
         //todo: create view to show gathered info for all dataFields (thus also showing current value of; name, age, hasProfiletext etc.)
@@ -1526,20 +1525,20 @@ export class TinderController implements datingAppController {
             for (let i = 0; i <= (dataRecords.length - 1); i = i + 1) {
                 console.log(`GETTING MESSAGES now for: ${i} - ${dataRecords[i].usedDataFields[5].getValue()}`);
                 const systemIdMatch = dataRecords[i].getRecordPersonSystemId('tinder');
-                const personId = this.getPersonIdFromMatch(systemIdMatch, matches);
-                const messages = await requestHandler.getMatchesMessagesStart(systemIdMatch);
-                // console.log(`Got Messages: `);
-                // console.dir(messages);
-                // console.log(`==========================`);
 
-                if (personId) {
-                    const messagesDataField = dataRecords[i].usedDataFields[2] as DataFieldMessages;
-                    messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(messages.reverse(), personId), true)
-                } else {
-                    console.warn(`Messages could not be added to dataRecord because personId was not found in matches array. Please check the values provided.`);
+                if(!systemIdMatch){
+                    console.warn(`Could not get messages because systemidMatch was: ${systemIdMatch}`);
+                }else{
+                    const personId = this.getPersonIdFromMatch(systemIdMatch, matches);
+                    const messages = await requestHandler.getMatchesMessagesStart(systemIdMatch);
+    
+                    if (personId) {
+                        const messagesDataField = dataRecords[i].usedDataFields[2] as DataFieldMessages;
+                        messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(messages.reverse(), personId), true)
+                    } else {
+                        console.warn(`Messages could not be added to dataRecord because personId was not found in matches array. Please check the values provided.`);
+                    }
                 }
-
-                //todo: create method which adds new messages directly?
 
                 if (i === (dataRecords.length - 1)) {
                     return resolve(true);
@@ -1658,13 +1657,12 @@ export class TinderController implements datingAppController {
                 const matchId = unupdatedMatch.getRecordPersonSystemId('tinder');
                 const matchName = unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Name')].getValue();
 
-                this.requestHandler.getMatchDetailsStart(unupdatedMatch.getRecordPersonSystemId('tinder')).then((matchDetails: Match | 404 | 500) => {
-                // this.requestHandler.getMatchDetailsStart("abc123").then((matchDetails: Match) => {
-                    // TODO TODO TODO: add case for catching 404; is probably match removed profile?
-                    // execute the same code below, BUT ALSO add 'match-seemingly-deleted-profile' or 'match-disappeared' (description; possibly means match deleted profile)
-                    // debugger;
-                    // update dataField 'Blocked' to true
+                if(!matchId){
+                    console.warn(`Could not get matchId from DataRecord, matcId result: ${matchId}, dataRecord: ${unupdatedMatch}`);
+                    continue;
+                }
 
+                this.requestHandler.getMatchDetailsStart(matchId).then((matchDetails: Match | 404 | 500) => {
                     if(matchDetails === 404){
                         console.warn(`Matchdetails: ${matchName} with id: ${matchId} gave a 404. Probably deleted profile?`);
                         console.dir(unupdatedMatchesList[i]);

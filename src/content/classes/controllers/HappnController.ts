@@ -75,14 +75,6 @@ export class HappnController implements datingAppController {
                         //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
                         // this.setSwipeHelperOnScreen();
 
-                        // HINT: In order to scroll to the very bottom of the messageList in tinder;
-                        /*
-                        Use 
-                        $0.children[$0.children.length-1].scrollIntoView()
-                        and a few ms after use;
-                        $0.scrollIntoView()
-                        .. and repeat again, again and again untill you have the full list
-                        */
                     }).catch((error) => {
                         console.dir(error);
                         console.error(`Something went wrong`);
@@ -105,7 +97,7 @@ export class HappnController implements datingAppController {
         }
     }
 
-    private async refreshDataTableMatchesAndMatchMessages(requestHandler: RequestHandlerTinder | RequestHandlerHappn): Promise<void> {
+    private async refreshDataTableMatchesAndMatchMessages(requestHandler: RequestHandlerHappn): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             // Gather data (by api's OR (less preferably) DOM)
             this.getMatches()?.then(async (matches: ParsedResultMatch[] | null) => {
@@ -130,38 +122,43 @@ export class HappnController implements datingAppController {
                 this.updateDataTable(matches);
 
                 this.setUnupdatedMatchesToBlocked(matches, this.dataTable).finally(()=>{
+                    // TODO TODO TODO: didn't I have a check on the tinder controller as well to check if messages needed to be updated? if so, then this code is still valid.
+                    // if i get the messages per profile every time rergardless, then it is not valid.
+                    // TODO TODO TODO: How exactly did my tinder matches get the status 'unupdated'? Shouldn't I implement this for my happn matches as well?
+                    // TODO TODO TODO: How exactly did my tinder controller determine which match needed to update the messages? Shouldn't I implement this as well?
                         const dataRecordsWhereMessagesNeedToBeUpdated = this.dataTable.getAllDataRecordsWhereMessageNeedTobeUpdated();
                         if (dataRecordsWhereMessagesNeedToBeUpdated.length === 0) {
                             return resolve();
                         }
 
-                        // this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved) => {
+                        this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved) => {
 
-                        //     if (!hasMessagesBeenRetrieved) {
-                        //         console.error(`Something went wrong with getting messages! Check the network logs.`);
-                        //         return reject();
-                        //     }
+                            if (!hasMessagesBeenRetrieved) {
+                                console.error(`Something went wrong with getting messages! Check the network logs.`);
+                                return reject();
+                            }
 
-                        //     // eslint-disable-next-line no-debugger
-                        //     // debugger;
+                            const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
+                            dataRecords.forEach((dataRecord) => {
+                                const dataFields: DataField[] = dataRecord.getDataFields();
 
-                        //     const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
-                        //     dataRecords.forEach((dataRecord) => {
-                        //         const dataFields: DataField[] = dataRecord.getDataFields();
+                                const systemId: string | null = dataRecord.getRecordPersonSystemId(this.nameController)
+                                if(!systemId){
+                                    console.warn(`Could not update dataRecord because record index could not be found due to not found system id: ${systemId}`);
+                                }else{
+                                    const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
+                                    const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
+                                    this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
+                                }
+                            });
 
-                        //         const systemId: string = dataRecord.getRecordPersonSystemId(this.nameController)
-                        //         const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
-                        //         const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
-                        //         this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
-                        //     });
-
-                        // }).catch((error) => {
-                        //     console.dir(error);
-                        //     console.error(`Error occured getting matchMessages`);
-                        // }).finally(()=>{
-                        //     console.log(`And here is my data table:`);
-                        //     console.dir(this.dataTable);
-                        // });
+                        }).catch((error) => {
+                            console.dir(error);
+                            console.error(`Error occured getting matchMessages`);
+                        }).finally(()=>{
+                            console.log(`And here is my data table:`);
+                            console.dir(this.dataTable);
+                        });
                         
                     });
 
@@ -169,14 +166,11 @@ export class HappnController implements datingAppController {
                 console.dir(error);
                 console.error(`An error occured getting matches`);
             });
-
-                            // ONLY ENABLED THIS FOR TESTING 24-07-2023
-                            // setTimeout(() => {
-                            //     return resolve();
-                            // }, 2000);
         });
     }
+    
     private _addMessagesMatchesHappn(matches: ParsedResultMatch[]): Promise<void> {
+        // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
             for (let i = 0; i <= matches.length - 1; i++) {
                 const index = i;
@@ -213,8 +207,8 @@ export class HappnController implements datingAppController {
             // for now i will use the TinderMessage interface because the ParsedResultMatch interface does not allow me to add multiple message interfaces for I would need to update every object i add to the list with similair properties
             // should probably want to refactor this for tinder + happn to 1 single interface (simply use Message interface?)
             const tinderMessageToConvert: TinderMessage = {
-                _id: "",
-                match_id: "",
+                _id: messageNode.node.id,
+                match_id: parsedResultMatch.match.id,
                 sent_date: messageNode.node.creationDate,
                 message: messageNode.node.body,
                 to: isMessengerMe ? 'match' : 'me',
@@ -232,13 +226,14 @@ export class HappnController implements datingAppController {
     }
 
     private _addProfileDataMatchesHappn(matches: ParsedResultMatch[]): Promise<void> {
+        // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
             for (let i = 0; i <= matches.length - 1; i++) {
                 const index = i;
                 const firstName = matches[index].match.participants[1].user.first_name;
                 console.log(`*** Getting result for ${firstName}`);
 
-                const test = new Promise<boolean>((resolve, reject) => {
+                const profileDetails = new Promise<boolean>((resolve, reject) => {
                     this.requestHandler.getMatchProfileDetails(matches[index].match.participants[1].user.id).then((result) => {
                         if (result.error !== null) {
                             console.warn(`Could not get profile data for ${firstName}`);
@@ -253,8 +248,8 @@ export class HappnController implements datingAppController {
                         return resolve(true);
                     });
                 });
-                await test;
-                console.log(`Succesfully retrtieved profile data for ${firstName}?: ${(await test).valueOf()}`);
+                await profileDetails;
+                console.log(`Succesfully retrtieved profile data for ${firstName}?: ${(await profileDetails).valueOf()}`);
             }
             resolve();
         });
@@ -546,7 +541,6 @@ export class HappnController implements datingAppController {
 
         const happnMatch = match?.match as HappnConversation;
 
-        //TODO TODO TODO: THIS SHOULD BE LOOKED AT AFTER I UPDATED THE CODE BELOW FOR HAPPN
         if (match && match.matchMessages.length > 0) {
             const retrievedMessagesFromMatch = match.matchMessages as TinderMessage[];
             messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(retrievedMessagesFromMatch, happnMatch.participants[1].user.id))
@@ -1643,54 +1637,101 @@ export class HappnController implements datingAppController {
         });
     }
 
-    // public updateMessagesDataRecords(requestHandler: RequestHandlerTinder, dataRecords: DataRecord[], matches: ParsedResultMatch[]): Promise<boolean> {
-    //     // eslint-disable-next-line no-async-promise-executor
-    //     return new Promise<boolean>(async (resolve, reject) => {
-    //         if (dataRecords.length === 0) {
-    //             console.error(`Data records amount cannot be 0`);
-    //             return reject(false);
-    //         }
+    public updateMessagesDataRecords(requestHandler: RequestHandlerHappn, dataRecords: DataRecord[], matches: ParsedResultMatch[]): Promise<boolean> {
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise<boolean>(async (resolve, reject) => {
+            if (dataRecords.length === 0) {
+                console.error(`Data records amount cannot be 0`);
+                return reject(false);
+            }
 
-    //         for (let i = 0; i <= (dataRecords.length - 1); i = i + 1) {
-    //             console.log(`GETTING MESSAGES now for: ${i} - ${dataRecords[i].usedDataFields[5].getValue()}`);
-    //             const systemIdMatch = dataRecords[i].getRecordPersonSystemId('tinder');
-    //             const personId = this.getPersonIdFromMatch(systemIdMatch, matches);
-    //             const messages = await requestHandler.getMatchesMessagesStart(systemIdMatch);
-    //             // console.log(`Got Messages: `);
-    //             // console.dir(messages);
-    //             // console.log(`==========================`);
+            for (let i = 0; i <= (dataRecords.length - 1); i = i + 1) {
+                console.log(`GETTING MESSAGES now for: ${i} - ${dataRecords[i].usedDataFields[5].getValue()}`);
+                const systemIdMatch = dataRecords[i].getRecordPersonSystemId(this.nameController);
 
-    //             if (personId) {
-    //                 const messagesDataField = dataRecords[i].usedDataFields[2] as DataFieldMessages;
-    //                 messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(messages.reverse(), personId), true)
-    //             } else {
-    //                 console.warn(`Messages could not be added to dataRecord because personId was not found in matches array. Please check the values provided.`);
-    //             }
+                if(!systemIdMatch){
+                    console.warn(`Could not get messages for ${i} - ${dataRecords[i].usedDataFields[5].getValue()} because systemId was: ${systemIdMatch}`);
+                }else{
+                    const personId = this.getPersonIdFromMatch(systemIdMatch, matches);
+                    const messages = await requestHandler.getMatchMessages(systemIdMatch);
+                    const currentMatch: ParsedResultMatch = getParsedResultMatchBySystemId(systemIdMatch, matches);
 
-    //             //todo: create method which adds new messages directly?
+                    const tinderMessages: TinderMessage[] = convertMessagesHappnToTinderMessages(messages, currentMatch);
 
-    //             if (i === (dataRecords.length - 1)) {
-    //                 return resolve(true);
-    //             }
-    //         }
-    //     });
+                    if (personId) {
+                        const messagesDataField = dataRecords[i].usedDataFields[2] as DataFieldMessages;
+                        messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(tinderMessages, personId), true)
+                    } else {
+                        console.warn(`Messages could not be added to dataRecord because personId was not found in matches array. Please check the values provided.`);
+                    }
+                }
 
-    // }
-    // public getPersonIdFromMatch(systemIdMatch: string, matches: ParsedResultMatch[]): string | null {
-    //     if (!systemIdMatch || !matches || matches.length === 0) {
-    //         console.error(`Insufficient systemIdMatch or match array was provided. Please check the provided values.`);
-    //         return null;
-    //     }
-    //     const match = matches.find((match) => {
-    //         return match.match._id === systemIdMatch || match.match.person._id === systemIdMatch;
-    //     });
-    //     if (match) {
-    //         return match.match.person._id;
-    //     } else {
-    //         console.error(`No match found in match array with systemIdMatch: ${systemIdMatch}`);
-    //         return null;
-    //     }
-    // }
+                if (i === (dataRecords.length - 1)) {
+                    return resolve(true);
+                }
+
+            }
+        });
+
+        function getParsedResultMatchBySystemId(systemId: string, matches: ParsedResultMatch[]): ParsedResultMatch {
+            let matchIndex = matches.findIndex((match)=>{
+                return match.match.id === systemId;
+            });
+            if(matchIndex === -1){
+                matchIndex = 0;
+            }
+            return matches[matchIndex];
+        }
+
+        function convertMessagesHappnToTinderMessages(messages: MessagesHappn, parsedResultMatch: ParsedResultMatch): TinderMessage[] {
+            const tinderMessages: TinderMessage[] = [];
+            messages.data.conversation.messages.edges.forEach((messageNode)=>{
+
+                const isMessengerMe = parsedResultMatch.match.participants[0].user.first_name === messages.data.conversation.messages.edges[0].node.sender.firstName;
+
+                if(isMessengerMe){
+                    console.log(`Yes! I am the sender of this message: ${messageNode.node.body}`);
+                }else{
+                    console.log(`No, i am not the sender of this message: ${messageNode.node.body}`);
+                }
+                
+                // for now i will use the TinderMessage interface because the ParsedResultMatch interface does not allow me to add multiple message interfaces for I would need to update every object i add to the list with similair properties
+                // should probably want to refactor this for tinder + happn to 1 single interface (simply use Message interface?)
+                const tinderMessageToConvert: TinderMessage = {
+                    _id: messageNode.node.id,
+                    match_id: parsedResultMatch.match.id,
+                    sent_date: messageNode.node.creationDate,
+                    message: messageNode.node.body,
+                    to: isMessengerMe ? 'match' : 'me',
+                    from: isMessengerMe ? 'me' : 'match',
+                    created_date: messageNode.node.creationDate,
+                    timestamp: new Date(messageNode.node.creationDate).getTime()
+                };
+
+                tinderMessages.push(tinderMessageToConvert);
+            });
+            return tinderMessages;
+        }
+    }
+
+    public getPersonIdFromMatch(systemIdMatch: string, matches: ParsedResultMatch[]): string | null {
+        if (!systemIdMatch || !matches || matches.length === 0) {
+            console.error(`Insufficient systemIdMatch or match array was provided. Please check the provided values.`);
+            return null;
+        }
+        
+        const match = matches.find((match) => {
+            const happnMatch = match.match as HappnConversation;
+            return happnMatch.id === systemIdMatch || happnMatch.participants[1].id === systemIdMatch;
+        });
+        if (match) {
+            const happnMatch = match.match as HappnConversation;
+            return happnMatch.participants[1].user.id;
+        } else {
+            console.error(`No match found in match array with systemIdMatch: ${systemIdMatch}`);
+            return null;
+        }
+    }
 
     public updateDataTable(matches: ParsedResultMatch[]): void {
 
@@ -1742,125 +1783,131 @@ export class HappnController implements datingAppController {
         return recordIndex;
     }
 
-    // private setUnupdatedMatchesToBlocked(matches: ParsedResultMatch[], dataTable: DataTable): Promise<void> {
-    //     return new Promise<void>((resolve) => {
-    //         const unupdatedMatchesList: DataRecord[] = dataTable.getAllDataRecords().filter((dataRecord) => {
-    //             const doesDataRecordNotHaveMatchListed = matches.findIndex((match) => {
-    //                 return match.match.id === dataRecord.getRecordPersonSystemId('tinder') || match.match.person._id === dataRecord.getRecordPersonSystemId('tinder');
-    //             });
+    private setUnupdatedMatchesToBlocked(matches: ParsedResultMatch[], dataTable: DataTable): Promise<void> {
+        return new Promise<void>((resolve) => {
 
-    //             return doesDataRecordNotHaveMatchListed === -1 ? true : false;
-    //         });
+            // if a match no longer appears in the retrieved (matches), then either the profile or our match has been deleted!
+            const unupdatedMatchesList: DataRecord[] = dataTable.getAllDataRecords().filter((dataRecord) => {
+                const doesDataRecordNotHaveMatchListed = matches.findIndex((match) => {
+                    return match.match.id === dataRecord.getRecordPersonSystemId(this.nameController) || match.match.participants[1].user.id === dataRecord.getRecordPersonSystemId(this.nameController);
+                });
 
-    //         for (let i = 0; i <= (unupdatedMatchesList.length - 1); i = i + 1) {
-    //             const unupdatedMatch = unupdatedMatchesList[i];
-    //             let presumedRequestsFired = 0;
-    //             let actualRequestsFired = 0;
+                return doesDataRecordNotHaveMatchListed === -1 ? true : false;
+            });
 
-    //             // do not update if dataField 'Blocked' is already set to true
-    //             const indexDataFieldBlocked: number = unupdatedMatch.getIndexOfDataFieldByTitle('Blocked-or-removed');
-    //             let isDataFieldBlocked = false;
-    //             if (unupdatedMatch.usedDataFields[indexDataFieldBlocked].getValue()) {
-    //                 isDataFieldBlocked = true
-    //             }
+            for (let i = 0; i <= (unupdatedMatchesList.length - 1); i = i + 1) {
+                const unupdatedMatch = unupdatedMatchesList[i];
+                let presumedRequestsFired = 0;
+                let actualRequestsFired = 0;
 
-    //             // do not update if dataField 'isMatch' is still false, since this person can still become a match in the future
-    //             const indexDataFieldIsMatch: number = unupdatedMatch.getIndexOfDataFieldByTitle('Is-match');
-    //             let isDataFieldIsMatch = true;
-    //             if (!unupdatedMatch.usedDataFields[indexDataFieldIsMatch].getValue()) {
-    //                 isDataFieldIsMatch = false;
-    //             }
+                // do not update if dataField 'Blocked' is already set to true
+                const indexDataFieldBlocked: number = unupdatedMatch.getIndexOfDataFieldByTitle('Blocked-or-removed');
+                let isDataFieldBlocked = false;
+                if (unupdatedMatch.usedDataFields[indexDataFieldBlocked].getValue()) {
+                    isDataFieldBlocked = true
+                }
 
-    //             const indexDataFieldSeeminglyDeletedProfile: number = unupdatedMatch.getIndexOfDataFieldByTitle('Seemingly-deleted-profile');
-    //             let hasDataFieldSeeminglyDeletedProfile = true;
-    //             if (!unupdatedMatch.usedDataFields[indexDataFieldSeeminglyDeletedProfile].getValue()) {
-    //                 hasDataFieldSeeminglyDeletedProfile = false;
-    //             }
+                // do not update if dataField 'isMatch' is still false, since this person can still become a match in the future
+                const indexDataFieldIsMatch: number = unupdatedMatch.getIndexOfDataFieldByTitle('Is-match');
+                let isDataFieldIsMatch = true;
+                if (!unupdatedMatch.usedDataFields[indexDataFieldIsMatch].getValue()) {
+                    isDataFieldIsMatch = false;
+                }
 
-    //             if(isDataFieldBlocked || hasDataFieldSeeminglyDeletedProfile || !isDataFieldIsMatch){
-    //                 if(i === (unupdatedMatchesList.length - 1)){
-    //                     resolve();
-    //                 }
-    //                 continue;
-    //             }
+                // do not update if datafield 'Seemingly-deleted-profile' is false, since this is an already confirmed deleted profile
+                const indexDataFieldSeeminglyDeletedProfile: number = unupdatedMatch.getIndexOfDataFieldByTitle('Seemingly-deleted-profile');
+                let hasDataFieldSeeminglyDeletedProfile = true;
+                if (!unupdatedMatch.usedDataFields[indexDataFieldSeeminglyDeletedProfile].getValue()) {
+                    hasDataFieldSeeminglyDeletedProfile = false;
+                }
 
-    //             presumedRequestsFired = presumedRequestsFired + 1;
-    //             const matchId = unupdatedMatch.getRecordPersonSystemId('tinder');
-    //             const matchName = unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Name')].getValue();
+                if(isDataFieldBlocked || hasDataFieldSeeminglyDeletedProfile || !isDataFieldIsMatch){
+                    if(i === (unupdatedMatchesList.length - 1)){
+                        resolve();
+                    }
+                    continue;
+                }
 
-    //             this.requestHandler.getMatchDetailsStart(unupdatedMatch.getRecordPersonSystemId('tinder')).then((matchDetails: Match | 404 | 500) => {
-    //             // this.requestHandler.getMatchDetailsStart("abc123").then((matchDetails: Match) => {
-    //                 // TODO TODO TODO: add case for catching 404; is probably match removed profile?
-    //                 // execute the same code below, BUT ALSO add 'match-seemingly-deleted-profile' or 'match-disappeared' (description; possibly means match deleted profile)
-    //                 // debugger;
-    //                 // update dataField 'Blocked' to true
+                presumedRequestsFired = presumedRequestsFired + 1;
+                const matchId = unupdatedMatch.getRecordPersonSystemId(this.nameController);
+                const matchName = unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Name')].getValue();
 
-    //                 if(matchDetails === 404){
-    //                     console.warn(`Matchdetails: ${matchName} with id: ${matchId} gave a 404. Probably deleted profile?`);
-    //                     console.dir(unupdatedMatchesList[i]);
+                // todo: continue here
+                this.requestHandler.getMatchProfileDetails(matchId).then((matchDetails: MatchProfileDetailsHappn) => {
+                    // what if a match blockes me?
+                        // what kind of response will Happn retrieve on this api?
+                    // what if a match removes their own profile?
+                        // what kind of response will Happn retrieve on this api?
+                    // what if I delete a match?
+                        // what kind of response will Happn retrieve on this api?
 
-    //                     unupdatedMatch.addDataToDataFields([
-    //                         {
-    //                             label: 'Blocked-or-removed',
-    //                             value: false
-    //                         },
-    //                         {
-    //                             label: 'Date-of-unmatch',
-    //                             value: new Date().toISOString()
-    //                         },
-    //                         {
-    //                             label: 'Seemingly-deleted-profile',
-    //                             value: true
-    //                         }
-    //                     ]);
 
-    //                     unupdatedMatch.setUpdateMessages(false);
-    //                 }
+                    // if(matchDetails === 404){
+                    //     console.warn(`Matchdetails: ${matchName} with id: ${matchId} gave a 404. Probably deleted profile?`);
+                    //     console.dir(unupdatedMatchesList[i]);
 
-    //                 if(matchDetails === 500){
-    //                     console.error(`Matchdetails: ${matchName} with id: ${matchId} request returned a 500. Probably only removed me as match?`);
-    //                 }
+                    //     unupdatedMatch.addDataToDataFields([
+                    //         {
+                    //             label: 'Blocked-or-removed',
+                    //             value: false
+                    //         },
+                    //         {
+                    //             label: 'Date-of-unmatch',
+                    //             value: new Date().toISOString()
+                    //         },
+                    //         {
+                    //             label: 'Seemingly-deleted-profile',
+                    //             value: true
+                    //         }
+                    //     ]);
 
-    //                 if(typeof matchDetails !== 'number' && matchDetails?.closed){
-    //                     const indexUnmatchDatafield = unupdatedMatch.getIndexOfDataFieldByTitle('Did-i-unmatch');
-    //                     if(unupdatedMatch.usedDataFields[indexUnmatchDatafield].getValue()){
-    //                         console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. I (ME) deleted our match!`);
-    //                         console.warn(unupdatedMatchesList[i]);
-    //                     }else{
-    //                         console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. Match deleted our match!`);
-    //                         console.warn(unupdatedMatchesList[i]);
-    //                     }
+                    //     unupdatedMatch.setUpdateMessages(false);
+                    // }
 
-    //                     unupdatedMatch.addDataToDataFields([
-    //                         {
-    //                             label: 'Blocked-or-removed',
-    //                             value: true
-    //                         },
-    //                         {
-    //                             label: 'Date-of-unmatch',
-    //                             value: unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() ? unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() : (matchDetails.last_activity_date ? matchDetails.last_activity_date : new Date().toISOString())
-    //                         },
-    //                         {
-    //                             label: 'Seemingly-deleted-profile',
-    //                             value: false
-    //                         }
-    //                     ]);
+                    // if(matchDetails === 500){
+                    //     console.error(`Matchdetails: ${matchName} with id: ${matchId} request returned a 500. Probably only removed me as match?`);
+                    // }
 
-    //                     unupdatedMatch.setUpdateMessages(false);
-    //                 }
+                    // if(typeof matchDetails !== 'number' && matchDetails?.closed){
+                    //     const indexUnmatchDatafield = unupdatedMatch.getIndexOfDataFieldByTitle('Did-i-unmatch');
+                    //     if(unupdatedMatch.usedDataFields[indexUnmatchDatafield].getValue()){
+                    //         console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. I (ME) deleted our match!`);
+                    //         console.warn(unupdatedMatchesList[i]);
+                    //     }else{
+                    //         console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. Match deleted our match!`);
+                    //         console.warn(unupdatedMatchesList[i]);
+                    //     }
 
-    //                 actualRequestsFired = actualRequestsFired + 1;
-    //                 if(presumedRequestsFired === actualRequestsFired){
-    //                     resolve();
-    //                 }
-    //             }).catch(()=>{
-    //                 const indexDataFieldName: number = unupdatedMatch.getIndexOfDataFieldByTitle('Name');
-    //                 console.log(`Failed to get matchDetails for profile with name: ${unupdatedMatch.usedDataFields[indexDataFieldName].getValue()}. Please check if request adress is still correct.`);
-    //             });
+                    //     unupdatedMatch.addDataToDataFields([
+                    //         {
+                    //             label: 'Blocked-or-removed',
+                    //             value: true
+                    //         },
+                    //         {
+                    //             label: 'Date-of-unmatch',
+                    //             value: unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() ? unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() : (matchDetails.last_activity_date ? matchDetails.last_activity_date : new Date().toISOString())
+                    //         },
+                    //         {
+                    //             label: 'Seemingly-deleted-profile',
+                    //             value: false
+                    //         }
+                    //     ]);
 
-    //         }
-    //     });
-    // }
+                    //     unupdatedMatch.setUpdateMessages(false);
+                    // }
+
+                    // actualRequestsFired = actualRequestsFired + 1;
+                    // if(presumedRequestsFired === actualRequestsFired){
+                    //     resolve();
+                    // }
+                }).catch(()=>{
+                    const indexDataFieldName: number = unupdatedMatch.getIndexOfDataFieldByTitle('Name');
+                    console.log(`Failed to get matchDetails for profile with name: ${unupdatedMatch.usedDataFields[indexDataFieldName].getValue()}. Please check if request adress is still correct.`);
+                });
+
+            }
+        });
+    }
 
     // private getAmountOfPictures(personDetails: Match["person"] | MatchDetailsAPI["results"]): number | null {
     //     let amountOfPictures: null | number = null;
