@@ -204,6 +204,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const parsedFileContent = JSON.parse(fileContent);
         if (Array.isArray(parsedFileContent)) {
+
             const parsedFileContentList = parsedFileContent as Record<string, unknown>[];
             const filteredHeaders: string[] = filterNestedHeadersJSON(parsedFileContentList);
 
@@ -229,6 +230,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 return currentRecordHasCompatibleValues;
             });
 
+            // if empty array (new file)
+            if(parsedFileContent.length === 0){
+                inputDataList = mapResultsArrayToresultDataRecordValues(parsedFileContentList);
+                hideAllCurrentNotifications();
+                $('#succesText').text('New file').removeClass('d-none');
+                $('#activate').attr('disabled', null); 
+                return;
+            }
+
+            // if not empty array (existing file)
             if(hasCompatibleHeaders && hasCompatibleValues){
                 console.log(`Result succes: `);
                 console.dir(parsedFileContentList);
@@ -245,6 +256,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }else{
             console.error(`Uploaded file contents does not contain an array as it's first element. Please check & update your file contents.`);
         }
+    }
+
+    function hideAllCurrentNotifications(){
+        $('.alert').addClass('d-none');
     }
 
     function filterNestedHeadersJSON(parsedFileContent: Array<unknown>): string[] {
