@@ -32,6 +32,6 @@
     "./src"
   ],
   "files": [
-    "./vue-shims.d.ts", "./src/content/classes/data/SubmitType.ts", "src/background/SubmitAction.interface.ts", "./src/background/backgroundScriptErrorHelper.ts", "./src/background/tinderRequestInterceptorHelper.ts", "src/content/classes/data/ReminderHttp.ts", "./src/content/classes/serrvices/AutoReminderText.ts"
+    "./vue-shims.d.ts", "./src/content/classes/data/SubmitType.ts", "src/background/SubmitAction.interface.ts", "./src/background/backgroundScriptErrorHelper.ts", "./src/background/tinderRequestInterceptorHelper.ts", "src/content/classes/data/ReminderHttp.ts", "./src/content/classes/serrvices/AutoReminderText.ts", "./src/content/classes/util/GenericPersonProperties/GenericPersonProperty.ts", "./src/content/classes/util/LogColors.ts"
   ]
 }

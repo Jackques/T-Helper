@@ -1,4 +1,4 @@
-import { GenericPersonPropertiesList } from "src/content/classes/util/GenericPersonPropertiesList";
+import { GenericPersonPropertiesList } from "src/content/classes/util/GenericPersonProperties/GenericPersonPropertiesList";
 import { HappnConversation } from "../http-requests/MatchesListHappn.interface";
 import { Match } from "../http-requests/MatchesListTinder.interface";
 import { TinderMessage } from "../http-requests/MessagesListTinder.interface";

@@ -80,6 +80,8 @@ export class DataRecord {
 
         new DataField('Liked-me-first-is-instant-match', 'If this person liked me first thus resulting in an instant match upon me liking this person. Must set this field manually, if the match is not instant then I liked the person first', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Is-gold-match', 'If a match is thanks to Tinder gold or not', true, { UIrequired: UIRequired.CHAT_ONLY, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Needs-profile-update', 'If a match profile details need to be updated for this record', false, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
+        new DataField('Needs-messages-update', 'If a match messages need to be updated for this record', false, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
         new DataField('Needs-reminder', 'If a match did not respond thus needs a reminder', true, { UIrequired: UIRequired.ALL, UIrequiredType: UIRequiredType.SWITCH }, false, false, false, false, {baseType: 'boolean', customCheckClass: null}),
 
         new DataFieldDistances('Distance-in-km', 'The reported distance of this person relative to me on a given datetime', true, { UIrequired: UIRequired.NONE, UIrequiredType: null }, true, false, false, false, {baseType: 'specialList', customCheckClass: new dataCheckDistances()}),
@@ -353,6 +355,24 @@ export class DataRecord {
     public hasMessages(): boolean {
         const dataFieldMessages = this.usedDataFields[this.getIndexOfDataFieldByTitle('Messages')] as DataFieldMessages;
         return dataFieldMessages.hasMessages();
+    }
+
+    public getIfProfileDetailsNeedsUpdate(): boolean {
+        // Created due to the need to be able to determine on record (match)-level if the profile details need to be updated or not
+        // Which in turn can be:
+        // - Not set due to a (single accidental) HTTP failure, in which case it would be preferable to try getting the details again in the future
+        // - Need to be reset according to the wishes of the user by setting it in the screenhelper panel (slider to true)
+
+        return this.usedDataFields[this.getIndexOfDataFieldByTitle('Needs-profile-update')].getValue() as boolean;
+    }
+
+    public getIfMessagesNeedsUpdate(): boolean {
+        // Created due to the need to be able to determine on record (match)-level if the profile details need to be updated or not
+        // Which in turn can be:
+        // - Not set due to a (single accidental) HTTP failure, in which case it would be preferable to try getting the details again in the future
+        // - Need to be reset according to the wishes of the user by setting it in the screenhelper panel (slider to true)
+
+        return this.usedDataFields[this.getIndexOfDataFieldByTitle('Needs-messages-update')].getValue() as boolean;
     }
 
     /**

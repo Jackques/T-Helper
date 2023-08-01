@@ -569,6 +569,20 @@ export class TinderController implements datingAppController {
                     });
                     break;
                 }
+                case 'Needs-profile-update': {
+                    dataRecordValuesList.push({
+                        'label': 'Needs-profile-update',
+                        'value': dataField.getValue() ? dataField.getValue() : false
+                    });
+                    break;
+                }
+                case 'Needs-messages-update': {
+                    dataRecordValuesList.push({
+                        'label': 'Needs-messages-update',
+                        'value': dataField.getValue() ? dataField.getValue() : false
+                    });
+                    break;
+                }
                 case 'Needs-reminder': {
                     dataRecordValuesList.push({
                         'label': 'Needs-reminder',

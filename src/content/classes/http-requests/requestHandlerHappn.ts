@@ -9,7 +9,7 @@ import { ReminderHttp } from '../data/ReminderHttp';
 import { MatchListHappnAPI, HappnConversation } from 'src/content/interfaces/http-requests/MatchesListHappn.interface';
 import { TypeOfChat } from '../util/happn/typeOfChat';
 import { MatchProfileDetailsHappn } from 'src/content/interfaces/http-requests/MatchProfileDetailsHappn.interface';
-import { GenericPersonPropertiesList } from '../util/GenericPersonPropertiesList';
+import { GenericPersonPropertiesList } from '../util/GenericPersonProperties/GenericPersonPropertiesList';
 import { MessagesHappn } from 'src/content/interfaces/http-requests/MessagesHappn.interface';
 
 export class RequestHandlerHappn {

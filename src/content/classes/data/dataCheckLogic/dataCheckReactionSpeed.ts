@@ -39,7 +39,7 @@ export class dataCheckReactionSpeed extends dataCheck implements validEntry {
             
         });
         const differenceBetweenDates = DateHelper.getAmountMilisecondesBetweenDates(listEntry[requiredPropertiesList[0].label] as string, listEntry[requiredPropertiesList[1].label] as string);
-        const isDifferenceDatesPositiveNumber = differenceBetweenDates !== undefined && differenceBetweenDates > 0 ? true : false;
+        const isDifferenceDatesPositiveNumber = differenceBetweenDates !== undefined && differenceBetweenDates > -1 ? true : false;
         return hasRequiredArguments && isDifferenceDatesPositiveNumber;
     }
 
