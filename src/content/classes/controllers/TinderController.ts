@@ -28,7 +28,6 @@ import { ReminderHttp } from "../data/ReminderHttp";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
-    listEndpoints = ['a', 'b', 'c']; //todo: should refactor this so i will not need to provide these here? I doubt i use these here anyway
     private hasCredentials = false;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
     private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer();

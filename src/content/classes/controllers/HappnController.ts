@@ -35,19 +35,17 @@ import { LogColors } from "../util/ConsoleColorLog/LogColors";
 
 export class HappnController implements datingAppController {
     private nameController = 'happn';
-    listEndpoints = ['a', 'b', 'c']; //todo: should refactor this so i will not need to provide these here? I doubt i use these here anyway
     private hasCredentials = false;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
     private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer();
 
     private happnAccessToken = '';
     private requestHandler!: RequestHandlerHappn; // 'definite assignment assertion proerty (!) added here, is this a good practice?'
-    public matches: Person[] = [];
     private dataTable: DataTable;
     private dataStorage: dataStorage;
 
     private currentScreenTimeoutId: number | null = null;
-    private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
+    // private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
     private currentMatchIdByUrlChat: string | null = null;
 
     private amountOfUnmessagedMatches = 0;
@@ -1680,32 +1678,32 @@ export class HappnController implements datingAppController {
     //     return href.substring(href.lastIndexOf('/') + 1);
     // }
 
-    public getCurrentScreenByDOM(): ScreenNavStateCombo {
-        const swipeIdentifier = '.recsToolbar';
-        const chatIdentifier = '.chat';
-        const chatProfileIdentifier = '.chatProfile';
+    // public getCurrentScreenByDOM(): ScreenNavStateCombo {
+    //     const swipeIdentifier = '.recsToolbar';
+    //     const chatIdentifier = '.chat';
+    //     const chatProfileIdentifier = '.chatProfile';
 
-        const backButtonOnMainPanelIdentifier = 'a[href="/app/recs"].focus-button-style';
+    //     const backButtonOnMainPanelIdentifier = 'a[href="/app/recs"].focus-button-style';
 
-        let currentPage: ScreenNavStateCombo;
+    //     let currentPage: ScreenNavStateCombo;
 
-        switch (true) {
-            case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length === 0 ? true : false:
-                currentPage = ScreenNavStateCombo.Swipe;
-                break;
-            case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length > 0 ? true : false:
-                currentPage = ScreenNavStateCombo.SwipeProfile;
-                break;
-            case $(chatIdentifier).length > 0 && $(chatProfileIdentifier).length > 0 ? true : false:
-                currentPage = ScreenNavStateCombo.Chat;
-                break;
-            default:
-                currentPage = ScreenNavStateCombo.UnknownScreen;
-                break;
-        }
-        console.log(`You are on page: ${currentPage}`);
-        return currentPage;
-    }
+    //     switch (true) {
+    //         case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length === 0 ? true : false:
+    //             currentPage = ScreenNavStateCombo.Swipe;
+    //             break;
+    //         case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length > 0 ? true : false:
+    //             currentPage = ScreenNavStateCombo.SwipeProfile;
+    //             break;
+    //         case $(chatIdentifier).length > 0 && $(chatProfileIdentifier).length > 0 ? true : false:
+    //             currentPage = ScreenNavStateCombo.Chat;
+    //             break;
+    //         default:
+    //             currentPage = ScreenNavStateCombo.UnknownScreen;
+    //             break;
+    //     }
+    //     console.log(`You are on page: ${currentPage}`);
+    //     return currentPage;
+    // }
 
     // public getMatchesAndMatchMessagesByAPI(requestHandler: RequestHandlerTinder, useMock: boolean): Promise<ParsedResultMatch[] | null> {
     //     //todo: make seperate out logic in different methods because whilst 'getData' may be generic, getting it will differ for each supported app.
