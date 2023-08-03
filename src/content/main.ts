@@ -8,11 +8,11 @@ import { dataStorage } from './classes/data/dataStorage';
 import { DataTable } from './classes/data/dataTable';
 import { DataRecordValues } from './interfaces/data/dataRecordValues.interface';
 import { PortMessage } from './interfaces/portMessage.interface';
-import { UIFieldsRenderer } from './classes/controllers/UIFieldsRenderer';
 import { AutoReminder } from './classes/serrvices/AutoReminder';
 import { ReminderHttp } from './classes/data/ReminderHttp';
 import { ghostMoment } from './interfaces/data/ghostMoment.interface';
 import { HappnController } from './classes/controllers/HappnController';
+import { Overlay } from './classes/serrvices/Overlay';
 
 export class Main {
     private datingAppController: TinderController | HappnController | undefined | null; //todo: should remove undefined/null properties in the future
@@ -20,7 +20,6 @@ export class Main {
 
     private dataTable: DataTable = new DataTable();
     private dataStorage: dataStorage = new dataStorage();
-    private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer();
     private autoReminder: AutoReminder = new AutoReminder();
     private importedFile: FileHelper | null = null;
     private backgroundChannelPort: chrome.runtime.Port | null = null;
@@ -169,7 +168,7 @@ export class Main {
         let closeButtonPromptActiveNo: number | null = null;
         
         $(`body`).on("click", '[id="closeButton"]', () => {
-            this.uiRenderer.setLoadingOverlay('closeAppAction', true);
+            Overlay.setLoadingOverlay('closeAppAction', true);
             
             if(!closeButtonPromptActiveNo){
                 closeButtonPromptActiveNo = setTimeout(()=>{
@@ -181,7 +180,7 @@ export class Main {
                     } else {
                         txt = "You pressed Cancel!";
                     }
-                    this.uiRenderer.setLoadingOverlay('closeAppAction', false);
+                    Overlay.setLoadingOverlay('closeAppAction', false);
                     console.log(txt);
                     closeButtonPromptActiveNo = null;
                 }, 100);

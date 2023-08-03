@@ -32,11 +32,22 @@ import { ConsoleColorLog } from "../util/ConsoleColorLog/ConsoleColorLog";
 import { CategoryStatus } from "../util/ConsoleColorLog/CategoryStatus";
 import { LogColors } from "../util/ConsoleColorLog/LogColors";
 import { HappnMatchesAndMessagesController } from "./HappnMatchesAndMessagesController";
+import { Overlay } from "../serrvices/Overlay";
+import { MatchDataParser } from "./MatchDataParserHappn";
 
 export class HappnController implements datingAppController {
     private nameController = 'happn';
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
-    private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer();
+    private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer({
+        fieldsContainerSwipeScreen: 'body [data-testid="cards-desktop"]',
+        fieldsContainerChatScreen: 'body [data-testid="conversation-message-list-scrollbars"]',
+        
+        swipeActionLike: 'body [data-testid="profile-btn-like"]',
+        swipeActionPass: 'body [data-testid="profile-btn-reject"]',
+        swipeActionSuperlike: 'body [data-testid="profile-btn-flashnote"]',
+
+        chatActionSendMessage: 'body [data-testid="conversation"] textarea',
+    });
 
     private happnAccessToken = '';
     private requestHandler!: RequestHandlerHappn; // 'definite assignment assertion proerty (!) added here, is this a good practice?'
@@ -44,7 +55,7 @@ export class HappnController implements datingAppController {
     private dataStorage: dataStorage;
 
     private currentScreenTimeoutId: number | null = null;
-    // private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
+    private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
     private currentMatchIdByUrlChat: string | null = null;
 
     private amountOfUnmessagedMatches = 0;
@@ -72,7 +83,7 @@ export class HappnController implements datingAppController {
                     // debugger;
                     this.happnMatchesAndMessagesController = new HappnMatchesAndMessagesController(this.requestHandler, this.dataTable, this.nameController);
 
-                    this.uiRenderer.setLoadingOverlay('initApp', true);
+                    Overlay.setLoadingOverlay('initApp', true);
                     this.happnMatchesAndMessagesController.refreshDataTableMatchesAndMatchMessages().then(() => {
 
                         // ConsoleColorLog.startCategorizedLogs(CategoryStatus.START, LogColors.BLUE);
@@ -83,13 +94,13 @@ export class HappnController implements datingAppController {
 
                         console.log(`RefreshDataTableMatchesAndMatchMessages .then START`);
                         //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
-                        // this.setSwipeHelperOnScreen();
+                        this.setSwipeHelperOnScreen();
 
                     }).catch((error) => {
                         console.dir(error);
                         console.error(`Something went wrong`);
                     }).finally(() => {
-                        this.uiRenderer.setLoadingOverlay('initApp', false);
+                        Overlay.setLoadingOverlay('initApp', false);
                         // this.setScreenWatcher();
                         // this.setMessageListWatcherOnScreen();
                         // this.setMatchesListWatcher();
@@ -140,7 +151,7 @@ export class HappnController implements datingAppController {
     //             return;
     //         }
 
-    //         this.uiRenderer.setLoadingOverlay('switchScreen', true);
+    //         Overlay.setLoadingOverlay('switchScreen', true);
 
     //         this.uiRenderer.removeAllUIHelpers();
 
@@ -157,11 +168,11 @@ export class HappnController implements datingAppController {
     //                     this.setRefreshDataTable(false);
     //                     this.setSwipeHelperOnScreen();
     //                 }).finally(() => {
-    //                     this.uiRenderer.setLoadingOverlay('switchScreen', false);
+    //                     Overlay.setLoadingOverlay('switchScreen', false);
     //                 });
     //             } else {
     //                 this.addUIHelpers(this.currentScreen);
-    //                 this.uiRenderer.setLoadingOverlay('switchScreen', false);
+    //                 Overlay.setLoadingOverlay('switchScreen', false);
     //             }
 
     //         }, 500);
@@ -378,477 +389,460 @@ export class HappnController implements datingAppController {
     //     return null;
     // }
 
-    // public setSwipeHelperOnScreen(): void {
-    //     this.currentScreen = this.getCurrentScreenByDOM();
-    //     this.addUIHelpers(this.currentScreen);
-    // }
+    public setSwipeHelperOnScreen(): void {
+        this.currentScreen = this.getCurrentScreenByDOM();
+        this.addUIHelpers(this.currentScreen);
+    }
 
-    // public addUIHelpers(currentScreen: ScreenNavStateCombo, forceRefresh?: boolean): void {
-    //     if (currentScreen === ScreenNavStateCombo.Chat) {
+    public addUIHelpers(currentScreen: ScreenNavStateCombo, forceRefresh?: boolean): void {
+        if (currentScreen === ScreenNavStateCombo.Chat) {
 
-    //         if (forceRefresh) {
-    //             this.uiRenderer.removeAllUIHelpers();
-    //         }
+            if (forceRefresh) {
+                this.uiRenderer.removeAllUIHelpers();
+            }
 
-    //         // 1. get current messageListItemPerson
-    //         const currentMatchid: string = this.getCurrentMatchIdFromChatScreen();
-    //         let dataRecord: DataRecord | null = null;
-    //         let dataFields: DataField[] | undefined | null = undefined;
+            // 1. get current messageListItemPerson
+            const currentMatchid: string = this.getCurrentMatchIdFromChatScreen();
+            // debugger;
 
-    //         // 2. get record in table for this person
-    //         if (currentMatchid.length > 0) {
-    //             const recordIndexId = this.dataTable.getRecordIndexBySystemId(currentMatchid, 'tinder');
-    //             if (recordIndexId !== -1) {
-    //                 // todo: so i need to get the data first BEFORE i update the record? or just change this entirely?
-    //                 // todo: why do i need to include undefined here while at no point in the assignment of this variabele does it ever get undefined assigned to it?
-    //                 dataRecord = this.dataTable.getRecordByRecordIndex(recordIndexId);
-    //                 if (dataRecord !== null) {
-    //                     dataFields = dataRecord.getDataRecordDataFields();
+            // TODO TODO TODO:
+            // 1. V Extract logic for parseMatchDataToDataRecordValues in HappnMatchesAndMessagesController to it's own class, make relevant methods static so they can also be accessed here
+            // 2. V Refactor call to said methods here so they reach the static methods
+            // 3. V Add new instance for parseMatchDataToDataRecordValues (or make that static as well?) and refactor the useage of it here
+            // 4. Make the relevant methods which use specific (datingapp-related) HTML classes generic by providing said dating-app related HTML classes by params
+            
+            let dataRecord: DataRecord | null = null;
+            let dataFields: DataField[] | undefined | null = undefined;
 
-    //                     // 3. show helpers for chat (all?), make space above messagebox, put helper container there?
-    //                     this.uiRenderer.renderFieldsContainerForScreen(currentScreen, () => {
-    //                         // $('div[id*="SC.chat"]').first().css('width', '730px');
-    //                         const chatContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div[id*="SC.chat"]');
-    //                         if (chatContainerDOM !== null) {
-    //                             $(chatContainerDOM).css('padding-right', '315px');
-    //                         } else {
-    //                             console.error(`Cannot find chat container DOM element. Please update the selectors.`);
-    //                             return;
-    //                         }
+            // 2. get record in table for this person
+            if (currentMatchid.length > 0) {
+                const recordIndexId = this.dataTable.getRecordIndexBySystemId(currentMatchid, this.nameController);
+                if (recordIndexId !== -1) {
+                    // todo: so i need to get the data first BEFORE i update the record? or just change this entirely?
+                    // todo: why do i need to include undefined here while at no point in the assignment of this variabele does it ever get undefined assigned to it?
+                    dataRecord = this.dataTable.getRecordByRecordIndex(recordIndexId);
+                    if (dataRecord !== null) {
+                        dataFields = dataRecord.getDataRecordDataFields();
 
-    //                     });
-    //                     let uiRequiredDataFields: DataField[] = [];
+                        // 3. show helpers for chat (all?), make space above messagebox, put helper container there?
+                        // debugger;
+                        this.uiRenderer.renderFieldsContainerForScreen(currentScreen, () => {
+                            // $('div[id*="SC.chat"]').first().css('width', '730px');
+                            const chatContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div[data-testid="conversation-message-list-scrollbars"]');
+                            if (chatContainerDOM !== null) {
+                                $(chatContainerDOM).css('padding-right', '315px');
+                            } else {
+                                console.error(`Cannot find chat container DOM element. Please update the selectors.`);
+                                return;
+                            }
 
-    //                     if (dataFields && dataFields.length > 0) {
-    //                         uiRequiredDataFields = dataRecord.getDataFields(false, true, UIRequired.CHAT_ONLY);
+                        });
+                        let uiRequiredDataFields: DataField[] = [];
 
-    //                         // 4. on send/receive message.. add message to/update dataRecord? (check; messageListObserver)
-    //                         // 5. on switch person in messagelist; switch settings of the above? (check screenWatcher (Observer))
-    //                         this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields,
-    //                             (value: DataRecordValues) => {
-    //                                 console.log(`Updated value to existing data record; label: ${value.label}, value: ${value.value}`);
-    //                                 const updatedValuesForDataFields: DataRecordValues[] = [value];
+                        if (dataFields && dataFields.length > 0) {
+                            uiRequiredDataFields = dataRecord.getDataFields(false, true, UIRequired.CHAT_ONLY);
 
-    //                                 if(value.label === "Acquired-number" && value.value){
-    //                                     updatedValuesForDataFields.push({
-    //                                         label: 'Date-of-acquired-number',
-    //                                         value: new Date().toISOString()
-    //                                     });
-    //                                 }else if(value.label === "Acquired-number" && !value.value){
-    //                                     updatedValuesForDataFields.push({
-    //                                         label: 'Date-of-acquired-number',
-    //                                         value: null
-    //                                     });
-    //                                 }
+                            // 4. on send/receive message.. add message to/update dataRecord? (check; messageListObserver)
+                            // 5. on switch person in messagelist; switch settings of the above? (check screenWatcher (Observer))
+                            this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields,
+                                (value: DataRecordValues) => {
+                                    console.log(`Updated value to existing data record; label: ${value.label}, value: ${value.value}`);
+                                    const updatedValuesForDataFields: DataRecordValues[] = [value];
 
-    //                                 dataRecord?.addDataToDataFields(updatedValuesForDataFields);
-    //                                 console.log(`Updated dataRecord: `);
-    //                                 console.dir(dataRecord);
-    //                             }, (submitType: SubmitType) => {
-    //                                 dataRecord?.setUpdateMessages(true);
-    //                             });
-    //                     }
+                                    if(value.label === "Acquired-number" && value.value){
+                                        updatedValuesForDataFields.push({
+                                            label: 'Date-of-acquired-number',
+                                            value: new Date().toISOString()
+                                        });
+                                    }else if(value.label === "Acquired-number" && !value.value){
+                                        updatedValuesForDataFields.push({
+                                            label: 'Date-of-acquired-number',
+                                            value: null
+                                        });
+                                    }
 
-    //                     const indexDataFieldDistance = dataRecord.getIndexOfDataFieldByTitle('Distance-in-km');
-    //                     if (indexDataFieldDistance !== -1) {
+                                    dataRecord?.addDataToDataFields(updatedValuesForDataFields);
+                                    console.log(`Updated dataRecord: `);
+                                    console.dir(dataRecord);
+                                }, (submitType: SubmitType) => {
+                                    dataRecord?.setUpdateMessages(true);
+                                });
+                        }
 
-    //                         const distanceDataField = dataRecord.usedDataFields[indexDataFieldDistance] as DataFieldDistances;
-    //                         const hasRecentDistanceEntry = distanceDataField.containsRecordWithinHours(12);
-    //                         const personId = dataRecord.getRecordPersonSystemId(this.nameController, true);
+                        const indexDataFieldDistance = dataRecord.getIndexOfDataFieldByTitle('Distance-in-km');
+                        if (indexDataFieldDistance !== -1) {
 
-    //                         if (hasRecentDistanceEntry === false && personId && personId.length > 0) {
-    //                             this.requestHandler.getProfileDetailsStart(personId).then((matchDetails: MatchDetailsAPI) => {
+                            const distanceDataField = dataRecord.usedDataFields[indexDataFieldDistance] as DataFieldDistances;
+                            const hasRecentDistanceEntry = distanceDataField.containsRecordWithinHours(12);
+                            const personId = dataRecord.getRecordPersonSystemId(this.nameController, true);
 
-    //                                 const dataForDataFields: DataRecordValues[] = [
-    //                                     {
-    //                                         label: 'Name',
-    //                                         // value: matchDetails?.results?.name ? matchDetails.results.name : 'Unknown name'
-    //                                         value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Name')].getValue() ? dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Name')].getValue() : (matchDetails?.results?.name ? matchDetails.results.name : 'Unknown name')
-    //                                     },
-    //                                     {
-    //                                         label: 'Age',
-    //                                         // value: matchDetails?.results?.birth_date ? DateHelper.getAgeFromBirthDate(matchDetails.results.birth_date) : NaN
-    //                                         value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Age')].getValue() ? dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Age')].getValue() : (matchDetails?.results?.birth_date ? DateHelper.getAgeFromBirthDate(matchDetails.results.birth_date) : NaN)
-    //                                     },
-    //                                     {
-    //                                         label: 'City',
-    //                                         // value: matchDetails?.results?.city?.name.length > 0 ? matchDetails.results.city.name : ''
-    //                                         value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('City')].getValue() ? dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('City')].getValue() : (matchDetails?.results?.city?.name.length > 0 ? matchDetails.results.city.name : '')
-    //                                     },
-    //                                     {
-    //                                         label: 'Job',
-    //                                         // value: matchDetails?.results?.jobs?.at(0)?.title?.name ? matchDetails?.results.jobs.at(0)?.title.name : ''
-    //                                         value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Job')].getValue() ? dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Job')].getValue() : (matchDetails?.results?.jobs?.at(0)?.title?.name ? matchDetails?.results.jobs.at(0)?.title?.name : '')
+                            if (hasRecentDistanceEntry === false && personId && personId.length > 0) {
+                                this.requestHandler.getMatchProfileDetails(personId).then((matchDetails: MatchProfileDetailsHappn) => {
+                                    if(matchDetails.error){
+                                        ConsoleColorLog.singleLog(`Could not get match profile details for currently opened match: `, dataRecord, LogColors.RED);
+                                    }
 
-    //                                     },
-    //                                     {
-    //                                         label: 'School',
-    //                                         // value: matchDetails?.results?.schools?.at(0)?.name ? matchDetails?.results.schools.at(0)?.name : ''
-    //                                         value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('School')].getValue() ? dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('School')].getValue() : (matchDetails?.results?.schools?.at(0)?.name ? matchDetails?.results.schools.at(0)?.name : '')
-    //                                     },
-    //                                     {
-    //                                         label: 'Gender',
-    //                                         // value: matchDetails?.results?.gender ? this._getGender(matchDetails?.results?.gender) : ''
-    //                                         value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Gender')].getValue() ? dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Gender')].getValue() : (matchDetails?.results?.gender ? this._getGender(matchDetails?.results?.gender) : '')
+                                    const dataForDataFields: DataRecordValues[] = [
+                                        {
+                                            label: 'Name',
+                                            value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Name')].getValue() ? 
+                                            dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Name')].getValue() : 
+                                            (matchDetails?.data?.first_name ? matchDetails.data.first_name : 'Unknown name')
+                                        },
+                                        {
+                                            label: 'Age',
+                                            value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Age')].getValue() ? 
+                                            dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Age')].getValue() : 
+                                            (matchDetails?.data?.age ? matchDetails?.data?.age : NaN)
+                                        },
+                                        {
+                                            label: 'Job',
+                                            value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Job')].getValue() ? 
+                                            dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Job')].getValue() : 
+                                            (matchDetails?.data?.job ? matchDetails?.data?.job : '')
 
-    //                                     },
-    //                                     {
-    //                                         label: 'Interests',
-    //                                         // value: matchDetails?.results?.user_interests?.selected_interests?.length > 0 ? this._getInterests(matchDetails?.results?.user_interests?.selected_interests) : []
-    //                                         value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Interests')].getValue() ? dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Interests')].getValue() : (matchDetails?.results?.user_interests?.selected_interests?.length > 0 ? this._getInterests(matchDetails?.results?.user_interests?.selected_interests) : [])
-    //                                     },
-    //                                     {
-    //                                         label: 'Has-profiletext',
-    //                                         // value: matchDetails?.results?.bio.length > 0 ? true : false
-    //                                         value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Has-profiletext')].getValue() ? dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Has-profiletext')].getValue() : (matchDetails?.results?.bio.length > 0 ? true : false)
-    //                                     },
-    //                                     {
-    //                                         label: 'Is-verified',
-    //                                         // value: matchDetails?.results?.badges.length > 0 ? this._isVerifiedMatch(matchDetails?.results?.badges) : false
-    //                                         value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Is-verified')].getValue() ? dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Is-verified')].getValue() : (matchDetails?.results?.badges.length > 0 ? this._isVerifiedMatch(matchDetails?.results?.badges) : false)
+                                        },
+                                        {
+                                            label: 'School',
+                                            value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('School')].getValue() ? 
+                                            dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('School')].getValue() : 
+                                            (matchDetails?.data?.school ? matchDetails?.data?.school : '')
+                                        },
+                                        {
+                                            label: 'Gender',
+                                            value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Gender')].getValue() ? 
+                                            dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Gender')].getValue() : 
+                                            (matchDetails?.data?.gender ? MatchDataParser.getGender(matchDetails?.data?.gender) : 'Other')
 
-    //                                     },
-    //                                     {
-    //                                         label: 'Distance-in-km',
-    //                                         value: [{
-    //                                             dateTime: new Date().toISOString(),
-    //                                             distanceInKM: this._convertDistanceMilesToKM(matchDetails?.results?.distance_mi)
-    //                                         }]
-    //                                     },
-    //                                     {
-    //                                         label: 'Amount-of-pictures',
-    //                                         value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Amount-of-pictures')].getValue() ? dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Amount-of-pictures')].getValue() : this.getAmountOfPictures(matchDetails.results)
-    //                                     },
-    //                                 ];
+                                        },
+                                        {
+                                            label: 'Has-profiletext',
+                                            value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Has-profiletext')].getValue() ? 
+                                            dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Has-profiletext')].getValue() : 
+                                            (matchDetails?.data?.about?.length > 0 ? true : false)
+                                        },
+                                        {
+                                            label: 'Is-verified',
+                                            value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Is-verified')].getValue() ? 
+                                            dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Is-verified')].getValue() : 
+                                            (matchDetails?.data.verification.status !== "unverified")
 
-    //                                 dataRecord?.addDataToDataFields(dataForDataFields);
+                                        },
+                                        //TODO TODO TODO: Figure out if I want to include distance & how (last crossed/know location maybe? but maybe i'll need a lat/long for that with external api?..hmm..)
+                                        // {
+                                        //     label: 'Distance-in-km',
+                                        //     value: [{
+                                        //         dateTime: new Date().toISOString(),
+                                        //         distanceInKM: this._convertDistanceMilesToKM(matchDetails?.results?.distance_mi)
+                                        //     }]
+                                        // },
+                                        {
+                                            label: 'Amount-of-pictures',
+                                            value: dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Amount-of-pictures')].getValue() ? 
+                                            dataRecord?.usedDataFields[dataRecord?.getIndexOfDataFieldByTitle('Amount-of-pictures')].getValue() : 
+                                            matchDetails?.data?.nb_photos
+                                        },
+                                    ];
 
-    //                             });
-    //                         }
-    //                     }
-    //                 }
-    //             } else {
-    //                 //todo: needs inplementation on what to do if recordid is not found? This should not happen tho.. wait.. yes it should! What if i get a new match after i imported everything and started chatting with match!?
-    //                 console.error('Current match id not found');
-    //                 // 2.a if chat new person (recognize chat new person or not) (and record does not exist yet); add new record?
-    //                 //todo: nice-to-have; prompt user to add this unknown person or not?
-    //                 // dataRecord = new DataRecord();
-    //                 // dataRecord.addDataToDataFields([{ label: "System-no", value: currentMatchid}]);
+                                    dataRecord?.addDataToDataFields(dataForDataFields);
 
-    //                 //todo: gather person data by ui (but this time; via chat interface!) OR; get data by api?
-    //             }
+                                });
+                            }
+                        }
+                    }
+                } else {
+                    console.error('Current match id not found');
+                }
 
-    //         } else {
-    //             console.error('Invalid matchId.');
-    //         }
+            } else {
+                console.error('Invalid matchId.');
+            }
+        }
 
+        if (currentScreen === ScreenNavStateCombo.Swipe) {
 
-    //     }
+            if (forceRefresh) {
+                this.uiRenderer.removeAllUIHelpers();
+            }
 
-    //     if (currentScreen === ScreenNavStateCombo.Swipe) {
+            const newDataRecord: DataRecord = new DataRecord();
 
-    //         if (forceRefresh) {
-    //             this.uiRenderer.removeAllUIHelpers();
-    //         }
+            this.uiRenderer.renderFieldsContainerForScreen(currentScreen, ()=>{
 
-    //         const newDataRecord: DataRecord = new DataRecord();
+                const swipeContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div[data-testid="cards-desktop"]');
+                if (swipeContainerDOM !== null) {
+                    $(swipeContainerDOM).css('position', 'absolute');
+                    $(swipeContainerDOM).css('left', '-200px');
+                } else {
+                    console.error(`Cannot find swipe container DOM element. Please update the selectors.`);
+                    return;
+                }
+            });
 
-    //         this.uiRenderer.renderFieldsContainerForScreen(currentScreen, ()=>{
+            const uiRequiredDataFields: DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
 
-    //             const swipeContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('.recsCardboard__cards');
-    //             if (swipeContainerDOM !== null) {
-    //                 $(swipeContainerDOM).css('position', 'absolute');
-    //                 $(swipeContainerDOM).css('left', '-200px');
-    //             } else {
-    //                 console.error(`Cannot find swipe container DOM element. Please update the selectors.`);
-    //                 return;
-    //             }
-    //         });
+            newDataRecord.addDataToDataFields([
+                // set initial value to later be adjusted by ui control
+                {
+                    label: 'Has-usefull-profiletext',
+                    value: false
+                },
+                {
+                    label: 'Attractiveness-score',
+                    value: 6
+                },
+                {
+                    label: 'Seems-fake',
+                    value: false
+                },
+                {
+                    label: 'Seems-empty',
+                    value: false
+                },
+                {
+                    label: 'Seems-obese',
+                    value: false
+                },
+                {
+                    label: 'Seems-toppick',
+                    value: false
+                },
+                {
+                    label: 'Last-updated',
+                    value: new Date().toISOString()
+                },
+                {
+                    label: 'Is-match',
+                    value: false
+                },
+                {
+                    label: 'Date-liked-or-passed',
+                    value: new Date().toISOString()
+                },
+            ]);
 
-    //         const uiRequiredDataFields: DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
+            // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
+            this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields, (value: DataRecordValues) => {
+                console.log(`Added value to new data record; label: ${value.label}, value: ${value.value}`);
+                newDataRecord.addDataToDataFields([value]);
+                console.log(`Updated dataRecord: `);
+                console.dir(newDataRecord);
 
-    //         newDataRecord.addDataToDataFields([
-    //             // set initial value to later be adjusted by ui control
-    //             {
-    //                 label: 'Has-usefull-profiletext',
-    //                 value: false
-    //             },
-    //             {
-    //                 label: 'Attractiveness-score',
-    //                 value: 6
-    //             },
-    //             {
-    //                 label: 'Seems-fake',
-    //                 value: false
-    //             },
-    //             {
-    //                 label: 'Seems-empty',
-    //                 value: false
-    //             },
-    //             {
-    //                 label: 'Seems-obese',
-    //                 value: false
-    //             },
-    //             {
-    //                 label: 'Seems-toppick',
-    //                 value: false
-    //             },
-    //             {
-    //                 label: 'Last-updated',
-    //                 value: new Date().toISOString()
-    //             },
-    //             {
-    //                 label: 'Is-match',
-    //                 value: false
-    //             },
-    //             {
-    //                 label: 'Date-liked-or-passed',
-    //                 value: new Date().toISOString()
-    //             },
-    //         ]);
+            }, (submitType: SubmitType) => {
+                console.log('Callback received a submit type! But it will only be used if no response from background can be retrieved');
+                Overlay.setLoadingOverlay('loadingSwipeAction', true);
+                console.log(submitType);
 
-    //         // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
-    //         this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields, (value: DataRecordValues) => {
-    //             console.log(`Added value to new data record; label: ${value.label}, value: ${value.value}`);
-    //             newDataRecord.addDataToDataFields([value]);
-    //             console.log(`Updated dataRecord: `);
-    //             console.dir(newDataRecord);
+                console.log(this.dataStorage);
+                console.assert(this.dataStorage.popLastActionFromDataStore() === undefined);
 
-    //         }, (submitType: SubmitType) => {
-    //             console.log('Callback received a submit type! But it will only be used if no response from background can be retrieved');
-    //             this.uiRenderer.setLoadingOverlay('loadingSwipeAction', true);
-    //             console.log(submitType);
+                //todo: refactor all code below to use a promise, in which a set interval checks every 100ms orso if a dataStorage item is available then executes code as normal to a max of 60 sec
+                // OR even better; once submittype has been pressed, do nothing here, copy the code below to the backgroundscriptlistener? (let THAT code check if we are on swiping page, what is filled into the datafields etc.)
+                // OR EVEN BETTER YET; this code (except for when the timeout begins should always run first, sooner than my backgroundscript can receive a response..), so; create a new promise, add it to the dataStore, let the eventlistener from backgroundscript trigger the resolve, if no response comes make my script below (with timeout) trigger the reject after 1 min orso
 
-    //             console.log(this.dataStorage);
-    //             console.assert(this.dataStorage.popLastActionFromDataStore() === undefined);
+                // get (request) personid from backgroundscript (get response), after 1 sec
+                const ms = 1000;
+                setTimeout(() => {
+                    console.log('this is what is found in dataStore after 1 sec: ');
+                    console.log(this.dataStorage);
+                    const submitAction: SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
+                    console.log(submitAction);
 
-    //             //todo: refactor all code below to use a promise, in which a set interval checks every 100ms orso if a dataStorage item is available then executes code as normal to a max of 60 sec
-    //             // OR even better; once submittype has been pressed, do nothing here, copy the code below to the backgroundscriptlistener? (let THAT code check if we are on swiping page, what is filled into the datafields etc.)
-    //             // OR EVEN BETTER YET; this code (except for when the timeout begins should always run first, sooner than my backgroundscript can receive a response..), so; create a new promise, add it to the dataStore, let the eventlistener from backgroundscript trigger the resolve, if no response comes make my script below (with timeout) trigger the reject after 1 min orso
+                    let typeOfLikeOrPass = '';
+                    if (submitAction !== undefined) {
+                        let personActionStatus: boolean | undefined = undefined;
+                        if (submitAction.submitType === PersonAction.LIKED_PERSON) {
+                            personActionStatus = true;
+                            typeOfLikeOrPass = 'like';
+                        }
+                        if (submitAction.submitType === PersonAction.SUPER_LIKED_PERSON) {
+                            personActionStatus = true;
+                            typeOfLikeOrPass = 'superlike';
+                        }
+                        if (submitAction.submitType === PersonAction.PASSED_PERSON) {
+                            personActionStatus = false;
+                            typeOfLikeOrPass = 'pass';
+                        }
 
-    //             // get (request) personid from backgroundscript (get response), after 1 sec
-    //             const ms = 1000;
-    //             setTimeout(() => {
-    //                 console.log('this is what is found in dataStore after 1 sec: ');
-    //                 console.log(this.dataStorage);
-    //                 const submitAction: SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
-    //                 console.log(submitAction);
+                        if (personActionStatus === undefined) {
+                            return;
+                        }
 
-    //                 let typeOfLikeOrPass = '';
-    //                 if (submitAction !== undefined) {
-    //                     let personActionStatus: boolean | undefined = undefined;
-    //                     if (submitAction.submitType === PersonAction.LIKED_PERSON) {
-    //                         personActionStatus = true;
-    //                         typeOfLikeOrPass = 'like';
-    //                     }
-    //                     if (submitAction.submitType === PersonAction.SUPER_LIKED_PERSON) {
-    //                         personActionStatus = true;
-    //                         typeOfLikeOrPass = 'superlike';
-    //                     }
-    //                     if (submitAction.submitType === PersonAction.PASSED_PERSON) {
-    //                         personActionStatus = false;
-    //                         typeOfLikeOrPass = 'pass';
-    //                     }
+                        const dataForDataFields: DataRecordValues[] = [
+                            {
+                                label: 'System-no',
+                                value: {
+                                    appType: this.nameController,
+                                    tempId: submitAction.personId
+                                }
+                            },
+                            {
+                                label: 'Did-i-like',
+                                value: personActionStatus
+                            },
+                            {
+                                label: 'Type-of-match-or-like',
+                                value: [typeOfLikeOrPass]
+                            },
+                        ];
+                        newDataRecord.addDataToDataFields(dataForDataFields);
 
-    //                     if (personActionStatus === undefined) {
-    //                         return;
-    //                     }
+                        this.requestHandler.getMatchProfileDetails(submitAction.personId).then((matchDetails: MatchProfileDetailsHappn) => {
+                            //todo: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
 
-    //                     const dataForDataFields: DataRecordValues[] = [
-    //                         {
-    //                             label: 'System-no',
-    //                             value: {
-    //                                 appType: 'tinder',
-    //                                 tempId: submitAction.personId
-    //                             }
-    //                         },
-    //                         {
-    //                             label: 'Did-i-like',
-    //                             value: personActionStatus
-    //                         },
-    //                         {
-    //                             label: 'Type-of-match-or-like',
-    //                             value: [typeOfLikeOrPass]
-    //                         },
-    //                     ];
-    //                     newDataRecord.addDataToDataFields(dataForDataFields);
+                            const dataForDataFields: DataRecordValues[] = [
+                                {
+                                    label: 'Name',
+                                    value: matchDetails?.data?.first_name ? matchDetails.data.first_name : 'Unknown name'
+                                },
+                                {
+                                    label: 'Age',
+                                    value: matchDetails?.data?.age ?matchDetails.data.age : NaN
+                                },
+                                // {
+                                //     label: 'City',
+                                //     value: matchDetails?.data?.city?.name.length > 0 ? matchDetails.data.city.name : ''
+                                // },
+                                {
+                                    label: 'Job',
+                                    value: matchDetails?.data?.job ? matchDetails?.data?.job : ''
+                                },
+                                {
+                                    label: 'School',
+                                    value: matchDetails?.data?.school ? matchDetails?.data?.school : ''
+                                },
+                                {
+                                    label: 'Gender',
+                                    value: matchDetails?.data?.gender ? MatchDataParser.getGender(matchDetails?.data?.gender) : 'Other'
+                                },
+                                // {
+                                //     label: 'Interests',
+                                //     value: matchDetails?.results?.user_interests?.selected_interests?.length > 0 ? this._getInterests(matchDetails?.results?.user_interests?.selected_interests) : []
+                                // },
+                                {
+                                    label: 'Has-profiletext',
+                                    value: matchDetails?.data?.about?.length > 0 ? true : false
+                                },
+                                {
+                                    label: 'Is-verified',
+                                    value: matchDetails?.data?.verification?.status !== "unverified"
+                                }
+                            ];
 
-    //                     this.requestHandler.getProfileDetailsStart(submitAction.personId).then((matchDetails: MatchDetailsAPI) => {
-    //                         //todo: Build in; valid from guard. I must check a box in order to proceed to 'like' or 'pass' a person to prevent accidental skipping a field
+                            // if (matchDetails?.results?.distance_mi) {
+                            //     dataForDataFields.push({
+                            //         label: 'Distance-in-km',
+                            //         value: [{
+                            //             dateTime: new Date().toISOString(),
+                            //             distanceInKM: this._convertDistanceMilesToKM(matchDetails?.results?.distance_mi)
+                            //         }]
+                            //     });
+                            // }
 
-    //                         const dataForDataFields: DataRecordValues[] = [
-    //                             {
-    //                                 label: 'Name',
-    //                                 value: matchDetails?.results?.name ? matchDetails.results.name : 'Unknown name'
-    //                             },
-    //                             {
-    //                                 label: 'Age',
-    //                                 value: matchDetails?.results?.birth_date ? DateHelper.getAgeFromBirthDate(matchDetails.results.birth_date) : NaN
-    //                             },
-    //                             {
-    //                                 label: 'City',
-    //                                 value: matchDetails?.results?.city?.name.length > 0 ? matchDetails.results.city.name : ''
-    //                             },
-    //                             {
-    //                                 label: 'Job',
-    //                                 value: matchDetails?.results?.jobs?.at(0)?.title?.name ? matchDetails?.results.jobs.at(0)?.title.name : ''
-    //                             },
-    //                             {
-    //                                 label: 'School',
-    //                                 value: matchDetails?.results?.schools?.at(0)?.name ? matchDetails?.results.schools.at(0)?.name : ''
-    //                             },
-    //                             {
-    //                                 label: 'Gender',
-    //                                 value: matchDetails?.results?.gender ? this._getGender(matchDetails?.results?.gender) : ''
-    //                             },
-    //                             {
-    //                                 label: 'Interests',
-    //                                 value: matchDetails?.results?.user_interests?.selected_interests?.length > 0 ? this._getInterests(matchDetails?.results?.user_interests?.selected_interests) : []
-    //                             },
-    //                             {
-    //                                 label: 'Has-profiletext',
-    //                                 value: matchDetails?.results?.bio.length > 0 ? true : false
-    //                             },
-    //                             {
-    //                                 label: 'Is-verified',
-    //                                 value: matchDetails?.results?.badges.length > 0 ? this._isVerifiedMatch(matchDetails?.results?.badges) : false
-    //                             }
-    //                         ];
+                            newDataRecord.addDataToDataFields(dataForDataFields);
 
-    //                         if (matchDetails?.results?.distance_mi) {
-    //                             dataForDataFields.push({
-    //                                 label: 'Distance-in-km',
-    //                                 value: [{
-    //                                     dateTime: new Date().toISOString(),
-    //                                     distanceInKM: this._convertDistanceMilesToKM(matchDetails?.results?.distance_mi)
-    //                                 }]
-    //                             });
-    //                         }
+                        }).catch(()=>{
+                            console.error(`Swiped person received tempId, but could not get details of swiped person! Saving inserted info of record regardless`);
+                        }).finally(()=>{
+                            this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
+                            this.addUIHelpers(currentScreen, true);
+                            Overlay.setLoadingOverlay('loadingSwipeAction', false);
+                        });
+                    }else{
+                        newDataRecord.addDataToDataFields([
+                            // set initial value to later be adjusted by ui control
+                            {
+                                label: 'System-no',
+                                value: {
+                                    appType: 'tinder',
+                                    tempId: `idNotRetrievedPleaseCheckBackgroundRequestsBackupsInLocalStorage-${new Date().toISOString()}`
+                                }
+                            },
+                            {
+                                label: 'Did-i-like',
+                                value: submitType === 'liked' ? true : false
+                            },
+                            {
+                                label: 'Type-of-match-or-like',
+                                value: [submitType]
+                            },
+                        ]);
+                        this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
+                        this.addUIHelpers(currentScreen, true);
+                        Overlay.setLoadingOverlay('loadingSwipeAction', false);
 
-    //                         newDataRecord.addDataToDataFields(dataForDataFields);
+                        console.error(`Swiped person received no tempId! Saving inserted info of record regardless.. Don't forget to check background local storage requests backup to get the corresponding personid and to overwrite the tempId later!`);
+                        //todo: Should REALLY throw a important alert to notify myself what I need to pay extra attention!
+                    }
+                }, ms);
+            });
+        }
 
+        //todo: create view to show gathered info for all dataFields (thus also showing current value of; name, age, hasProfiletext etc.)
+        //todo: create 're-try retrieve' button; for when the tinder UI finishes loading too late and my app already attempted to gather data
+        //todo: figure out a solution to auto get 'hasProfileText' for when a profile DOES HAVE profileText but isnt show in the initial view because there is too much other info (location, age, distance, job etc.).. maybe do inplement a previous screen?
 
-    //                         //TODO:
-    //                         // 1. V Test when swiping and CAN retrieve all data if this still works
-    //                         // 2. V Test when swiping and CANNOT reach getProfileDetails endpoint if this still works
-    //                         // 3. V Test when swiping and CANNOT reach getProfileDetails endpoint NOR dataStorage has been set if this still works
+        //todo: create ability to while swipe/chat see all the values being stored for this record/person
 
-    //                         // BONUS: Add updated dataRecords to localStorage? or even simply use the FileSystemApi (the one exclusive to chrome, since my chrome extension is chrome exclusive anwyay..)
-    //                         // would be very usefull for temporary storing data if...
-    //                             // 1. my browser were to suddenly crash for whatever reason, or my entire computer
-    //                             // 2. for whatever reason i need to run (catch train?) thus aborting export for storing data records
+        //todo: create checker method which checks if above DOM element ref exists, otherwise throw error
+        //todo: FUTURE; create checker method which checks if all required DOM elements used here still exist (auto loop through application?)
+        //todo: add other state (if,.. or seperate method) for adding chat ui helper VS swipe ui helper. Currently working on swipe ui helper
 
-    //                         // works =
-    //                         // swiped profile is still added to the dataRecords
-    //                         // screen is still reset correctly
-    //                         // overlay is gone
+        //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
+    }
 
-    //                     }).catch(()=>{
-    //                         console.error(`Swiped person received tempId, but could not get details of swiped person! Saving inserted info of record regardless`);
-    //                     }).finally(()=>{
-    //                         this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
-    //                         this.addUIHelpers(currentScreen, true);
-    //                         this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
-    //                     });
-    //                 }else{
-    //                     newDataRecord.addDataToDataFields([
-    //                         // set initial value to later be adjusted by ui control
-    //                         {
-    //                             label: 'System-no',
-    //                             value: {
-    //                                 appType: 'tinder',
-    //                                 tempId: `idNotRetrievedPleaseCheckBackgroundRequestsBackupsInLocalStorage-${new Date().toISOString()}`
-    //                             }
-    //                         },
-    //                         {
-    //                             label: 'Did-i-like',
-    //                             value: submitType === 'liked' ? true : false
-    //                         },
-    //                         {
-    //                             label: 'Type-of-match-or-like',
-    //                             value: [submitType]
-    //                         },
-    //                     ]);
-    //                     this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
-    //                     this.addUIHelpers(currentScreen, true);
-    //                     this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
+    public getCurrentMatchIdFromChatScreen(): string {
+        const matchIdFromUrl: string | null = this.getCurrentMatchIdFromUrl();
+        if (matchIdFromUrl) {
+            return matchIdFromUrl;
+        } else {
+            console.error(`Message List Item DOM Element not found. Please check & update the selector.`);
+        }
+        return '';
+    }
 
-    //                     console.error(`Swiped person received no tempId! Saving inserted info of record regardless.. Don't forget to check background local storage requests backup to get the corresponding personid and to overwrite the tempId later!`);
-    //                     //todo: Should REALLY throw a important alert to notify myself what I need to pay extra attention!
-    //                 }
-    //             }, ms);
-    //         });
-
-    //         //TODO TODO TODO:
-    //         // AM I SURE I DO NOT WANT TO ALWAYS STORE MY (ONLY) NEWLY MADE DATARECORDS IN LOCALSTORAGE JUST TO BE 100% SURE I DON'T LOSE ANY OF MY INSERTED DATA?
-    //         // AND TO REMOVE THESE RECORDS FROM LOCALSTORAGE AFTER E.G. 3 DAYS 
-    //         // I WOULD ONLY BE STORING DATA RECORDS I JUST MADE AFTER ALL, NOT ALL OF THE DATA OFF COURSE (IN CASE OF ERRORS; BROWSER CRASH, PC CRASH ETC. IT WOULD BE USEFULL)
-    //         // I COULD CREATE A SIMILAIR CLASS (OR REFACTOR THE CLASS) AND LOGIC I USE IN BACKGROUND SCRIPT
-    //     }
-
-    //     //todo: create view to show gathered info for all dataFields (thus also showing current value of; name, age, hasProfiletext etc.)
-    //     //todo: create 're-try retrieve' button; for when the tinder UI finishes loading too late and my app already attempted to gather data
-    //     //todo: figure out a solution to auto get 'hasProfileText' for when a profile DOES HAVE profileText but isnt show in the initial view because there is too much other info (location, age, distance, job etc.).. maybe do inplement a previous screen?
-
-    //     //todo: create ability to while swipe/chat see all the values being stored for this record/person
-
-    //     //todo: create checker method which checks if above DOM element ref exists, otherwise throw error
-    //     //todo: FUTURE; create checker method which checks if all required DOM elements used here still exist (auto loop through application?)
-    //     //todo: add other state (if,.. or seperate method) for adding chat ui helper VS swipe ui helper. Currently working on swipe ui helper
-
-    //     //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
-    // }
-
-    // public getCurrentMatchIdFromChatScreen(): string {
-    //     const matchIdFromUrl: string | null = this.getCurrentMatchIdFromUrl();
-    //     if (matchIdFromUrl) {
-    //         return matchIdFromUrl;
-    //     } else {
-    //         console.error(`Message List Item DOM Element not found. Please check & update the selector.`);
-    //     }
-    //     return '';
-    // }
-
-    // private getCurrentMatchIdFromUrl(): string | null {
-    //     const indexLastSlash: number = window.location.href.lastIndexOf('/');
-    //     if (indexLastSlash >= 0) {
-    //         return window.location.href.substring(indexLastSlash + 1);
-    //     } else {
-    //         console.error(`Url does not seem to contain a slash?`);
-    //         return null;
-    //     }
-    // }
+    private getCurrentMatchIdFromUrl(): string | null {
+        const indexLastSlash: number = window.location.href.lastIndexOf('/');
+        if (indexLastSlash >= 0) {
+            return window.location.href.substring(indexLastSlash + 1);
+        } else {
+            console.error(`Url does not seem to contain a slash?`);
+            return null;
+        }
+    }
 
     // private getMatchIdFromMessageHrefSDtring(href: string): string {
     //     return href.substring(href.lastIndexOf('/') + 1);
     // }
 
-    // public getCurrentScreenByDOM(): ScreenNavStateCombo {
-    //     const swipeIdentifier = '.recsToolbar';
-    //     const chatIdentifier = '.chat';
-    //     const chatProfileIdentifier = '.chatProfile';
+    public getCurrentScreenByDOM(): ScreenNavStateCombo {
+        const bodyPageRef = $('body')[0];
+        if(bodyPageRef){
+            const bodyPageDataPageAttr = bodyPageRef.getAttribute('data-page');
 
-    //     const backButtonOnMainPanelIdentifier = 'a[href="/app/recs"].focus-button-style';
-
-    //     let currentPage: ScreenNavStateCombo;
-
-    //     switch (true) {
-    //         case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length === 0 ? true : false:
-    //             currentPage = ScreenNavStateCombo.Swipe;
-    //             break;
-    //         case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length > 0 ? true : false:
-    //             currentPage = ScreenNavStateCombo.SwipeProfile;
-    //             break;
-    //         case $(chatIdentifier).length > 0 && $(chatProfileIdentifier).length > 0 ? true : false:
-    //             currentPage = ScreenNavStateCombo.Chat;
-    //             break;
-    //         default:
-    //             currentPage = ScreenNavStateCombo.UnknownScreen;
-    //             break;
-    //     }
-    //     console.log(`You are on page: ${currentPage}`);
-    //     return currentPage;
-    // }
+            if(!bodyPageDataPageAttr && typeof bodyPageDataPageAttr !== 'string'){
+                throw new Error(`Could not get current page, please check the DOM properties & code references`);
+            }
+    
+            let currentPage: ScreenNavStateCombo;
+    
+            switch (true) {
+                case bodyPageDataPageAttr === '/home':
+                    currentPage = ScreenNavStateCombo.Swipe;
+                    break;
+                case bodyPageDataPageAttr.startsWith('/conversations/'):
+                    currentPage = ScreenNavStateCombo.Chat;
+                    break;
+                default:
+                    currentPage = ScreenNavStateCombo.UnknownScreen;
+                    break;
+            }
+            console.log(`You are on page: ${currentPage}`);
+            return currentPage;
+        }
+        throw new Error(`Could not get body DOM element from current page, please check the DOM properties & code references`);
+        
+    }
 
     // public getMatchesAndMatchMessagesByAPI(requestHandler: RequestHandlerTinder, useMock: boolean): Promise<ParsedResultMatch[] | null> {
     //     //todo: make seperate out logic in different methods because whilst 'getData' may be generic, getting it will differ for each supported app.
@@ -903,32 +897,32 @@ export class HappnController implements datingAppController {
         return false;
     }
 
-    // public disconnectAllUIWatchers(): boolean {
-    //     this.uiRenderer.removeAllUIHelpers();
+    public disconnectAllUIWatchers(): boolean {
+        this.uiRenderer.removeAllUIHelpers();
 
-    //     let disconnectedWatchersAmount = 0;
-    //     this.watchersUIList.forEach((watcher: MutationObserver) => {
-    //         watcher.disconnect();
-    //         disconnectedWatchersAmount = disconnectedWatchersAmount + 1;
-    //         console.log('UI Watcher disconnected');
-    //     });
-    //     if (this.watchersUIList.length === disconnectedWatchersAmount) {
-    //         this.watchersUIList.length = 0;
-    //     }
-    //     return this.watchersUIList.length === 0 ? true : false;
-    // }
+        let disconnectedWatchersAmount = 0;
+        this.watchersUIList.forEach((watcher: MutationObserver) => {
+            watcher.disconnect();
+            disconnectedWatchersAmount = disconnectedWatchersAmount + 1;
+            console.log('UI Watcher disconnected');
+        });
+        if (this.watchersUIList.length === disconnectedWatchersAmount) {
+            this.watchersUIList.length = 0;
+        }
+        return this.watchersUIList.length === 0 ? true : false;
+    }
 
     // public getReminders(reminderHttpList: ReminderHttp[]){
     //     //todo: show overlay
-    //     this.uiRenderer.setLoadingOverlay('reminderOverlay', true);
+    //     Overlay.setLoadingOverlay('reminderOverlay', true);
     //     this.requestHandler.postReminderList(reminderHttpList, (currentIndex: number, totalLength: number, statusText: string)=>{
     //         console.log(`${currentIndex}, / ${totalLength} - ${statusText}`);
-    //         this.uiRenderer.setLoadingOverlayProgress('reminderOverlay', currentIndex, totalLength, statusText);
+    //         Overlay.setLoadingOverlayProgress('reminderOverlay', currentIndex, totalLength, statusText);
     //     }).then((reminderHttpList)=>{
     //         console.dir(reminderHttpList);
     //         debugger;
     //         //todo: hide overlay
-    //         this.uiRenderer.setLoadingOverlay('reminderOverlay', false);
+    //         Overlay.setLoadingOverlay('reminderOverlay', false);
     //     });
     // }
 }

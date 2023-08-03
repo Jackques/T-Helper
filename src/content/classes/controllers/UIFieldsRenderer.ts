@@ -5,6 +5,7 @@ import { DataField, UIRequiredType } from "../data/dataField";
 import { SubmitType } from "../../../SubmitType";
 import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 import { DOMHelper } from "../util/DOMHelper";
+import { DOMRefs } from "src/content/interfaces/data/domReferences.interface";
 
 export class UIFieldsRenderer {
     private decoratedSubmitEventsDOMElementsList: HTMLElement[] = [];
@@ -175,7 +176,10 @@ export class UIFieldsRenderer {
         }
     };
 
-    constructor(){
+    private domRef: DOMRefs;
+
+    constructor(DOMReferences: DOMRefs){
+        this.domRef = DOMReferences;
         console.log(`UIRenderer init`);
     }
     
@@ -227,9 +231,10 @@ export class UIFieldsRenderer {
         return currentTarget && Object.prototype.hasOwnProperty.call(currentTarget.dataset, "type") ? currentTarget.dataset.type : undefined;
     }
 
-    public renderFieldsContainerForScreen(screen: ScreenNavStateCombo, additionalScreenAdjustmentCommands?: () => void): void {
+    public renderFieldsContainerForScreen(screen: ScreenNavStateCombo, additionalScreenAdjustments?: () => void): void {
         if(screen === ScreenNavStateCombo.Swipe){
-            $('body .recsCardboard__cardsContainer').prepend(`
+            // $('body .recsCardboard__cardsContainer').prepend(`
+            $(this.domRef.fieldsContainerSwipeScreen).prepend(`
                 <div id="uiHelperFields" class="uiHelperFieldsContainer uiHelperFieldsContainer--select">
                     <form id="uiHelperFieldsForm">
                         <div class="container">
@@ -245,7 +250,8 @@ export class UIFieldsRenderer {
         }
 
         if(screen === ScreenNavStateCombo.Chat){
-            $('body div.chat').prepend(`
+            // $('body div.chat').prepend(`
+            $(this.domRef.fieldsContainerChatScreen).prepend(`
             <div id="uiHelperFields" class="uiHelperFieldsContainer uiHelperFieldsContainer--chat">
                 <form id="uiHelperFieldsForm">
                     <div class="container">
@@ -262,8 +268,8 @@ export class UIFieldsRenderer {
 
         this._setSubmitEventHandlers(screen);
 
-        if(additionalScreenAdjustmentCommands){
-            additionalScreenAdjustmentCommands();
+        if(additionalScreenAdjustments){
+            additionalScreenAdjustments();
         }
 
         $(`body`).on("blur", '#uiHelperFieldsContainer [id^="datafieldUI_"]', this.valuesEventHandler);
@@ -275,7 +281,7 @@ export class UIFieldsRenderer {
 
         if(screen === ScreenNavStateCombo.Swipe){
             // const submitButtonDOMType_pass = $(".recsCardboard__cards div[class*=c-pink] button").first();
-            const submitButtonDOMType_pass = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-nope-default)" )+"] button");
+            const submitButtonDOMType_pass = DOMHelper.getFirstDOMNodeByJquerySelector(this.domRef.swipeActionPass);
             if(submitButtonDOMType_pass !== null){
                 $(submitButtonDOMType_pass).attr('id', 'submitAction_passed');
                 this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_pass);
@@ -284,7 +290,7 @@ export class UIFieldsRenderer {
             }
 
             // const submitButtonDOMType_superlike = $(".recsCardboard__cards div[class*=c-superlike-blue] button").first();
-            const submitButtonDOMType_superlike = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-super-like-default)" )+"] button");
+            const submitButtonDOMType_superlike = DOMHelper.getFirstDOMNodeByJquerySelector(this.domRef.swipeActionSuperlike);
             if(submitButtonDOMType_superlike !== null){
                 $(submitButtonDOMType_superlike).attr('id', 'submitAction_superliked');
                 this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_superlike);
@@ -293,7 +299,7 @@ export class UIFieldsRenderer {
             }
 
             // const submitButtonDOMType_like = $(".recsCardboard__cards div[class*=c-like-green] button").first();
-            const submitButtonDOMType_like = DOMHelper.getFirstDOMNodeByJquerySelector(".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-like-default)" )+"] button");
+            const submitButtonDOMType_like = DOMHelper.getFirstDOMNodeByJquerySelector(this.domRef.swipeActionLike);
             if(submitButtonDOMType_like !== null){
                 $(submitButtonDOMType_like).attr('id', 'submitAction_liked');
                 this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_like);
@@ -304,7 +310,7 @@ export class UIFieldsRenderer {
 
         if(screen === ScreenNavStateCombo.Chat){
             // const submitButtonDOMType_sendMessage = $("div.BdT > form > button[type='submit']").first();
-            const submitButtonDOMType_sendMessage = DOMHelper.getFirstDOMNodeByJquerySelector("div.BdT > form > button[type='submit']");
+            const submitButtonDOMType_sendMessage = DOMHelper.getFirstDOMNodeByJquerySelector(this.domRef.chatActionSendMessage);
             if(submitButtonDOMType_sendMessage !== null){
                 $(submitButtonDOMType_sendMessage).attr('id', 'submitAction_sendMessage');
                 this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_sendMessage);
@@ -312,7 +318,6 @@ export class UIFieldsRenderer {
                 console.error(`submitAction_sendMessage could not be set! submit button not found. Please update the selector.`);
             }
         }
-
     }
 
     public renderFieldsFromDataFields(dataFields: DataField[], valuesCallback: (value: DataRecordValues) => void, submitCallback: (submitType: SubmitType) => void){
@@ -382,84 +387,6 @@ export class UIFieldsRenderer {
                 this.value = '';
             });
         }
-    }
-
-    /**
-     * Checks wether all data record values array provided in the param exist in the data record
-     * @param {string} uniqueId
-     * @param {boolean} visibility
-     * @returns {void}
-     */
-    public setLoadingOverlay(uniqueId: string, visibility: boolean): void {
-        if(!uniqueId || uniqueId.length === 0){
-            console.error(`uniqueId is not set`);
-            return;
-        }
-        if(visibility === undefined){
-            console.error(`visibility is not provided`);
-            return;
-        }
-        if(visibility){
-
-            // if loadingOverlay with the same name already exists, do nothing
-            if($(`#${uniqueId}`).length > 0){
-                return;
-            }
-
-            $(`body`).append(`
-            <div id="${uniqueId}" class="loadingOverlay">
-                <div class="loadingOverlayContainer">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="sr-only">Loading...</span>
-                    </div>
-                </div>
-            </div>`);
-        }else{
-            $(`body #${uniqueId}`).remove();
-        }
-        
-    }
-
-    public setLoadingOverlayProgress(uniqueId: string, currentNumber: number, totalNumber: number, statusText: string){
-        if(!uniqueId || uniqueId.length === 0){
-            console.error(`uniqueId is not set`);
-            return;
-        }
-
-        if($(`#${uniqueId}`).length === 0){
-            // if loader is not found, do nothing
-            return;
-        }
-
-        if(currentNumber < 0 || totalNumber < 0){
-            console.error(`CurrentNumber or totalNumber input may not be less than 0`);
-            return;
-        }
-
-        if(totalNumber < currentNumber){
-            console.error(`TotalNumber ${totalNumber} cannot be less than currentNumber: ${currentNumber}`);
-        }
-
-        if($(`#${uniqueId} .loadingOverlayContainer .progress`).length === 0){
-            $(`body #${uniqueId} .loadingOverlayContainer`).append(`
-                <div class="status-container">
-                    <div class="status-text-container">
-                        <p class="status-text">${statusText}</p>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: ${this.getPercentageOfTotal(currentNumber, totalNumber)}%" aria-valuenow="${this.getPercentageOfTotal(currentNumber, totalNumber)}" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-            `);
-        }else{
-            $(`#${uniqueId} .loadingOverlayContainer .status-text`).text(statusText);
-            $(`#${uniqueId} .loadingOverlayContainer .progress-bar`).css( "width", `${this.getPercentageOfTotal(currentNumber, totalNumber)}%`);
-        }
-    }
-
-    private getPercentageOfTotal(currentValue: number, totalValue: number): number {
-        // return totalValue / 100 * currentValue;
-        return currentValue / totalValue * 100;
     }
 
 }

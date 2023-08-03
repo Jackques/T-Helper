@@ -25,12 +25,20 @@ import { ghostMoment } from "src/content/interfaces/data/ghostMoment.interface";
 import { reminderAmountItem } from "src/content/interfaces/data/reminderAmountItem.interface";
 import { Reminder } from "../util/NeedsReminder";
 import { ReminderHttp } from "../data/ReminderHttp";
+import { Overlay } from "../serrvices/Overlay";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
     private hasCredentials = false;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
-    private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer();
+    private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer({
+        fieldsContainerSwipeScreen: 'body .recsCardboard__cardsContainer',
+        fieldsContainerChatScreen: 'body div.chat',
+        swipeActionLike: ".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-like-default)" )+"] button",
+        swipeActionPass: ".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-nope-default)" )+"] button",
+        swipeActionSuperlike: ".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-super-like-default)" )+"] button",
+        chatActionSendMessage: "div.BdT > form > button[type='submit']",
+    });
 
     private xAuthToken = '';
     private requestHandler!: RequestHandlerTinder; // 'definite assignment assertion proerty (!) added here, is this a good practice?'
@@ -64,7 +72,7 @@ export class TinderController implements datingAppController {
                     //todo: test to see if auth token works by using a simple request first?
                     this.requestHandler = new RequestHandlerTinder(this.xAuthToken);
 
-                    this.uiRenderer.setLoadingOverlay('initApp', true);
+                    Overlay.setLoadingOverlay('initApp', true);
                     this.refreshDataTableMatchesAndMatchMessages(this.requestHandler).then(() => {
                         //todo: 4 Inplement add tinder UI support overlay (e.g. add icon/color to match who hasn't replied in a week)
                         this.setSwipeHelperOnScreen();
@@ -81,7 +89,7 @@ export class TinderController implements datingAppController {
                         console.dir(error);
                         console.error(`Something went wrong`);
                     }).finally(() => {
-                        this.uiRenderer.setLoadingOverlay('initApp', false);
+                        Overlay.setLoadingOverlay('initApp', false);
                         this.setScreenWatcher();
                         this.setMessageListWatcherOnScreen();
                         this.setMatchesListWatcher();
@@ -204,7 +212,7 @@ export class TinderController implements datingAppController {
                 return;
             }
 
-            this.uiRenderer.setLoadingOverlay('switchScreen', true);
+            Overlay.setLoadingOverlay('switchScreen', true);
 
             this.uiRenderer.removeAllUIHelpers();
 
@@ -221,11 +229,11 @@ export class TinderController implements datingAppController {
                         this.setRefreshDataTable(false);
                         this.setSwipeHelperOnScreen();
                     }).finally(() => {
-                        this.uiRenderer.setLoadingOverlay('switchScreen', false);
+                        Overlay.setLoadingOverlay('switchScreen', false);
                     });
                 } else {
                     this.addUIHelpers(this.currentScreen);
-                    this.uiRenderer.setLoadingOverlay('switchScreen', false);
+                    Overlay.setLoadingOverlay('switchScreen', false);
                 }
 
             }, 500);
@@ -1175,7 +1183,7 @@ export class TinderController implements datingAppController {
 
             }, (submitType: SubmitType) => {
                 console.log('Callback received a submit type! But it will only be used if no response from background can be retrieved');
-                this.uiRenderer.setLoadingOverlay('loadingSwipeAction', true);
+                Overlay.setLoadingOverlay('loadingSwipeAction', true);
                 console.log(submitType);
 
                 console.log(this.dataStorage);
@@ -1307,7 +1315,7 @@ export class TinderController implements datingAppController {
                         }).finally(()=>{
                             this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
                             this.addUIHelpers(currentScreen, true);
-                            this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
+                            Overlay.setLoadingOverlay('loadingSwipeAction', false);
                         });
                     }else{
                         newDataRecord.addDataToDataFields([
@@ -1330,7 +1338,7 @@ export class TinderController implements datingAppController {
                         ]);
                         this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
                         this.addUIHelpers(currentScreen, true);
-                        this.uiRenderer.setLoadingOverlay('loadingSwipeAction', false);
+                        Overlay.setLoadingOverlay('loadingSwipeAction', false);
 
                         console.error(`Swiped person received no tempId! Saving inserted info of record regardless.. Don't forget to check background local storage requests backup to get the corresponding personid and to overwrite the tempId later!`);
                         //todo: Should REALLY throw a important alert to notify myself what I need to pay extra attention!
@@ -1771,15 +1779,15 @@ export class TinderController implements datingAppController {
 
     public getReminders(reminderHttpList: ReminderHttp[]){
         //todo: show overlay
-        this.uiRenderer.setLoadingOverlay('reminderOverlay', true);
+        Overlay.setLoadingOverlay('reminderOverlay', true);
         this.requestHandler.postReminderList(reminderHttpList, (currentIndex: number, totalLength: number, statusText: string)=>{
             console.log(`${currentIndex}, / ${totalLength} - ${statusText}`);
-            this.uiRenderer.setLoadingOverlayProgress('reminderOverlay', currentIndex, totalLength, statusText);
+            Overlay.setLoadingOverlayProgress('reminderOverlay', currentIndex, totalLength, statusText);
         }).then((reminderHttpList)=>{
             console.dir(reminderHttpList);
             debugger;
             //todo: hide overlay
-            this.uiRenderer.setLoadingOverlay('reminderOverlay', false);
+            Overlay.setLoadingOverlay('reminderOverlay', false);
         });
     }
 
