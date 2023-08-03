@@ -1,6 +1,6 @@
 import { SubmitAction } from "src/background/SubmitAction.interface";
 
-export class dataStorage {
+export class DataStorage {
     private dataStore:DataItem[] = [];
 
     constructor(){

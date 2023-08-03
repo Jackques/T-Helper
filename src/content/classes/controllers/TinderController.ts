@@ -14,9 +14,9 @@ import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
 import { UIFieldsRenderer } from "./UIFieldsRenderer";
 import { RequestHandlerTinder } from "../http-requests/requestHandlerTinder";
 import { Person } from "../tinder/Person";
-import { dataStorage } from '../data/dataStorage';
+import { DataStorage } from '../data/dataStorage';
 import { DataField, DataFieldDistances, DataFieldMessages, UIRequired } from "../data/dataField";
-import { PersonAction } from "./../../../peronAction.enum"; // todo: had to move this to top level AND make a relative path.. but since ALL components (content, background, popup) share the same interfaces/enums etc. why not move everything to top lvl for importing? ALSO; why did an error occur when i tried to relative import this?
+import { PersonAction } from "../../../personAction.enum"; // todo: had to move this to top level AND make a relative path.. but since ALL components (content, background, popup) share the same interfaces/enums etc. why not move everything to top lvl for importing? ALSO; why did an error occur when i tried to relative import this?
 import { SubmitAction } from "src/background/SubmitAction.interface";
 import { DOMHelper } from "../util/DOMHelper";
 import { Message, MessageAuthorEnum } from "./../../../message.interface";
@@ -44,7 +44,7 @@ export class TinderController implements datingAppController {
     private requestHandler!: RequestHandlerTinder; // 'definite assignment assertion proerty (!) added here, is this a good practice?'
     public matches: Person[] = [];
     private dataTable: DataTable;
-    private dataStorage: dataStorage;
+    private dataStorage: DataStorage;
 
     private currentScreenTimeoutId: number | null = null;
     private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
@@ -57,7 +57,7 @@ export class TinderController implements datingAppController {
 
     private watchersUIList: MutationObserver[] = [];
 
-    constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: dataStorage) {
+    constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: DataStorage) {
 
         this.dataRetrievalMethod = dataRetrievalMethod;
         this.dataTable = dataTable;

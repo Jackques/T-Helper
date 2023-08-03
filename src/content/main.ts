@@ -4,7 +4,7 @@ import { FileHelper } from '../fileHelper';
 import { parse } from 'tldts';
 import { TinderController } from './classes/controllers/TinderController';
 import { DataRecord } from './classes/data/dataRecord';
-import { dataStorage } from './classes/data/dataStorage';
+import { DataStorage } from './classes/data/dataStorage';
 import { DataTable } from './classes/data/dataTable';
 import { DataRecordValues } from './interfaces/data/dataRecordValues.interface';
 import { PortMessage } from './interfaces/portMessage.interface';
@@ -19,7 +19,7 @@ export class Main {
     private datingAppType = '';
 
     private dataTable: DataTable = new DataTable();
-    private dataStorage: dataStorage = new dataStorage();
+    private dataStorage: DataStorage = new DataStorage();
     private autoReminder: AutoReminder = new AutoReminder();
     private importedFile: FileHelper | null = null;
     private backgroundChannelPort: chrome.runtime.Port | null = null;
@@ -132,7 +132,7 @@ export class Main {
         }
     }
 
-    private initAppController(appType: string, dataTable: DataTable, dataStorage: dataStorage) {
+    private initAppController(appType: string, dataTable: DataTable, dataStorage: DataStorage) {
         switch (appType) {
             case "tinder":
                 return new TinderController('api', dataTable, dataStorage);
@@ -267,7 +267,7 @@ export class Main {
             this.keepAliveIntervalNumber = null;
         }
 
-        this.dataStorage = new dataStorage();
+        this.dataStorage = new DataStorage();
 
         this.dataTable.emptyDataTable();
         this.datingAppType = '';

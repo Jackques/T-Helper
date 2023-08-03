@@ -1,4 +1,4 @@
-import { PersonAction } from "../peronAction.enum";
+import { PersonAction } from "../personAction.enum";
 
 
 export interface SubmitAction {

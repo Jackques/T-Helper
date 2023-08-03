@@ -1,4 +1,4 @@
-import { PersonAction } from "../peronAction.enum";
+import { PersonAction } from "../personAction.enum";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { SubmitAction } from "./SubmitAction.interface";
 import { backgroundScriptErrorHelper } from "./backgroundScriptErrorHelper";

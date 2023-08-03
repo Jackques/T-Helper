@@ -1,4 +1,4 @@
-import { PersonAction } from "../peronAction.enum";
+import { PersonAction } from "../personAction.enum";
 import { DateHelper } from "../../src/content/classes/util/dateHelper";
 import { LocalStorageFacade } from "./Storage";
 
