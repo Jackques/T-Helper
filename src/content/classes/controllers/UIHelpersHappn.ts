@@ -16,6 +16,7 @@ import { SubmitAction } from "src/background/SubmitAction.interface";
 // import { PersonAction } from "src/personAction.enum";
 import { PersonAction } from "./../../../personAction.enum";
 import { DataStorage } from "../data/dataStorage";
+import { UrlHelper } from "../serrvices/UrlHelper";
 
 export class UIHelpersHappn {
 
@@ -422,7 +423,7 @@ export class UIHelpersHappn {
     }
 
     private getCurrentMatchIdFromChatScreen(): string {
-        const matchIdFromUrl: string | null = this.getCurrentMatchIdFromUrl();
+        const matchIdFromUrl: string | null = UrlHelper.getCurrentMatchIdFromUrl();
         if (matchIdFromUrl) {
             return matchIdFromUrl;
         } else {
@@ -431,13 +432,5 @@ export class UIHelpersHappn {
         return '';
     }
 
-    private getCurrentMatchIdFromUrl(): string | null {
-        const indexLastSlash: number = window.location.href.lastIndexOf('/');
-        if (indexLastSlash >= 0) {
-            return window.location.href.substring(indexLastSlash + 1);
-        } else {
-            console.error(`Url does not seem to contain a slash?`);
-            return null;
-        }
-    }
+
 }

@@ -35,6 +35,7 @@ import { HappnMatchesAndMessagesController } from "./HappnMatchesAndMessagesCont
 import { Overlay } from "../serrvices/Overlay";
 import { MatchDataParser } from "./MatchDataParserHappn";
 import { UIHelpersHappn } from "./UIHelpersHappn";
+import { UrlHelper } from "../serrvices/UrlHelper";
 
 export class HappnController implements datingAppController {
     private nameController = 'happn';
@@ -104,7 +105,7 @@ export class HappnController implements datingAppController {
                         console.error(`Something went wrong`);
                     }).finally(() => {
                         Overlay.setLoadingOverlay('initApp', false);
-                        // this.setScreenWatcher();
+                        this.setScreenWatcher('#root');
                         // this.setMessageListWatcherOnScreen();
                         // this.setMatchesListWatcher();
                     });
@@ -121,73 +122,75 @@ export class HappnController implements datingAppController {
         }
     }
 
-    // private setScreenWatcher() {
+    private setScreenWatcher(containerDomElement: string) {
 
-    //     // main & aside container (with this class) is always present as far as i know, so should always work.
-    //     const swipeOrChatContainerIdentifier = '.App__body > .desktop > main.BdStart';
+        // main & aside container (with this class) is always present as far as i know, so should always work.
+        // const swipeOrChatContainerIdentifier = '.App__body > .desktop > main.BdStart';
+        const swipeOrChatContainerIdentifier = containerDomElement;
 
-    //     const $SOCcontainer = $('body').find(swipeOrChatContainerIdentifier).first()[0];
+        const $SOCcontainer = $('body').find(swipeOrChatContainerIdentifier).first()[0];
 
-    //     if (!$SOCcontainer) {
-    //         console.error(`Element with identifier not found: ${swipeOrChatContainerIdentifier}. Please update identifiers.`);
-    //         return;
-    //     }
+        if (!$SOCcontainer) {
+            console.error(`Element with identifier not found: ${swipeOrChatContainerIdentifier}. Please update identifiers.`);
+            return;
+        }
 
-    //     // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
-    //     // Thus I can always apply DOM manipulations on them when needed!
-    //     const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
+        // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
+        // Thus I can always apply DOM manipulations on them when needed!
+        const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
 
-    //         if (this.currentScreenTimeoutId !== null) {
-    //             // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
-    //             return;
-    //         }
+            if (this.currentScreenTimeoutId !== null) {
+                // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
+                return;
+            }
 
-    //         if (this.currentScreen === ScreenNavStateCombo.Chat) {
-    //             const newMatchIdFromUrl = this.getMatchIdFromMessageHrefSDtring(window.location.href);
-    //             if (this.currentMatchIdByUrlChat === null || this.currentMatchIdByUrlChat !== newMatchIdFromUrl) {
-    //                 console.log(`%c Switched CHAT from match with id ${this.currentMatchIdByUrlChat} to match with id: ${newMatchIdFromUrl}`, "color: green");
-    //                 this.currentMatchIdByUrlChat = newMatchIdFromUrl;
-    //             } else {
-    //                 return;
-    //             }
-    //         } else if (this.currentScreen === this.getCurrentScreenByDOM()) {
-    //             return;
-    //         }
+            if (this.currentScreen === ScreenNavStateCombo.Chat) {
+                const newMatchIdFromUrl = UrlHelper.getCurrentMatchIdFromUrl();
 
-    //         Overlay.setLoadingOverlay('switchScreen', true);
+                if (this.currentMatchIdByUrlChat === null || this.currentMatchIdByUrlChat !== newMatchIdFromUrl) {
+                    console.log(`%c Switched CHAT from match with id ${this.currentMatchIdByUrlChat} to match with id: ${newMatchIdFromUrl}`, "color: green");
+                    this.currentMatchIdByUrlChat = newMatchIdFromUrl;
+                } else {
+                    return;
+                }
+            } else if (this.currentScreen === this.getCurrentScreenByDOM()) {
+                return;
+            }
 
-    //         this.uiRenderer.removeAllUIHelpers();
+            Overlay.setLoadingOverlay('switchScreen', true);
 
-    //         this.currentScreenTimeoutId = setTimeout(() => {
-    //             this.currentScreen = this.getCurrentScreenByDOM();
-    //             console.log(`Current screen: ${this.currentScreen}`);
+            this.uiRenderer.removeAllUIHelpers();
 
-    //             this.currentScreenTimeoutId = null;
+            this.currentScreenTimeoutId = setTimeout(() => {
+                this.currentScreen = this.getCurrentScreenByDOM();
+                console.log(`Current screen: ${this.currentScreen}`);
 
-    //             console.log(`execute add UI helpers for screen: ${this.currentScreen}`);
+                this.currentScreenTimeoutId = null;
 
-    //             if (this.dataTableNeedsToBeUpdated) {
-    //                 this.refreshDataTableMatchesAndMatchMessages(this.requestHandler).then(() => {
-    //                     this.setRefreshDataTable(false);
-    //                     this.setSwipeHelperOnScreen();
-    //                 }).finally(() => {
-    //                     Overlay.setLoadingOverlay('switchScreen', false);
-    //                 });
-    //             } else {
-    //                 this.addUIHelpers(this.currentScreen);
-    //                 Overlay.setLoadingOverlay('switchScreen', false);
-    //             }
+                console.log(`execute add UI helpers for screen: ${this.currentScreen}`);
 
-    //         }, 500);
-    //     });
-    //     mutationObv.observe($SOCcontainer, {
-    //         childList: true, // observe direct children
-    //         subtree: true, // lower descendants too
-    //         characterDataOldValue: true, // pass old data to callback
-    //     });
+                if (this.dataTableNeedsToBeUpdated) {
+                    this.happnMatchesAndMessagesController?.refreshDataTableMatchesAndMatchMessages().then(() => {
+                        this.setRefreshDataTable(false);
+                        this.setSwipeHelperOnScreen();
+                    }).finally(() => {
+                        Overlay.setLoadingOverlay('switchScreen', false);
+                    });
+                } else {
+                    this.uIHelpersHappn?.addUIHelpers(this.currentScreen);
+                    Overlay.setLoadingOverlay('switchScreen', false);
+                }
 
-    //     this.watchersUIList.push(mutationObv);
-    // }
+            }, 500);
+        });
+        mutationObv.observe($SOCcontainer, {
+            childList: true, // observe direct children
+            subtree: true, // lower descendants too
+            characterDataOldValue: true, // pass old data to callback
+        });
+
+        this.watchersUIList.push(mutationObv);
+    }
 
     // private setMessageListWatcherOnScreen() {
 
@@ -295,9 +298,10 @@ export class HappnController implements datingAppController {
     //         return;
     //     }
     // }
-    // private setRefreshDataTable(shouldDataTableBeRefreshed: boolean) {
-    //     this.dataTableNeedsToBeUpdated = shouldDataTableBeRefreshed;
-    // }
+
+    private setRefreshDataTable(shouldDataTableBeRefreshed: boolean) {
+        this.dataTableNeedsToBeUpdated = shouldDataTableBeRefreshed;
+    }
 
     // private getUnmessagedMatchesAmount(matchesListContainerElement: HTMLElement): number {
     //     const matchListItemsAmount = $(matchesListContainerElement).find('a.matchListItem').length;
@@ -394,12 +398,12 @@ export class HappnController implements datingAppController {
 
     public setSwipeHelperOnScreen(): void {
         this.currentScreen = this.getCurrentScreenByDOM();
-        this.uIHelpersHappn.addUIHelpers(this.currentScreen);
+        this.uIHelpersHappn?.addUIHelpers(this.currentScreen);
     }
 
-    // private getMatchIdFromMessageHrefSDtring(href: string): string {
-    //     return href.substring(href.lastIndexOf('/') + 1);
-    // }
+    private getMatchIdFromMessageHrefSDtring(href: string): string {
+        return href.substring(href.lastIndexOf('/') + 1);
+    }
 
     public getCurrentScreenByDOM(): ScreenNavStateCombo {
         const bodyPageRef = $('body')[0];
