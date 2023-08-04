@@ -110,7 +110,6 @@ export class UIHelpersHappn {
                             const personId = dataRecord.getRecordPersonSystemId(this.nameController, true);
 
                             if (hasRecentDistanceEntry === false && personId && personId.length > 0) {
-                                debugger;
                                 this.requestHandler.getMatchProfileDetails(personId).then((matchDetails: MatchProfileDetailsHappn) => {
                                     if (matchDetails.error) {
                                         ConsoleColorLog.singleLog(`Could not get match profile details for currently opened match: `, dataRecord, LogColors.RED);

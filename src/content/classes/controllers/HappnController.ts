@@ -36,6 +36,7 @@ import { Overlay } from "../serrvices/Overlay";
 import { MatchDataParser } from "./MatchDataParserHappn";
 import { UIHelpersHappn } from "./UIHelpersHappn";
 import { UrlHelper } from "../serrvices/UrlHelper";
+import { MessagesWatcherHappn } from "./MessagesWatcher";
 
 export class HappnController implements datingAppController {
     private nameController = 'happn';
@@ -43,7 +44,7 @@ export class HappnController implements datingAppController {
     private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer({
         fieldsContainerSwipeScreen: 'body',
         fieldsContainerChatScreen: 'body [data-testid="conversation-message-list-scrollbars"]',
-        
+
         swipeActionLike: 'body [data-testid="profile-btn-like"]',
         swipeActionPass: 'body [data-testid="profile-btn-reject"]',
         swipeActionSuperlike: 'body [data-testid="profile-btn-flashnote"]',
@@ -51,6 +52,7 @@ export class HappnController implements datingAppController {
         chatActionSendMessage: 'body [data-testid="conversation"] textarea',
     });
     private uIHelpersHappn: UIHelpersHappn | null = null;
+    private messagesWatcher: MessagesWatcherHappn | null = null;
 
     private happnAccessToken = '';
     private requestHandler!: RequestHandlerHappn; // 'definite assignment assertion proerty (!) added here, is this a good practice?'
@@ -86,6 +88,7 @@ export class HappnController implements datingAppController {
                     // debugger;
                     this.happnMatchesAndMessagesController = new HappnMatchesAndMessagesController(this.requestHandler, this.dataTable, this.nameController);
                     this.uIHelpersHappn = new UIHelpersHappn(this.nameController, this.uiRenderer, this.dataTable, this.requestHandler, this.dataStorage);
+                    this.messagesWatcher = new MessagesWatcherHappn(this.nameController, this.dataTable, this.watchersUIList);
 
                     Overlay.setLoadingOverlay('initApp', true);
                     this.happnMatchesAndMessagesController.refreshDataTableMatchesAndMatchMessages().then(() => {
@@ -106,7 +109,39 @@ export class HappnController implements datingAppController {
                     }).finally(() => {
                         Overlay.setLoadingOverlay('initApp', false);
                         this.setScreenWatcher('#root');
-                        // this.setMessageListWatcherOnScreen();
+
+
+                        const messageListContainer: JQuery<HTMLElement> = $('body [data-testid="conversations-pending-button-outer"]').next();
+                        this.messagesWatcher?.setMessageListWatcherOnScreen(
+                            messageListContainer, 
+                            () => {
+                                const messagesList: { tempId: string, lastMessage: string }[] = [];
+                                const messages = $(messageListContainer).find('[data-testid="conversation-list-item"]');
+                                messages.each((index, elem) => {
+                                    const srcUrl = $(elem).find('[data-testid="conversations-avatar-picture"]').attr('src');
+                                    let tempId = '';
+
+                                    if (srcUrl?.includes('https://images.happn.fr/resizing/')) {
+                                        const reducedString = srcUrl.replace('https://images.happn.fr/resizing/', '');
+                                        const firstSlashPos = reducedString.indexOf('/');
+                                        tempId = reducedString.substring(0, firstSlashPos);
+                                    } else {
+                                        ConsoleColorLog.singleLog('Warning! Picture url in message does no longer contain a recognized format to safely extract temorary id! Please check the image urls', '', LogColors.YELLOW);
+                                    }
+
+                                    const lastMessage = $(elem).find('[data-testid="conversation-list-item-preview-text"]').text();
+                                    // eslint-disable-next-line no-debugger
+                                    debugger;
+                                    messagesList.push({ tempId: tempId, lastMessage: lastMessage });
+                                    // if person left the list; do not update
+                                    // if (new) person appeared on the list; do update
+                                    // if person changed message; do update
+                                });
+                                return messagesList;
+                            },
+                            () => {
+                                this.setRefreshDataTable(true);
+                            });
                         // this.setMatchesListWatcher();
                     });
 
@@ -192,67 +227,6 @@ export class HappnController implements datingAppController {
         this.watchersUIList.push(mutationObv);
     }
 
-    // private setMessageListWatcherOnScreen() {
-
-    //     const messageListIdentifier = '.messageList';
-    //     const $MessageListContainer = $('body').find(messageListIdentifier).first()[0];
-
-    //     if (!$MessageListContainer) {
-    //         console.error(`Element with identifier not found: ${messageListIdentifier}. Please update identifiers.`);
-    //         return;
-    //     }
-
-    //     const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
-
-    //         // ensures that only descandt nodes of the (div) node with class 'messageList' will be passed
-    //         const mutationsOnMessageItem = mutations.filter((mutation) => {
-    //             const mutatedElement = mutation.target as HTMLElement;
-    //             if (mutatedElement.nodeName === "DIV") {
-    //                 if (!mutatedElement.classList.contains('messageList')) {
-    //                     return mutatedElement;
-    //                 }
-    //             } else {
-    //                 return mutatedElement;
-    //             }
-    //         });
-    //         if (mutationsOnMessageItem.length === 0) {
-    //             return;
-    //         }
-
-    //         // check if mutation are from receiving a new message, if so update the dataRecord to set 'needsTobeUpdated' to true
-    //         const matchId: string | null = this.getMatchIdFromMutations(mutationsOnMessageItem);
-
-    //         //Known flase positives (but does not matter, since all it does will be refetching the messages anyway);
-    //         // 'bug 1'; profile Aniek last message was a ANIMATED GIF sent to her.. this shows up as a hyperlink in the messages.. thus the last message ('You sent a GIF..') does INDEED NOT EQUAL the last message known by the dataRecord (the hyperlink to the gif)
-    //         if (matchId !== null) {
-    //             const dataRecord = this.dataTable.getRecordByRecordIndex(this.dataTable.getRecordIndexBySystemId(matchId, 'tinder'));
-
-    //             if (dataRecord === null) {
-    //                 console.error(`Observed last message from unknown match. Please check match in mutations: ${mutationsOnMessageItem} and check the datatable manually`);
-    //                 return;
-    //             }
-
-    //             if (this.hasReceivedNewMessagesFromMatch(mutationsOnMessageItem, dataRecord)) {
-    //                 // eslint-disable-next-line no-debugger
-    //                 // debugger;
-    //                 dataRecord.setUpdateMessages(true);
-    //                 this.setRefreshDataTable(true);
-    //                 console.log(`%c ${console.count()} (2)I just set profile: ${dataRecord.usedDataFields[5].getValue()} with id: ${matchId} with recordIndex: ${this.dataTable.getRecordIndexBySystemId(matchId, 'tinder')} to true.. for this person sent me a new message thus my messages list for her should be reviewed`, "color: orange");
-    //                 return;
-    //             }
-    //         }
-    //         // if not, then mutations are from switching match conversation
-    //     });
-
-    //     mutationObv.observe($MessageListContainer, {
-    //         childList: true, // observe direct children
-    //         subtree: true, // lower descendants too
-    //         characterDataOldValue: false, // pass old data to callback
-    //     });
-
-    //     this.watchersUIList.push(mutationObv);
-    // }
-
     // private setMatchesListWatcher(): void {
     //     const matchesListIdentifier = 'a.matchListItem';
     //     const matchesListElement: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector(matchesListIdentifier);
@@ -299,9 +273,6 @@ export class HappnController implements datingAppController {
     //     }
     // }
 
-    private setRefreshDataTable(shouldDataTableBeRefreshed: boolean) {
-        this.dataTableNeedsToBeUpdated = shouldDataTableBeRefreshed;
-    }
 
     // private getUnmessagedMatchesAmount(matchesListContainerElement: HTMLElement): number {
     //     const matchListItemsAmount = $(matchesListContainerElement).find('a.matchListItem').length;
@@ -315,107 +286,110 @@ export class HappnController implements datingAppController {
     //     }
     // }
 
-    // private getLatestMessageFromMutations(mutations: MutationRecord[]): string | null {
-    //     let latestMessageFromUI: string | null = null;
+    private setRefreshDataTable(shouldDataTableBeRefreshed: boolean) {
+        this.dataTableNeedsToBeUpdated = shouldDataTableBeRefreshed;
+    }
 
-    //     mutations.forEach((mutation) => {
-    //         if (mutation.target) {
-    //             const element$: JQuery<Node> = $(mutation.target).hasClass('messageListItem') ? $(mutation.target).first() : $(mutation.target).parents('.messageListItem').first();
-    //             if (element$.length > 0) {
-    //                 latestMessageFromUI = element$.find('.messageListItem__message').text();
-    //             } else {
-    //                 console.error(`Jquery node not found with class "messageListItem__message"`);
-    //                 return null;
-    //             }
-    //         }
-    //     });
-    //     return latestMessageFromUI;
-    // }
+    private getLatestMessageFromMutations(mutations: MutationRecord[]): string | null {
+        // KAN WEG?
+        let latestMessageFromUI: string | null = null;
 
-    // private getMatchIdFromMutations(mutations: MutationRecord[]): string | null {
-    //     let matchId: string | null = null;
+        mutations.forEach((mutation) => {
+            if (mutation.target) {
+                const element$: JQuery<Node> = $(mutation.target).hasClass('messageListItem') ? $(mutation.target).first() : $(mutation.target).parents('.messageListItem').first();
+                if (element$.length > 0) {
+                    latestMessageFromUI = element$.find('.messageListItem__message').text();
+                } else {
+                    console.error(`Jquery node not found with class "messageListItem__message"`);
+                    return null;
+                }
+            }
+        });
+        return latestMessageFromUI;
+    }
 
-    //     mutations.forEach((mutation) => {
-    //         if ($(mutation.target).hasClass('messageList')) {
-    //             return;
-    //         }
+    private getMatchIdFromMutations(mutations: MutationRecord[]): string | null {
+        //KAN WEG?
+        let matchId: string | null = null;
 
-    //         const element$: JQuery<Node> = $(mutation.target).hasClass('messageListItem') ? $(mutation.target).first() : $(mutation.target).parents('.messageListItem').first();
+        mutations.forEach((mutation) => {
+            if ($(mutation.target).hasClass('messageList')) {
+                return;
+            }
 
-    //         if (element$.length > 0) {
-    //             matchId = this.getMatchIdFromMessageListItem(element$[0] as HTMLElement);
-    //         } else {
-    //             console.error(`Jquery node not found with class "messageListItem__message"`);
-    //             return null;
-    //         }
+            const element$: JQuery<Node> = $(mutation.target).hasClass('messageListItem') ? $(mutation.target).first() : $(mutation.target).parents('.messageListItem').first();
 
-    //     });
+            if (element$.length > 0) {
+                matchId = this.getMatchIdFromMessageListItem(element$[0] as HTMLElement);
+            } else {
+                console.error(`Jquery node not found with class "messageListItem__message"`);
+                return null;
+            }
 
-    //     return matchId;
-    // }
+        });
 
-    // private hasReceivedNewMessagesFromMatch(mutations: MutationRecord[], dataRecord: DataRecord): boolean {
-    //     const latestMessageFromUI: string | null = this.getLatestMessageFromMutations(mutations);
-    //     let latestMessageFromMatchInDataTable: string | null | undefined;
-    //     if (dataRecord.hasMessages()) {
-    //         latestMessageFromMatchInDataTable = dataRecord.getLatestMessage() ? dataRecord.getLatestMessage()?.message : null;
-    //     } else {
-    //         latestMessageFromMatchInDataTable = "";
-    //     }
+        return matchId;
+    }
 
-    //     if (!latestMessageFromUI) {
-    //         console.error(`Unable to get new message from match. The value for from the UI is: "${latestMessageFromUI}". Please update the selectors.`);
-    //         return false;
-    //     }
+    private hasReceivedNewMessagesFromMatch(mutations: MutationRecord[], dataRecord: DataRecord): boolean {
+        // KAN WEG?
+        const latestMessageFromUI: string | null = this.getLatestMessageFromMutations(mutations);
+        let latestMessageFromMatchInDataTable: string | null | undefined;
+        if (dataRecord.hasMessages()) {
+            latestMessageFromMatchInDataTable = dataRecord.getLatestMessage() ? dataRecord.getLatestMessage()?.message : null;
+        } else {
+            latestMessageFromMatchInDataTable = "";
+        }
 
-    //     if (latestMessageFromUI !== latestMessageFromMatchInDataTable) {
-    //         return true;
-    //     } else {
-    //         return false;
-    //     }
+        if (!latestMessageFromUI) {
+            console.error(`Unable to get new message from match. The value for from the UI is: "${latestMessageFromUI}". Please update the selectors.`);
+            return false;
+        }
 
-    // }
+        if (latestMessageFromUI !== latestMessageFromMatchInDataTable) {
+            return true;
+        } else {
+            return false;
+        }
 
-    // private getMatchIdFromMessageListItem(latestMessageElement: HTMLElement): string | null {
+    }
 
-    //     if (!$(latestMessageElement).hasClass('messageListItem')) {
-    //         console.error(`latestMessageElement received is  not a messageListItem element. Please update the selectors.`);
-    //         return null;
-    //     }
+    private getMatchIdFromMessageListItem(latestMessageElement: HTMLElement): string | null {
+        // KAN WEG?
+        if (!$(latestMessageElement).hasClass('messageListItem')) {
+            console.error(`latestMessageElement received is  not a messageListItem element. Please update the selectors.`);
+            return null;
+        }
 
-    //     const matchIdHref: string | undefined = $(latestMessageElement).attr('href');
-    //     let matchId: string;
+        const matchIdHref: string | undefined = $(latestMessageElement).attr('href');
+        let matchId: string;
 
-    //     if (matchIdHref && matchIdHref.length > 0) {
-    //         matchId = matchIdHref.substring(matchIdHref.lastIndexOf('/') + 1);
-    //         if (matchId && matchId.length > 0) {
-    //             return matchId;
-    //         }
-    //     }
-    //     console.error(`Unable to get match id from message list item. Please update the DOM selectors.`);
-    //     return null;
-    // }
+        if (matchIdHref && matchIdHref.length > 0) {
+            matchId = matchIdHref.substring(matchIdHref.lastIndexOf('/') + 1);
+            if (matchId && matchId.length > 0) {
+                return matchId;
+            }
+        }
+        console.error(`Unable to get match id from message list item. Please update the DOM selectors.`);
+        return null;
+    }
 
     public setSwipeHelperOnScreen(): void {
         this.currentScreen = this.getCurrentScreenByDOM();
         this.uIHelpersHappn?.addUIHelpers(this.currentScreen);
     }
 
-    private getMatchIdFromMessageHrefSDtring(href: string): string {
-        return href.substring(href.lastIndexOf('/') + 1);
-    }
-
     public getCurrentScreenByDOM(): ScreenNavStateCombo {
         const bodyPageRef = $('body')[0];
-        if(bodyPageRef){
+        if (bodyPageRef) {
             const bodyPageDataPageAttr = bodyPageRef.getAttribute('data-page');
 
-            if(!bodyPageDataPageAttr && typeof bodyPageDataPageAttr !== 'string'){
+            if (!bodyPageDataPageAttr && typeof bodyPageDataPageAttr !== 'string') {
                 throw new Error(`Could not get current page, please check the DOM properties & code references`);
             }
-    
+
             let currentPage: ScreenNavStateCombo;
-    
+
             switch (true) {
                 case bodyPageDataPageAttr === '/home':
                     currentPage = ScreenNavStateCombo.Swipe;
@@ -431,7 +405,7 @@ export class HappnController implements datingAppController {
             return currentPage;
         }
         throw new Error(`Could not get body DOM element from current page, please check the DOM properties & code references`);
-        
+
     }
 
     // public getMatchesAndMatchMessagesByAPI(requestHandler: RequestHandlerTinder, useMock: boolean): Promise<ParsedResultMatch[] | null> {
