@@ -61,7 +61,7 @@ export class HappnController implements datingAppController {
 
     private currentScreenTimeoutId: number | null = null;
     private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
-    private currentMatchIdByUrlChat: string | null = null;
+    private currentMatchIdByUrlChat: string | null = UrlHelper.getCurrentMatchIdFromUrl();
 
     private amountOfUnmessagedMatches = 0;
     private matchesListTimeoutId: number | null = null;
@@ -108,36 +108,14 @@ export class HappnController implements datingAppController {
                         console.error(`Something went wrong`);
                     }).finally(() => {
                         Overlay.setLoadingOverlay('initApp', false);
-                        this.setScreenWatcher('#root');
+                        // this.setScreenWatcher('#root');
+                        this.setScreenWatcher('body');
 
-
-                        const messageListContainer: JQuery<HTMLElement> = $('body [data-testid="conversations-pending-button-outer"]').next();
+                        const messageListContainers = this.getMessageContainerDOMRef();
                         this.messagesWatcher?.setMessageListWatcherOnScreen(
-                            messageListContainer, 
+                            messageListContainers,
                             () => {
-                                const messagesList: { tempId: string, lastMessage: string }[] = [];
-                                const messages = $(messageListContainer).find('[data-testid="conversation-list-item"]');
-                                messages.each((index, elem) => {
-                                    const srcUrl = $(elem).find('[data-testid="conversations-avatar-picture"]').attr('src');
-                                    let tempId = '';
-
-                                    if (srcUrl?.includes('https://images.happn.fr/resizing/')) {
-                                        const reducedString = srcUrl.replace('https://images.happn.fr/resizing/', '');
-                                        const firstSlashPos = reducedString.indexOf('/');
-                                        tempId = reducedString.substring(0, firstSlashPos);
-                                    } else {
-                                        ConsoleColorLog.singleLog('Warning! Picture url in message does no longer contain a recognized format to safely extract temorary id! Please check the image urls', '', LogColors.YELLOW);
-                                    }
-
-                                    const lastMessage = $(elem).find('[data-testid="conversation-list-item-preview-text"]').text();
-                                    // eslint-disable-next-line no-debugger
-                                    debugger;
-                                    messagesList.push({ tempId: tempId, lastMessage: lastMessage });
-                                    // if person left the list; do not update
-                                    // if (new) person appeared on the list; do update
-                                    // if person changed message; do update
-                                });
-                                return messagesList;
+                                return this.getMatchTempIdLatestFromLatestMessage(messageListContainers);
                             },
                             () => {
                                 this.setRefreshDataTable(true);
@@ -157,13 +135,69 @@ export class HappnController implements datingAppController {
         }
     }
 
+    private getMessageContainerDOMRef(): JQuery<HTMLElement> {
+        const messageListContainers: JQuery<HTMLElement> = $('body [data-testid="conversations-pending-button-outer"]').next();
+        if (messageListContainers.length === 0) {
+            ConsoleColorLog.singleLog(`No element(s) found by HTML path: `, 'body [data-testid="conversations-pending-button-outer"]', LogColors.RED);
+        }
+        messageListContainers.each((index, element) => {
+            if (!element) {
+                console.error(`Element with identifier not found: ${element}. Please update identifiers.`);
+                return;
+            }
+        });
+        return messageListContainers;
+    }
+
+    private getMatchTempIdLatestFromLatestMessage(messageListContainers: JQuery<HTMLElement>): {
+        tempId: string;
+        lastMessage: string;
+    }[] {
+        const messagesList: { tempId: string, lastMessage: string }[] = [];
+        $(messageListContainers).each((index, element) => {
+            const messagesPanel = $(element).find('[data-testid="conversation-list-item"]');
+            messagesPanel.each((index, elem) => {
+                const srcUrl = $(elem).find('[data-testid="conversations-avatar-picture"]').attr('src');
+                const srcDisabledMatchUrl = $(elem).find('[data-testid="conversations-avatar-empty"]');
+
+                if (srcDisabledMatchUrl.length > 0) {
+                    ConsoleColorLog.singleLog(`A match conversation has been removed, thus unable to get tempId nor dataRecord`, '', LogColors.YELLOW);
+                    //TODO TODO TODO: Send message to screenwatcher, this has matchid set!
+                    return;
+                }
+
+                let tempId = '';
+
+                if (srcUrl?.includes('https://images.happn.fr/resizing/')) {
+                    const reducedString = srcUrl.replace('https://images.happn.fr/resizing/', '');
+                    const firstSlashPos = reducedString.indexOf('/');
+                    tempId = reducedString.substring(0, firstSlashPos);
+                } else {
+                    ConsoleColorLog.singleLog('Warning! Picture url in message does no longer contain a recognized format to safely extract temorary id! Please check the image urls', '', LogColors.YELLOW);
+                    return;
+                }
+
+                if (tempId.length === 0) {
+                    ConsoleColorLog.singleLog(`Error while setting tempId, tempId turned out empty. Please check the code`, false, LogColors.RED);
+                    return;
+                }
+
+                const lastMessage = $(elem).find('[data-testid="conversation-list-item-preview-text"]').text();
+                messagesList.push({ tempId: tempId, lastMessage: lastMessage });
+            });
+        });
+        return messagesList;
+    }
+
     private setScreenWatcher(containerDomElement: string) {
 
-        // main & aside container (with this class) is always present as far as i know, so should always work.
-        // const swipeOrChatContainerIdentifier = '.App__body > .desktop > main.BdStart';
+        /*
+            Sets the currently active screen 
+        */
         const swipeOrChatContainerIdentifier = containerDomElement;
 
-        const $SOCcontainer = $('body').find(swipeOrChatContainerIdentifier).first()[0];
+        // const $SOCcontainer = $('body').find(swipeOrChatContainerIdentifier).first()[0];
+        const $SOCcontainer = $('body').first()[0];
 
         if (!$SOCcontainer) {
             console.error(`Element with identifier not found: ${swipeOrChatContainerIdentifier}. Please update identifiers.`);
@@ -173,6 +207,13 @@ export class HappnController implements datingAppController {
         // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
         // Thus I can always apply DOM manipulations on them when needed!
         const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
+            
+            if(this.currentScreen === this.getCurrentScreenByDOM()){
+                ConsoleColorLog.singleLog(`Still on the same screen: `, this.currentScreen, LogColors.BLUE);
+                //TODO TODO TODO: If screen is still CHAT, maybe set a global current chat person id? Pass it to messageWatcher maybe?
+            }
+            this.currentScreen = this.getCurrentScreenByDOM();
+            ConsoleColorLog.singleLog(`New screen: `, this.currentScreen, LogColors.BLUE);
 
             if (this.currentScreenTimeoutId !== null) {
                 // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
@@ -180,7 +221,20 @@ export class HappnController implements datingAppController {
             }
 
             if (this.currentScreen === ScreenNavStateCombo.Chat) {
+                ConsoleColorLog.singleLog(`Switched to screen: `, ScreenNavStateCombo.Chat, LogColors.GREEN);
                 const newMatchIdFromUrl = UrlHelper.getCurrentMatchIdFromUrl();
+
+                const messageListContainers = this.getMessageContainerDOMRef();
+                this.messagesWatcher?.disconnectMessageWatchers();
+                this.messagesWatcher?.setMessageListWatcherOnScreen(
+                    messageListContainers,
+                    () => {
+                        return this.getMatchTempIdLatestFromLatestMessage(messageListContainers);
+                    },
+                    () => {
+                        this.setRefreshDataTable(true);
+                    }
+                );
 
                 if (this.currentMatchIdByUrlChat === null || this.currentMatchIdByUrlChat !== newMatchIdFromUrl) {
                     console.log(`%c Switched CHAT from match with id ${this.currentMatchIdByUrlChat} to match with id: ${newMatchIdFromUrl}`, "color: green");
@@ -216,12 +270,13 @@ export class HappnController implements datingAppController {
                     Overlay.setLoadingOverlay('switchScreen', false);
                 }
 
-            }, 500);
+            }, 1000);
         });
         mutationObv.observe($SOCcontainer, {
-            childList: true, // observe direct children
-            subtree: true, // lower descendants too
-            characterDataOldValue: true, // pass old data to callback
+            childList: false, // observe direct children
+            subtree: false, // lower descendants too
+            characterDataOldValue: false, // pass old data to callback
+            attributes: true
         });
 
         this.watchersUIList.push(mutationObv);
@@ -401,7 +456,7 @@ export class HappnController implements datingAppController {
                     currentPage = ScreenNavStateCombo.UnknownScreen;
                     break;
             }
-            console.log(`You are on page: ${currentPage}`);
+            // console.log(`You are on page: ${currentPage}`);
             return currentPage;
         }
         throw new Error(`Could not get body DOM element from current page, please check the DOM properties & code references`);
