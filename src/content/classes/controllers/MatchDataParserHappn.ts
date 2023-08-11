@@ -74,7 +74,7 @@ export class MatchDataParser {
                     });
                     break;
                 case 'Job': {
-                    const jobFromProfile = match?.addedProperties.getPersonGenericPropertyByPropName('Job')?.value ? match?.addedProperties.getPersonGenericPropertyByPropName('Job')?.value : '';
+                    const jobFromProfile = match?.addedProperties.getPersonGenericPropertyByKey('Job')?.value ? match?.addedProperties.getPersonGenericPropertyByKey('Job')?.value : '';
                     dataRecordValuesList.push({
                         'label': 'Job',
                         'value': dataField.getValue() ? dataField.getValue() : jobFromProfile,
@@ -95,7 +95,7 @@ export class MatchDataParser {
                     break;
 
                 case 'Has-profiletext': {
-                    const profileTextFromProfile = match?.addedProperties.getPersonGenericPropertyByPropName('Bio')?.value ? match?.addedProperties.getPersonGenericPropertyByPropName('Bio')?.value as string : '';
+                    const profileTextFromProfile = match?.addedProperties.getPersonGenericPropertyByKey('Bio')?.value ? match?.addedProperties.getPersonGenericPropertyByKey('Bio')?.value as string : '';
                     dataRecordValuesList.push({
                         'label': 'Has-profiletext',
                         'value': dataField.getValue() ? dataField.getValue() : (profileTextFromProfile.length > 0 ? true : false)
@@ -109,7 +109,7 @@ export class MatchDataParser {
                     dataRecordValuesList.push({ 'label': 'Gender', 'value': happnMatch.participants[1].user.gender ? this.getGender(happnMatch.participants[1].user.gender) : dataField.getValue() });
                     break;
                 case 'Is-verified': {
-                    const verificationFromProfile = match?.addedProperties.getPersonGenericPropertyByPropName('Verification')?.value ? match?.addedProperties.getPersonGenericPropertyByPropName('Verification')?.value as boolean : null;
+                    const verificationFromProfile = match?.addedProperties.getPersonGenericPropertyByKey('Verification')?.value ? match?.addedProperties.getPersonGenericPropertyByKey('Verification')?.value as boolean : null;
 
                     dataRecordValuesList.push({
                         'label': 'Is-verified',
@@ -118,7 +118,7 @@ export class MatchDataParser {
                     break;
                 }
                 case 'Type-of-match-or-like': {
-                    const typeOfMatchFromProfile = match?.addedProperties.getPersonGenericPropertyByPropName('Type-of-match-or-like')?.value ? match?.addedProperties.getPersonGenericPropertyByPropName('Type-of-match-or-like')?.value as string : '';
+                    const typeOfMatchFromProfile = match?.addedProperties.getPersonGenericPropertyByKey('Type-of-match-or-like')?.value ? match?.addedProperties.getPersonGenericPropertyByKey('Type-of-match-or-like')?.value as string : '';
 
                     dataRecordValuesList.push({
                         'label': 'Type-of-match-or-like',
@@ -141,7 +141,7 @@ export class MatchDataParser {
                     break;
                 }
                 case 'Needs-profile-update': {
-                    const needsProfileUpdate = match?.addedProperties.getPersonGenericPropertyByPropName('needsProfileDetailsUpdate')?.value;
+                    const needsProfileUpdate = match?.addedProperties.getPersonGenericPropertyByKey('needsProfileDetailsUpdate')?.value;
 
                     dataRecordValuesList.push({
                         'label': 'Needs-profile-update',
@@ -151,7 +151,7 @@ export class MatchDataParser {
                     break;
                 }
                 case 'Needs-messages-update': {
-                    const needsMessagesUpdate = match?.addedProperties.getPersonGenericPropertyByPropName('needsMessagesUpdate')?.value;
+                    const needsMessagesUpdate = match?.addedProperties.getPersonGenericPropertyByKey('needsMessagesUpdate')?.value;
 
                     dataRecordValuesList.push({
                         'label': 'Needs-messages-update',
@@ -168,7 +168,7 @@ export class MatchDataParser {
                     break;
                 }
                 case 'Amount-of-pictures': {
-                    const picturesAmountFromProfile = match?.addedProperties.getPersonGenericPropertyByPropName('Amount-of-pictures')?.value ? match?.addedProperties.getPersonGenericPropertyByPropName('Amount-of-pictures')?.value as number : null;
+                    const picturesAmountFromProfile = match?.addedProperties.getPersonGenericPropertyByKey('Amount-of-pictures')?.value ? match?.addedProperties.getPersonGenericPropertyByKey('Amount-of-pictures')?.value as number : null;
 
                     dataRecordValuesList.push({
                         'label': 'Amount-of-pictures',
@@ -281,7 +281,7 @@ export class MatchDataParser {
                     });
                     break;
                 case 'School': {
-                    const schoolFromProfile = match?.addedProperties.getPersonGenericPropertyByPropName('School')?.value ? match?.addedProperties.getPersonGenericPropertyByPropName('School')?.value as string : null;
+                    const schoolFromProfile = match?.addedProperties.getPersonGenericPropertyByKey('School')?.value ? match?.addedProperties.getPersonGenericPropertyByKey('School')?.value as string : null;
 
                     dataRecordValuesList.push({
                         'label': 'School',
