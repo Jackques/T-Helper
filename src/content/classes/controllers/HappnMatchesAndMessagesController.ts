@@ -159,7 +159,7 @@ export class HappnMatchesAndMessagesController {
     private _addMessagesMatchesHappn(matches: ParsedResultMatch[]): Promise<void> {
         // Get only the profiles which have been set to require an update
         const needsMessagesUpdateMatches: ParsedResultMatch[] = matches.filter((match) => {
-            const result = match.addedProperties.getPersonGenericPropertyByPropName('needsMessagesUpdate')?.value;
+            const result = match.addedProperties.getPersonGenericPropertyByKey('needsMessagesUpdate')?.value;
             return result;
         });
 
@@ -237,7 +237,7 @@ export class HappnMatchesAndMessagesController {
     private _addProfileDataMatchesHappn(matches: ParsedResultMatch[]): Promise<void> {
 
         // Get only the profiles which have been set to require an update
-        const needsProfileUpdateMatches: ParsedResultMatch[] = matches.filter((match) => match.addedProperties.getPersonGenericPropertyByPropName('needsProfileDetailsUpdate')?.value === true);
+        const needsProfileUpdateMatches: ParsedResultMatch[] = matches.filter((match) => match.addedProperties.getPersonGenericPropertyByKey('needsProfileDetailsUpdate')?.value === true);
 
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolvedAllProfileDetails, reject) => {

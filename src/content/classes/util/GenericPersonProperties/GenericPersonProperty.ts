@@ -7,18 +7,15 @@ export class GenericPersonProperty {
         if (value === null && valueAsString !== 'null') {
             console.info(`Person property: ${key} has been added but value is: ${value}, whilst valueAsString is set as: ${valueAsString}`);
         }
-        if (!valueAsString || valueAsString.length === 0) {
-            console.error(`A person property value type cannot be of falsey value or empty string`);
-        }
 
         this.key = key;
         this.value = value;
         this.valueAsString = valueAsString;
     }
 
-    public updateValue(value: unknown, valueAsString: string): boolean {
+    public updateValue(value: unknown, valueAsString?: string): boolean {
         this.value = value;
-        this.valueAsString = valueAsString;
+        this.valueAsString = valueAsString ? valueAsString : '';
 
         return true;
     }
