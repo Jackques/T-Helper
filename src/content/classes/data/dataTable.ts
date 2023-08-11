@@ -22,6 +22,12 @@ export class DataTable {
         });
     }
 
+    public getRecordIndexBySystemOrTempId(systemOrTempId: string, appType: string): number {
+        return this.dataRecords.findIndex((dataRecord: DataRecord) => {
+            return dataRecord.getRecordPersonSystemId(appType) === systemOrTempId || dataRecord.getRecordPersonSystemId(appType, true) === systemOrTempId;
+        });
+    }
+
     public getRecordByRecordIndex(index: number): DataRecord | null {
         if (index >= 0 && index <= this.dataRecords.length) {
             return this.dataRecords[index];
