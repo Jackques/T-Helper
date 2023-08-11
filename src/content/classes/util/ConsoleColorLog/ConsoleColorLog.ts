@@ -12,8 +12,6 @@ export class ConsoleColorLog {
         if(typeof value === "string" && value.length === 0){
             value = "EMPTY STRING"
         }
-        // eslint-disable-next-line no-console
-        debugger;
         console.log("%c" + message + " : " + "%c" + value, "color:" + color + "; font-weight:bold; background-color: "+ this.currentActiveCategoryColor+";", "color:" + colorValue);
     }
 
@@ -22,7 +20,7 @@ export class ConsoleColorLog {
         // eslint-disable-next-line no-console
         console.log("%c" + message + " :", "color:" + color + "; font-weight:bold; background-color: "+ this.currentActiveCategoryColor+";");
         // eslint-disable-next-line no-console
-        console.log("%c" + value, "color:" + colorValue + "; font-weight:bold;");
+        console.dir(value);
         if(hasUnderline){
             // eslint-disable-next-line no-console
             console.log("%c ================================================", "color:" + color + ";");
