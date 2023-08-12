@@ -1,7 +1,6 @@
 import { GenericPersonProperty } from "./GenericPersonProperty";
 
 export class GenericPersonPropertiesList {
-
     private personPropertiesList: GenericPersonProperty[] = [];
 
     public updatePersonProperty(key: string, value: unknown, valueAsString?: string): void {
@@ -38,6 +37,19 @@ export class GenericPersonPropertiesList {
         } else {
             return false;
         }
+    }
+
+    public getAllEntries(): GenericPersonProperty[] {
+        const entriesList = this.personPropertiesList;
+        return entriesList;
+    }
+
+    public getEntriesAmount(): number {
+        return this.personPropertiesList.length;
+    }
+
+    public clearAllEntries(): void {
+        this.personPropertiesList.length = 0;
     }
 }
 
