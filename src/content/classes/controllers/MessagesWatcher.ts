@@ -14,7 +14,7 @@ export class MessagesWatcherHappn {
         lastMessage: string;
     }[] = [];
 
-    private watchersUIList = new GenericPersonPropertiesList();
+    private watchersUIList: GenericPersonPropertiesList;
     private watcherKeys: string[] = [];
 
     private matchListByMessages = new GenericPersonPropertiesList();
@@ -30,10 +30,10 @@ export class MessagesWatcherHappn {
     - The DOM is checked which persons have updated their messages based on the tempId in found in the src url for their profile picture
     */
 
-    constructor(nameController: string, dataTable: DataTable, watchersList: MutationObserver[]) {
+    constructor(nameController: string, dataTable: DataTable, watchersList: GenericPersonPropertiesList) {
         this.nameController = nameController;
         this.dataTable = dataTable;
-        // this.watchersUIList = watchersList; //TODO TODO TODO: fix this
+        this.watchersUIList = watchersList;
     }
 
     public setMessageListWatcherOnScreen(
@@ -57,7 +57,7 @@ export class MessagesWatcherHappn {
                 ConsoleColorLog.multiLog(`mutation:`, newMessagesList, LogColors.YELLOW, false);
                 this.setLatestMessagesMatchList(this.currentMessagesList);
 
-                let updatedIdsFromMessages: string[] = this.getChangedMessagesTempIds(this.currentMessagesList, newMessagesList);
+                let updatedIdsFromMessages: string[] = this.getChangedMessagesTempIds(newMessagesList);
 
                 updatedIdsFromMessages.forEach((tempId) => {
                     const recordIndex = this.dataTable.getRecordIndexBySystemOrTempId(tempId, this.nameController);
@@ -76,21 +76,6 @@ export class MessagesWatcherHappn {
                 this.timeoutNo = null;
 
             }, 500);
-
-
-
-            // TODO TODO TDOO:
-            // V 1. Write logic to get first person of message list, 
-            //get their associated profile picture, 
-            //get the conversations-avatar-picture which contains an img url, 
-            //which contains a tempId (it is the part after reising/<tempId>/)
-            // V 2. Figure out how to update messages in the new way (or refactor,.. since i made a new implementation for this which MAY NOT HAVE BEEN NECESSARY AT ALL!)
-            // V 3. Document the use of getMatchTempIdLatestFromLatestMessage() method because this can change depending upon app implementation
-            // V 4. Remove all code below? i'm not going to need it anymore
-            // V 5. Consider refactoring 'setScreenWatcher' & 'setMessageListWatcherOnScreen' to their own respective classes, so they can each hold their own seperated state 
-            // V (i.e. what last message was for every match & their associated tempId VS what last message is now of every match and if that changed)
-            // V (i.e. how many matches there are VS how many matches after mutation)
-            // 6. Refactor code so cleanup of watchersUIList is executed here instead of on happnController
         });
 
         messageListContainers.each((index, element)=>{
@@ -109,7 +94,18 @@ export class MessagesWatcherHappn {
         });
     }
 
-    public disconnectMessageWatchers(): void {
+    public cleanData(): void {
+
+        this.disconnectMessageWatchers();
+
+        // clear the list of watcher keys
+        this.watcherKeys = [];
+
+        // Clear all the entries of matchlist found by messages
+        this.matchListByMessages.clearAllEntries();
+    }
+
+    private disconnectMessageWatchers(): void {
         // disconnect all message watchers & delete them from the list
         this.watcherKeys.forEach((key)=>{
             const obs = this.watchersUIList.getPersonGenericPropertyByKey(key)?.value as MutationObserver;
@@ -120,9 +116,6 @@ export class MessagesWatcherHappn {
                 ConsoleColorLog.singleLog(`A messageswatcher could not be deleted: `, key, LogColors.RED);
             }
         });
-
-        // clear the list of watcher keys
-        this.watcherKeys = [];
     }
 
     private setLatestMessagesMatchList(messagesList: { tempId: string; lastMessage: string; }[]): void {
@@ -132,14 +125,13 @@ export class MessagesWatcherHappn {
     }
 
     private getChangedMessagesTempIds(
-        currentMessagesList: { tempId: string; lastMessage: string; }[],
         newMessagesList: { tempId: string; lastMessage: string; }[]): string[] {
         const toBeUpdatedIdList: string[] = [];
 
         newMessagesList.forEach((newMessage)=>{
             const person = this.matchListByMessages.getPersonGenericPropertyByKey(newMessage.tempId);
             if(person !== null){
-                ConsoleColorLog.singleLog(`Person value: ${person.value}, while newMessage.lastMessage is: ${newMessage.lastMessage}`, '', LogColors.LIGHTGREY);
+                // ConsoleColorLog.singleLog(`Person value: ${person.value}, while newMessage.lastMessage is: ${newMessage.lastMessage}`, '', LogColors.LIGHTGREY);
                 if(person.value !== newMessage.lastMessage){
                     ConsoleColorLog.singleLog(`Message was updated: `, newMessage.lastMessage, LogColors.YELLOW);
                     toBeUpdatedIdList.push(newMessage.tempId);
