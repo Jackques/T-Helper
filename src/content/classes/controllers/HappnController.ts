@@ -115,15 +115,15 @@ export class HappnController implements datingAppController {
                             () => {
                                 this.setRefreshDataTable(true);
                             });
-                            const matchesContainers = this.getMatchesContainerDOMRef();
-                            this.matchesWatcher?.setMatchesNumberWatcherOnScreen(
-                                matchesContainers,
-                                () => {
-                                    return this.getMatchesAmount(matchesContainers);
-                                },
-                                () => {
-                                    this.setRefreshDataTable(true);
-                            })
+                        const matchesContainers = this.getMatchesContainerDOMRef();
+                        this.matchesWatcher?.setMatchesNumberWatcherOnScreen(
+                            matchesContainers,
+                            () => {
+                                return this.getMatchesAmount(matchesContainers);
+                            },
+                            () => {
+                                this.setRefreshDataTable(true);
+                            });
                     });
 
                 } else {
@@ -213,32 +213,32 @@ export class HappnController implements datingAppController {
         $(messageListContainers).each((index, element) => {
 
             const textElement$ = $(element).find('p:contains("Crushes op je")').first();
-            if(textElement$.length === 0){
+            if (textElement$.length === 0) {
                 ConsoleColorLog.singleLog(`Could not find matches container element. Please update identifier for matchesContainer`, '', LogColors.RED);
                 return;
             }
 
             const textContent = textElement$.text();
-            if(!textContent.startsWith("Er wachten ") || !textContent.endsWith(" Crushes op je")){
+            if (!textContent.startsWith("Er wachten ") || !textContent.endsWith(" Crushes op je")) {
                 ConsoleColorLog.singleLog(`Text content in matches container does not match expected format. Please update expected format.`, '', LogColors.RED);
                 return;
             }
 
             const matchesNumberAsString = textContent.match(/\d+/)?.[0] ? textContent.match(/\d+/)?.[0] : "";
-            if(!matchesNumberAsString || matchesNumberAsString === ""){
+            if (!matchesNumberAsString || matchesNumberAsString === "") {
                 ConsoleColorLog.singleLog(`Could not get matches amount from text. Please update expected format. Text received is: `, matchesNumberAsString, LogColors.RED);
                 return;
-            }else{
+            } else {
                 const matchesNumberAsNumber: number = parseInt(matchesNumberAsString);
-                if(matchesNumberAsNumber < 0){
+                if (matchesNumberAsNumber < 0) {
                     ConsoleColorLog.singleLog(`The amount of matches cannot be less than 0. Something went wrong while parsing from string to int. Parsed text is: `, matchesNumberAsNumber, LogColors.RED);
                     return;
                 }
-    
-                if(matchesNumberAsNumber >= 90){
+
+                if (matchesNumberAsNumber >= 90) {
                     ConsoleColorLog.singleLog(`I have gathered 90 or more matches. So far I think I cannot count more than 99+, please send some matches messages or delete some to decrease this number ands thus be able to watch the (new) incoming matches. Matches amount: `, matchesNumberAsNumber, LogColors.YELLOW);
                 }
-    
+
                 matchesAmount = matchesNumberAsNumber;
             }
         });
@@ -262,8 +262,8 @@ export class HappnController implements datingAppController {
         // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
         // Thus I can always apply DOM manipulations on them when needed!
         const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
-            
-            if(this.currentScreen === this.getCurrentScreenByDOM()){
+
+            if (this.currentScreen === this.getCurrentScreenByDOM()) {
                 ConsoleColorLog.singleLog(`Still on the same screen: `, this.currentScreen, LogColors.BLUE);
                 //TODO TODO TODO: If screen is still CHAT, maybe set a global current chat person id? Pass it to messageWatcher maybe?
             }
@@ -290,15 +290,28 @@ export class HappnController implements datingAppController {
                         this.setRefreshDataTable(true);
                     }
                 );
+                this.matchesWatcher?.cleanData();
+                const matchesContainers = this.getMatchesContainerDOMRef();
+                this.matchesWatcher?.setMatchesNumberWatcherOnScreen(
+                    matchesContainers,
+                    () => {
+                        return this.getMatchesAmount(matchesContainers);
+                    },
+                    () => {
+                        this.setRefreshDataTable(true);
+                });
 
-                if (this.currentMatchIdByUrlChat === null || this.currentMatchIdByUrlChat !== newMatchIdFromUrl) {
-                    console.log(`%c Switched CHAT from match with id ${this.currentMatchIdByUrlChat} to match with id: ${newMatchIdFromUrl}`, "color: green");
-                    this.currentMatchIdByUrlChat = newMatchIdFromUrl;
-                } else {
-                    return;
-                }
-            } else if (this.currentScreen === this.getCurrentScreenByDOM()) {
-                return;
+                // this.setSwipeHelperOnScreen();
+
+                // if (this.currentMatchIdByUrlChat === null || this.currentMatchIdByUrlChat !== newMatchIdFromUrl) {
+                //     console.log(`%c Switched CHAT from match with id ${this.currentMatchIdByUrlChat} to match with id: ${newMatchIdFromUrl}`, "color: green");
+                //     this.currentMatchIdByUrlChat = newMatchIdFromUrl;
+                // } else {
+                //     return;
+                // }
+            } else if (this.currentScreen === ScreenNavStateCombo.Swipe){
+                ConsoleColorLog.singleLog(`Switched to screen: `, ScreenNavStateCombo.Swipe, LogColors.BLUE);
+                // this.setSwipeHelperOnScreen();
             }
 
             Overlay.setLoadingOverlay('switchScreen', true);
@@ -321,7 +334,7 @@ export class HappnController implements datingAppController {
                         Overlay.setLoadingOverlay('switchScreen', false);
                     });
                 } else {
-                    this.uIHelpersHappn?.addUIHelpers(this.currentScreen);
+                    this.setSwipeHelperOnScreen();
                     Overlay.setLoadingOverlay('switchScreen', false);
                 }
 
@@ -338,7 +351,7 @@ export class HappnController implements datingAppController {
     }
 
     // private setMatchesListWatcher(): void {
-        // KAN WEG?
+    // KAN WEG?
     //     const matchesListIdentifier = 'a.matchListItem';
     //     const matchesListElement: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector(matchesListIdentifier);
     //     let matchesListContainer: null | HTMLElement = null;
@@ -386,7 +399,7 @@ export class HappnController implements datingAppController {
 
 
     // private getUnmessagedMatchesAmount(matchesListContainerElement: HTMLElement): number {
-        // KAN WEG?
+    // KAN WEG?
     //     const matchListItemsAmount = $(matchesListContainerElement).find('a.matchListItem').length;
 
     //     // I assume the 'likes you' and 'sent-likes' will always be present, thus accounting for at least 2 elements with class matchListItem
@@ -404,7 +417,7 @@ export class HappnController implements datingAppController {
 
     public setSwipeHelperOnScreen(): void {
         this.currentScreen = this.getCurrentScreenByDOM();
-        this.uIHelpersHappn?.addUIHelpers(this.currentScreen);
+        this.uIHelpersHappn?.addUIHelpers(this.currentScreen, true);
     }
 
     public getCurrentScreenByDOM(): ScreenNavStateCombo {
@@ -490,7 +503,7 @@ export class HappnController implements datingAppController {
     public disconnectAllUIWatchers(): boolean {
         this.uiRenderer.removeAllUIHelpers();
 
-        this.watchersUIList.getAllEntries().forEach((watcherItem)=>{
+        this.watchersUIList.getAllEntries().forEach((watcherItem) => {
             const watcher = watcherItem.getValue() as MutationObserver;
             watcher.disconnect();
         });
