@@ -59,20 +59,27 @@ export class MessagesWatcherHappn {
 
                 let updatedIdsFromMessages: string[] = this.getChangedMessagesTempIds(newMessagesList);
 
+
                 updatedIdsFromMessages.forEach((tempId) => {
                     const recordIndex = this.dataTable.getRecordIndexBySystemOrTempId(tempId, this.nameController);
                     if(recordIndex === -1){
                         ConsoleColorLog.singleLog(`Could not find record by system id, record index is: ${recordIndex}, tempId is:`, tempId, LogColors.RED);
                         return;
                     }
+                    
                     const dataRecord: DataRecord | null = this.dataTable.getRecordByRecordIndex(recordIndex);
-                    dataRecord ? dataRecord.setUpdateMessages(true) : ConsoleColorLog.singleLog(`Could not get dataRecord with tempId: `, this.dataTable.getRecordIndexBySystemId(tempId, this.nameController), LogColors.RED);
-                    dataRecord !== null ? ConsoleColorLog.multiLog(`Updated dataRecord: `, dataRecord, LogColors.GREEN, false) : null;
+                    if(dataRecord){
+                        dataRecord.setUpdateMessages(true);
+                        ConsoleColorLog.multiLog(`Updated dataRecord: `, dataRecord, LogColors.GREEN, false);
+
+                        updateTable();
+                    }else{
+                        ConsoleColorLog.singleLog(`Could not get dataRecord with tempId: `, this.dataTable.getRecordIndexBySystemId(tempId, this.nameController), LogColors.RED);
+                    }
                 });
 
                 updatedIdsFromMessages = [];
-                updateTable();
-
+                
                 this.timeoutNo = null;
 
             }, 500);
