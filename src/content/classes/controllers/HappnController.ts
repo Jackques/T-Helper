@@ -300,18 +300,8 @@ export class HappnController implements datingAppController {
                     () => {
                         this.setRefreshDataTable(true);
                 });
-
-                // this.setSwipeHelperOnScreen();
-
-                // if (this.currentMatchIdByUrlChat === null || this.currentMatchIdByUrlChat !== newMatchIdFromUrl) {
-                //     console.log(`%c Switched CHAT from match with id ${this.currentMatchIdByUrlChat} to match with id: ${newMatchIdFromUrl}`, "color: green");
-                //     this.currentMatchIdByUrlChat = newMatchIdFromUrl;
-                // } else {
-                //     return;
-                // }
             } else if (this.currentScreen === ScreenNavStateCombo.Swipe){
                 ConsoleColorLog.singleLog(`Switched to screen: `, ScreenNavStateCombo.Swipe, LogColors.BLUE);
-                // this.setSwipeHelperOnScreen();
             }
 
             Overlay.setLoadingOverlay('switchScreen', true);
@@ -349,67 +339,6 @@ export class HappnController implements datingAppController {
 
         this.watchersUIList.updatePersonProperty('screenWatcher', mutationObv);
     }
-
-    // private setMatchesListWatcher(): void {
-    // KAN WEG?
-    //     const matchesListIdentifier = 'a.matchListItem';
-    //     const matchesListElement: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector(matchesListIdentifier);
-    //     let matchesListContainer: null | HTMLElement = null;
-
-    //     if (matchesListElement !== null) {
-    //         matchesListContainer = $(matchesListElement).parents('[role="tabpanel"]').first()[0] ? $(matchesListElement).parents('[role="tabpanel"]').first()[0] : null;
-    //         if (matchesListContainer !== null) {
-    //             this.amountOfUnmessagedMatches = this.getUnmessagedMatchesAmount(matchesListContainer);
-
-    //             const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
-    //                 if (matchesListContainer !== null) {
-    //                     const currentUnmessagedMatchesAmount: number = this.getUnmessagedMatchesAmount(matchesListContainer);
-    //                     console.log(`Did the UI get updated so I can NOW get the number of unmessaged matches after one or more has been added/deleted?`);
-    //                     console.log(`Old number: ${this.amountOfUnmessagedMatches}, current/new number: ${currentUnmessagedMatchesAmount}`);
-
-    //                     if (this.amountOfUnmessagedMatches !== currentUnmessagedMatchesAmount) {
-    //                         this.amountOfUnmessagedMatches = currentUnmessagedMatchesAmount;
-
-    //                         this.setRefreshDataTable(true);
-    //                     }
-    //                 } else {
-    //                     console.error(`Could not find matchesListContainer. Please update the identifier.`);
-    //                     return;
-    //                 }
-
-    //             });
-
-    //             mutationObv.observe(matchesListContainer, {
-    //                 childList: true, // observe direct children
-    //                 subtree: true, // lower descendants too
-    //                 characterDataOldValue: false, // pass old data to callback
-    //             });
-
-    //             this.watchersUIList.push(mutationObv);
-
-    //         } else {
-    //             console.error(`Could not find matchesListContainer. Please update the identifier.`);
-    //             return;
-    //         }
-    //     } else {
-    //         console.error(`Could not find matchesListElement. Please update the identifier.`);
-    //         return;
-    //     }
-    // }
-
-
-    // private getUnmessagedMatchesAmount(matchesListContainerElement: HTMLElement): number {
-    // KAN WEG?
-    //     const matchListItemsAmount = $(matchesListContainerElement).find('a.matchListItem').length;
-
-    //     // I assume the 'likes you' and 'sent-likes' will always be present, thus accounting for at least 2 elements with class matchListItem
-    //     if (matchListItemsAmount >= 1) {
-    //         return matchListItemsAmount;
-    //     } else {
-    //         console.error(`Unable to find matchListItems. Please update selectors.`);
-    //         return 0;
-    //     }
-    // }
 
     private setRefreshDataTable(shouldDataTableBeRefreshed: boolean) {
         this.dataTableNeedsToBeUpdated = shouldDataTableBeRefreshed;
