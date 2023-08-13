@@ -11,6 +11,7 @@ import { TinderMessage } from "src/content/interfaces/http-requests/MessagesList
 import { MatchProfileDetailsHappn } from "src/content/interfaces/http-requests/MatchProfileDetailsHappn.interface";
 import { Match } from "src/content/interfaces/http-requests/MatchesListTinder.interface";
 import { MatchDataParser } from "./MatchDataParserHappn";
+import { LogColors } from "../util/ConsoleColorLog/LogColors";
 
 export class HappnMatchesAndMessagesController {
 
@@ -82,50 +83,45 @@ export class HappnMatchesAndMessagesController {
 
                 this.setUnupdatedMatchesToBlocked(matches, this.dataTable).finally(() => {
                     console.log(`setUnupdatedMatchesToBlocked finally() START`);
-                    // TODO TODO TODO: didn't I have a check on the tinder controller as well to check if messages needed to be updated? if so, then this code is still valid.
-                    // if i get the messages per profile every time rergardless, then it is not valid.
-                    // TODO TODO TODO: How exactly did my tinder matches get the status 'unupdated'? Shouldn't I implement this for my happn matches as well?
-                    // TODO TODO TODO: How exactly did my tinder controller determine which match needed to update the messages? Shouldn't I implement this as well?
-                    const dataRecordsWhereMessagesNeedToBeUpdated = this.dataTable.getAllDataRecordsWhereMessageNeedTobeUpdated();
-                    if (dataRecordsWhereMessagesNeedToBeUpdated.length === 0) {
-                        console.log(`NO DATA RECORDS NEED TO BE UPDATED`);
-                        return resolve();
-                    }
 
-                    this.updateMessagesDataRecords(this.requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved) => {
-                        console.log(`setUnupdatedMatchesToBlocked - this.updateMessageDataRecords finally() .then START`);
+                    // const dataRecordsWhereMessagesNeedToBeUpdated = this.dataTable.getAllDataRecordsWhereMessageNeedTobeUpdated();
+                    // if (dataRecordsWhereMessagesNeedToBeUpdated.length === 0) {
+                    //     console.log(`NO DATA RECORDS NEED TO BE UPDATED`);
+                    //     return resolve();
+                    // }
 
-                        if (!hasMessagesBeenRetrieved) {
-                            console.error(`Something went wrong with getting messages! Check the network logs.`);
-                            return reject();
-                        }
+                    // this.updateMessagesDataRecords(this.requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved) => {
+                    //     console.log(`setUnupdatedMatchesToBlocked - this.updateMessageDataRecords finally() .then START`);
 
-                        const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
-                        dataRecords.forEach((dataRecord) => {
-                            const dataFields: DataField[] = dataRecord.getDataFields();
+                    //     if (!hasMessagesBeenRetrieved) {
+                    //         console.error(`Something went wrong with getting messages! Check the network logs.`);
+                    //         return reject();
+                    //     }
 
-                            const systemId: string | null = dataRecord.getRecordPersonSystemId(this.nameController)
-                            if (!systemId) {
-                                console.warn(`Could not update dataRecord because record index could not be found due to not found system id: ${systemId}`);
-                            } else {
-                                const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
-                                const tinderMatchDataRecordValues: DataRecordValues[] = MatchDataParser.parseMatchDataToDataRecordValues(this.nameController, dataFields, undefined, systemId);
-                                this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
-                            }
-                        });
+                    //     const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
+                    //     dataRecords.forEach((dataRecord) => {
+                    //         const dataFields: DataField[] = dataRecord.getDataFields();
 
-                        // return resolve(); // does this perhaps need to be put INSIDE the this.updateMessagesDataRecords?, nope doesnt help either.. try 1
-                        console.log(`setUnupdatedMatchesToBlocked - this.updateMessageDataRecords finally() .then END`);
-                    }).catch((error) => {
-                        console.dir(error);
-                        console.error(`Error occured getting matchMessages`);
-                    }).finally(() => {
-                        console.log(`And here is my data table:`);
-                        console.dir(this.dataTable);
-                    });
-                    console.log(`setUnupdatedMatchesToBlocked finally() END`);
+                    //         const systemId: string | null = dataRecord.getRecordPersonSystemId(this.nameController)
+                    //         if (!systemId) {
+                    //             console.warn(`Could not update dataRecord because record index could not be found due to not found system id: ${systemId}`);
+                    //         } else {
+                    //             const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
+                    //             const tinderMatchDataRecordValues: DataRecordValues[] = MatchDataParser.parseMatchDataToDataRecordValues(this.nameController, dataFields, undefined, systemId);
+                    //             this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
+                    //         }
+                    //     });
 
-
+                    //     // return resolve(); // does this perhaps need to be put INSIDE the this.updateMessagesDataRecords?, nope doesnt help either.. try 1
+                    //     console.log(`setUnupdatedMatchesToBlocked - this.updateMessageDataRecords finally() .then END`);
+                    // }).catch((error) => {
+                    //     console.dir(error);
+                    //     console.error(`Error occured getting matchMessages`);
+                    // }).finally(() => {
+                    //     console.log(`And here is my data table:`);
+                    //     console.dir(this.dataTable);
+                    // });
+                    // console.log(`setUnupdatedMatchesToBlocked finally() END`);
                 });
 
 
@@ -176,7 +172,7 @@ export class HappnMatchesAndMessagesController {
                 console.dir(matchData);
                 // debugger;
                 await new Promise<void>((resolvedMessages, reject) => {
-                    this.requestHandler.getMatchMessages(matchData.id).then((result) => {
+                    this.requestHandler.getMatchMessages(matchData.id).then((result: MessagesHappn) => {
                         if (!result) {
                             match.addedProperties.updatePersonProperty('needsMessagesUpdate', true, 'true');
                             // console.log(`needsMessagesUpdate failure! thus set to true`);
@@ -346,12 +342,6 @@ export class HappnMatchesAndMessagesController {
 
                 const isMessengerMe = parsedResultMatch.match.participants[0].user.first_name === messages.data.conversation.messages.edges[0].node.sender.firstName;
 
-                if (isMessengerMe) {
-                    console.log(`Yes! I am the sender of this message: ${messageNode.node.body}`);
-                } else {
-                    console.log(`No, i am not the sender of this message: ${messageNode.node.body}`);
-                }
-
                 // for now i will use the TinderMessage interface because the ParsedResultMatch interface does not allow me to add multiple message interfaces for I would need to update every object i add to the list with similair properties
                 // should probably want to refactor this for tinder + happn to 1 single interface (simply use Message interface?)
                 const tinderMessageToConvert: TinderMessage = {
@@ -442,6 +432,9 @@ export class HappnMatchesAndMessagesController {
 
     private setUnupdatedMatchesToBlocked(matches: ParsedResultMatch[], dataTable: DataTable): Promise<void> {
         console.log(`setUnupdatedMatchesToBlocked - START`);
+
+        let newBlockedOrRemovedPersons = 0;
+        let updatedBlockedOrRemovedPersons = 0;
         return new Promise<void>((resolve) => {
 
             // if a match no longer appears in the retrieved (matches), then either the profile or our match has been deleted!
@@ -455,7 +448,6 @@ export class HappnMatchesAndMessagesController {
 
             for (let i = 0; i <= (unupdatedMatchesList.length - 1); i = i + 1) {
                 const unupdatedMatch = unupdatedMatchesList[i];
-                let presumedRequestsFired = 0;
 
                 // do not update if dataField 'Blocked' is already set to true
                 const indexDataFieldBlocked: number = unupdatedMatch.getIndexOfDataFieldByTitle('Blocked-or-removed');
@@ -486,7 +478,7 @@ export class HappnMatchesAndMessagesController {
                     continue;
                 }
 
-                presumedRequestsFired = presumedRequestsFired + 1;
+                newBlockedOrRemovedPersons = newBlockedOrRemovedPersons + 1;
                 const matchId = unupdatedMatch.getRecordPersonSystemId(this.nameController);
                 const matchName = unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Name')].getValue();
 
@@ -496,16 +488,12 @@ export class HappnMatchesAndMessagesController {
                 }
 
                 // todo: continue here
-                this.requestHandler.getMatchProfileDetails(matchId).then((matchDetails: MatchProfileDetailsHappn) => {
-                    // what if a match blockes me?
-                    // what kind of response will Happn retrieve on this api?
-                    // what if a match removes their own profile?
-                    // what kind of response will Happn retrieve on this api?
-                    // what if I delete a match?
-                    // what kind of response will Happn retrieve on this api?
+                // this.requestHandler.getMatchProfileDetails(matchId).then((matchDetails: MatchProfileDetailsHappn) => {
+                this.requestHandler.getMatchConversation(matchId).then((matchMessagesDetails: MessagesHappn) => {
+                    updatedBlockedOrRemovedPersons = updatedBlockedOrRemovedPersons + 1;
+                    // debugger;
 
-
-                    // if(matchDetails === 404){
+                    // if(matchMessagesDetails === 404){
                     //     console.warn(`Matchdetails: ${matchName} with id: ${matchId} gave a 404. Probably deleted profile?`);
                     //     console.dir(unupdatedMatchesList[i]);
 
@@ -527,45 +515,50 @@ export class HappnMatchesAndMessagesController {
                     //     unupdatedMatch.setUpdateMessages(false);
                     // }
 
-                    // if(matchDetails === 500){
-                    //     console.error(`Matchdetails: ${matchName} with id: ${matchId} request returned a 500. Probably only removed me as match?`);
-                    // }
+                    if(!matchMessagesDetails){
+                        ConsoleColorLog.multiLog(`Matchdetails: ${matchName} with id: ${matchId} request retrieved a falsy value`, matchMessagesDetails, LogColors.RED, true);
+                        alert(`Match perhaps deleted profile hence why matchMessagesDetails is a falsy value? Check console log`)
+                    }
 
-                    // if(typeof matchDetails !== 'number' && matchDetails?.closed){
-                    //     const indexUnmatchDatafield = unupdatedMatch.getIndexOfDataFieldByTitle('Did-i-unmatch');
-                    //     if(unupdatedMatch.usedDataFields[indexUnmatchDatafield].getValue()){
-                    //         console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. I (ME) deleted our match!`);
-                    //         console.warn(unupdatedMatchesList[i]);
-                    //     }else{
-                    //         console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. Match deleted our match!`);
-                    //         console.warn(unupdatedMatchesList[i]);
-                    //     }
+                    if(matchMessagesDetails.data.conversation.isBlocked){
+                        const indexUnmatchDatafield = unupdatedMatch.getIndexOfDataFieldByTitle('Did-i-unmatch');
+                        if(unupdatedMatch.usedDataFields[indexUnmatchDatafield].getValue()){
+                            console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. I (ME) deleted our match!`);
+                            console.warn(unupdatedMatchesList[i]);
+                        }else{
+                            console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. Match deleted our match!`);
+                            console.warn(unupdatedMatchesList[i]);
+                        }
 
-                    //     unupdatedMatch.addDataToDataFields([
-                    //         {
-                    //             label: 'Blocked-or-removed',
-                    //             value: true
-                    //         },
-                    //         {
-                    //             label: 'Date-of-unmatch',
-                    //             value: unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() ? unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() : (matchDetails.last_activity_date ? matchDetails.last_activity_date : new Date().toISOString())
-                    //         },
-                    //         {
-                    //             label: 'Seemingly-deleted-profile',
-                    //             value: false
-                    //         }
-                    //     ]);
+                        unupdatedMatch.addDataToDataFields([
+                            {
+                                label: 'Blocked-or-removed',
+                                value: true
+                            },
+                            {
+                                label: 'Date-of-unmatch',
+                                value: unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() ? 
+                                unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() : 
+                                (matchMessagesDetails.data.conversation.modificationDate ? matchMessagesDetails.data.conversation.modificationDate : new Date().toISOString())
+                            },
+                            {
+                                label: 'Seemingly-deleted-profile',
+                                value: false
+                            }
+                        ]);
 
-                    //     unupdatedMatch.setUpdateMessages(false);
-                    // }
-
-                    // actualRequestsFired = actualRequestsFired + 1;
-                    // if(presumedRequestsFired === actualRequestsFired){
-                    //     resolve();
-                    // }
+                        unupdatedMatch.setUpdateMessages(false);
+                    }else{
+                        ConsoleColorLog.multiLog(`This blocked/deleted/disappeared match does no longer appear in my retrieved match list, but did she block me? (which should follow the code above) or did she delete her profile? (which is a new scenario I have not yet accounted for)`, matchMessagesDetails, LogColors.RED, true);
+                        alert(`Unrecognized blocked match, please check console log`);
+                    }
                 }).catch(() => {
                     const indexDataFieldName: number = unupdatedMatch.getIndexOfDataFieldByTitle('Name');
                     console.log(`Failed to get matchDetails for profile with name: ${unupdatedMatch.usedDataFields[indexDataFieldName].getValue()}. Please check if request adress is still correct.`);
+                }).finally(()=>{
+                    if(newBlockedOrRemovedPersons === updatedBlockedOrRemovedPersons){
+                        resolve();
+                    }
                 });
 
             }

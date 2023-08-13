@@ -50,7 +50,6 @@ export class MatchesWatcherHappn {
             this.currentMatchesAmount = currentMatches !== null ? currentMatches : 0;
         }
         ConsoleColorLog.singleLog(`init matchesWatcher:`, currentMatches, LogColors.YELLOW);
-        // this.setLatestMessagesMatchList(this.currentMessagesList);
 
         const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
             ConsoleColorLog.singleLog(`Mutation observer for matches triggered, looking for changes`, ``, LogColors.LIGHTGREY);

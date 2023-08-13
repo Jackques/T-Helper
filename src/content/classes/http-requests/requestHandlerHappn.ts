@@ -118,7 +118,7 @@ export class RequestHandlerHappn {
                         'Content-Type': 'application/json',
                         'Authorization': 'OAuth="' + this.happnAccessToken + '"'
                     }
-                    })
+                })
                     .then(result => {
                         return result.json()
                     })
@@ -145,6 +145,112 @@ export class RequestHandlerHappn {
                                 before: ""
                             },
                             query: "fragment MessageFields on Message {\n  id\n  body\n  sender {\n    id\n    firstName\n    gender\n    isModerator\n    isSponsor\n    pictures(format: CROP_80x80) {\n      id\n      url\n      __typename\n    }\n    __typename\n  }\n  creationDate\n  __typename\n}\n\nquery GetConversationMessagesQuery($id: ID!, $before: Cursor) {\n  conversation(id: $id) {\n    id\n    messages(last: 50, before: $before) {\n      edges {\n        node {\n          ...MessageFields\n          __typename\n        }\n        cursor\n        __typename\n      }\n      pageInfo {\n        hasPreviousPage\n        hasNextPage\n        endCursor\n        startCursor\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"
+                        }
+                    ),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'OAuth="' + this.happnAccessToken + '"'
+                    }
+                })
+                    .then(result => {
+                        return result.json()
+                    })
+                    .catch(error => {
+                        reject(error);
+                    })
+                    .then(resultJSON => {
+                        resolve(resultJSON);
+                    });
+            }, this._getRandomCoupleHunderdMS());
+        });
+    }
+
+    public getMatchConversation(matchId: string): Promise<MessagesHappn> {
+        return new Promise<MessagesHappn>((resolve, reject) => {
+            setTimeout(() => {
+                fetch(`https://api.happn.fr/graphql/v1`, {
+                    method: 'POST',
+                    body: JSON.stringify(
+                        {
+                            operationName: "GetConversationQuery",
+                            variables: {
+                                id: matchId
+                            },
+                            query: `fragment UserBaseFields on User {
+                                id
+                                gender
+                                firstName
+                                lastMeetPosition {
+                                  lat
+                                  lon
+                                  __typename
+                                }
+                                pictures(format: CROP_80x80) {
+                                  id
+                                  url
+                                  __typename
+                                }
+                                __typename
+                              }
+                              
+                              fragment ParticipantFields on Participant {
+                                reactions {
+                                  reaction {
+                                    id
+                                    message
+                                    __typename
+                                  }
+                                  container {
+                                    type
+                                    content {
+                                      id
+                                      url
+                                      __typename
+                                    }
+                                    __typename
+                                  }
+                                  sender {
+                                    ...UserBaseFields
+                                    __typename
+                                  }
+                                  receiver {
+                                    ...UserBaseFields
+                                    __typename
+                                  }
+                                  __typename
+                                }
+                                user {
+                                  isModerator
+                                  isSponsor
+                                  onlineStatus
+                                  lastActivityDate
+                                  ...UserBaseFields
+                                  __typename
+                                }
+                                __typename
+                              }
+                              
+                              query GetConversationQuery($id: ID!) {
+                                conversation(id: $id) {
+                                  id
+                                  isBlocked
+                                  creationDate
+                                  modificationDate
+                                  participants {
+                                    target {
+                                      ...ParticipantFields
+                                      __typename
+                                    }
+                                    current {
+                                      ...ParticipantFields
+                                      __typename
+                                    }
+                                    __typename
+                                  }
+                                  __typename
+                                }
+                              }
+                              `
                         }
                     ),
                     headers: {

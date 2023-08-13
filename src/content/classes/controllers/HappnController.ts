@@ -184,8 +184,7 @@ export class HappnController implements datingAppController {
                 const srcDisabledMatchUrl = $(elem).find('[data-testid="conversations-avatar-empty"]');
 
                 if (srcDisabledMatchUrl.length > 0) {
-                    ConsoleColorLog.singleLog(`A match conversation has been removed, thus unable to get tempId nor dataRecord`, '', LogColors.YELLOW);
-                    //TODO TODO TODO: Send message to screenwatcher, this has matchid set!
+                    ConsoleColorLog.singleLog(`A match conversation has been removed, thus unable to get tempId nor dataRecord`, 'Please remove this old deleted match from the list manually', LogColors.RED);
                     return;
                 }
 
@@ -271,14 +270,19 @@ export class HappnController implements datingAppController {
 
             if (this.currentScreen === this.getCurrentScreenByDOM()) {
                 ConsoleColorLog.singleLog(`Still on the same screen: `, this.currentScreen, LogColors.BLUE);
-                //TODO TODO TODO: If screen is still CHAT, maybe set a global current chat person id? Pass it to messageWatcher maybe?
+
             }
+
             this.currentScreen = this.getCurrentScreenByDOM();
             ConsoleColorLog.singleLog(`New screen: `, this.currentScreen, LogColors.BLUE);
 
             if (this.currentScreenTimeoutId !== null) {
                 // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
                 return;
+            }
+
+            if(this.isAnyDataRecordProfileOrMessageSetToNeedsUpdate()){
+                this.setRefreshDataTable(true);
             }
 
             if (this.currentScreen === ScreenNavStateCombo.Chat) {
@@ -288,7 +292,7 @@ export class HappnController implements datingAppController {
                 this.setMessagesWatcher();
 
                 this.setMatchesWatcher();
-                
+
             } else if (this.currentScreen === ScreenNavStateCombo.Swipe) {
                 ConsoleColorLog.singleLog(`Switched to screen: `, ScreenNavStateCombo.Swipe, LogColors.BLUE);
             }
@@ -327,6 +331,13 @@ export class HappnController implements datingAppController {
         });
 
         this.watchersUIList.updatePersonProperty('screenWatcher', mutationObv);
+    }
+
+    private isAnyDataRecordProfileOrMessageSetToNeedsUpdate() {
+        const firstDataRecordWhichNeedsUpdateProfileOrMessages = this.dataTable.getAllDataRecords().find((dataRecord)=>{
+            return dataRecord.getIfProfileDetailsNeedsUpdate() || dataRecord.getIfMessagesNeedsUpdate();
+        });
+        return firstDataRecordWhichNeedsUpdateProfileOrMessages ? true : false;
     }
 
     private setRefreshDataTable(shouldDataTableBeRefreshed: boolean) {

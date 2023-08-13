@@ -1,6 +1,9 @@
 export interface MessagesHappn {
     data: {
         conversation: {
+            creationDate: string,
+            modificationDate: string,
+            isBlocked: boolean,
             id: string,
                 messages: {
                 edges: [
