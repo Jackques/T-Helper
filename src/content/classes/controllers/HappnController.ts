@@ -66,9 +66,6 @@ export class HappnController implements datingAppController {
     private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
     private currentMatchIdByUrlChat: string | null = UrlHelper.getCurrentMatchIdFromUrl();
 
-    // private amountOfUnmessagedMatches = 0;
-    // private matchesListTimeoutId: number | null = null;
-
     private dataTableNeedsToBeUpdated = false;
 
     private watchersUIList = new GenericPersonPropertiesList();
@@ -106,24 +103,9 @@ export class HappnController implements datingAppController {
                         Overlay.setLoadingOverlay('initApp', false);
                         this.setScreenWatcher('body');
 
-                        const messageListContainers = this.getMessageContainerDOMRef();
-                        this.messagesWatcher?.setMessageListWatcherOnScreen(
-                            messageListContainers,
-                            () => {
-                                return this.getMatchTempIdLatestFromLatestMessage(messageListContainers);
-                            },
-                            () => {
-                                this.setRefreshDataTable(true);
-                            });
-                        const matchesContainers = this.getMatchesContainerDOMRef();
-                        this.matchesWatcher?.setMatchesNumberWatcherOnScreen(
-                            matchesContainers,
-                            () => {
-                                return this.getMatchesAmount(matchesContainers);
-                            },
-                            () => {
-                                this.setRefreshDataTable(true);
-                            });
+                        this.setMessagesWatcher();
+
+                        this.setMatchesWatcher();
                     });
 
                 } else {
@@ -136,6 +118,30 @@ export class HappnController implements datingAppController {
         } else {
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
         }
+    }
+    private setMatchesWatcher(): void {
+        const matchesContainers = this.getMatchesContainerDOMRef();
+        this.matchesWatcher?.cleanData();
+        this.matchesWatcher?.setMatchesNumberWatcherOnScreen(
+            matchesContainers,
+            () => {
+                return this.getMatchesAmount(matchesContainers);
+            },
+            () => {
+                this.setRefreshDataTable(true);
+        });
+    }
+    private setMessagesWatcher(): void {
+        const messageListContainers = this.getMessageContainerDOMRef();
+        this.messagesWatcher?.cleanData();
+        this.messagesWatcher?.setMessageListWatcherOnScreen(
+            messageListContainers,
+            () => {
+                return this.getMatchTempIdLatestFromLatestMessage(messageListContainers);
+            },
+            () => {
+                this.setRefreshDataTable(true);
+            });
     }
 
     private getMessageContainerDOMRef(): JQuery<HTMLElement> {
@@ -279,28 +285,11 @@ export class HappnController implements datingAppController {
                 ConsoleColorLog.singleLog(`Switched to screen: `, ScreenNavStateCombo.Chat, LogColors.GREEN);
                 const newMatchIdFromUrl = UrlHelper.getCurrentMatchIdFromUrl();
 
-                const messageListContainers = this.getMessageContainerDOMRef();
-                this.messagesWatcher?.cleanData();
-                this.messagesWatcher?.setMessageListWatcherOnScreen(
-                    messageListContainers,
-                    () => {
-                        return this.getMatchTempIdLatestFromLatestMessage(messageListContainers);
-                    },
-                    () => {
-                        this.setRefreshDataTable(true);
-                    }
-                );
-                this.matchesWatcher?.cleanData();
-                const matchesContainers = this.getMatchesContainerDOMRef();
-                this.matchesWatcher?.setMatchesNumberWatcherOnScreen(
-                    matchesContainers,
-                    () => {
-                        return this.getMatchesAmount(matchesContainers);
-                    },
-                    () => {
-                        this.setRefreshDataTable(true);
-                });
-            } else if (this.currentScreen === ScreenNavStateCombo.Swipe){
+                this.setMessagesWatcher();
+
+                this.setMatchesWatcher();
+                
+            } else if (this.currentScreen === ScreenNavStateCombo.Swipe) {
                 ConsoleColorLog.singleLog(`Switched to screen: `, ScreenNavStateCombo.Swipe, LogColors.BLUE);
             }
 
