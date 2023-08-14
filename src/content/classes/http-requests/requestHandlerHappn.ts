@@ -11,6 +11,7 @@ import { TypeOfChat } from '../util/happn/typeOfChat';
 import { MatchProfileDetailsHappn } from 'src/content/interfaces/http-requests/MatchProfileDetailsHappn.interface';
 import { GenericPersonPropertiesList } from '../util/GenericPersonProperties/GenericPersonPropertiesList';
 import { MessagesHappn } from 'src/content/interfaces/http-requests/MessagesHappn.interface';
+import { PostMessageSuccessHappn } from 'src/content/interfaces/http-requests/PostMessageSuccessHappn.interface';
 
 export class RequestHandlerHappn {
     private happnAccessToken: string;
@@ -251,6 +252,36 @@ export class RequestHandlerHappn {
                                 }
                               }
                               `
+                        }
+                    ),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'OAuth="' + this.happnAccessToken + '"'
+                    }
+                })
+                    .then(result => {
+                        return result.json()
+                    })
+                    .catch(error => {
+                        reject(error);
+                    })
+                    .then(resultJSON => {
+                        resolve(resultJSON);
+                    });
+            }, this._getRandomCoupleHunderdMS());
+        });
+    }
+
+     // example: https://api.happn.fr/api/conversations/17846212729_9e7b04a7-12f6-438c-8608-c921bd80a765/messages?fields=id,message,creation_date,sender.fields(id),previous_message_id&conversation_id=17846212729_9e7b04a7-12f6-438c-8608-c921bd80a765
+     // (Iris)
+    public postMessage(matchId: string, message: string): Promise<PostMessageSuccessHappn> {
+        return new Promise<PostMessageSuccessHappn>((resolve, reject) => {
+            setTimeout(() => {
+                fetch(`https://api.happn.fr/api/conversations/${matchId}/messages?fields=id,message,creation_date,sender.fields(id),previous_message_id&conversation_id=${matchId}`, {
+                    method: 'POST',
+                    body: JSON.stringify(
+                        {
+                            "message": message
                         }
                     ),
                     headers: {
