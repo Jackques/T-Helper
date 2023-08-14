@@ -120,6 +120,7 @@ export class MatchDataParser {
                 case 'Type-of-match-or-like': {
                     const typeOfMatchFromProfile = match?.addedProperties.getPersonGenericPropertyByKey('Type-of-match-or-like')?.value ? match?.addedProperties.getPersonGenericPropertyByKey('Type-of-match-or-like')?.value as string : '';
                     //TODO TODO TODO: Figure out type of match, different types of matches (i.e. like with blocked match or removed profile match; show alert when a match is of a different type than a regular like)?
+                    // Alternatively; can also always register as normal like, and change it to 'superlike' manually in case of a superlike. But then i do need to display the field in chat!
                     dataRecordValuesList.push({
                         'label': 'Type-of-match-or-like',
                         'value': dataField.getValue() ? dataField.getValue() : typeOfMatchFromProfile

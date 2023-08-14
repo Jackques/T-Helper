@@ -1,0 +1,14 @@
+! response-speed, reminders-amount, ghosts etc. all absent. but this  may be because according to bug in app, it thinks matches never responded?
+	* Ornella; only response-speed remained empty.. why?
+
+! INTERESSANT:
+	ik heb 2 Anouk's als match, maar de meest recente Anouk heeft mij verwijderd (of profiel opgezegd). Ik zie haar en ons gesprek dus ook niet terug in de gesprekken (wel dat zij mij heeft verwijderd).
+	Die andere Anouk van way back staat er wel in,.. maar is oud gesprek? Waar zijn die oude gesprekken (verborgen onder de UI?)
+	Het LIJKT er idd op, dat Happn net als Tinder verwijderde/geblokkeerde gesprekken er uit filtert.
+	
+! OOK INTERESSANT:
+	match Dianne heeft haar leeftijd verborgen? Kennelijk kan dit..
+	Daarbij, kan haar leeftijd dan ook niet worden opgehaald middels profile details api?
+
+! WAAROM wordt als ik een match open telkens Inez ons matchid gebruikt?
+	trouwens.. uberhaupt het ophalen van details voor een match is standaard gedrag bij tinder, maar bij happn niet echt nodig.
