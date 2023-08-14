@@ -222,7 +222,7 @@ export class Main {
     
             console.table(dataRecordsWhoNeedAutoReminderMap, ["Name", "System-no","tempId", "tempIdisHowManyCharacters", "Needs-reminder", "Messages", "AcquiredNumber", "English-only"]);
             console.log("SEND REMINDER LIST");
-            let reminderHttpList: (ReminderHttp | null)[] = dataRecordsWhoNeedAutoReminder.map((dataRecord: DataRecord)=>{
+            const reminderHttpList: (ReminderHttp | null)[] = dataRecordsWhoNeedAutoReminder.map((dataRecord: DataRecord)=>{
                 const tempId: string | null = dataRecord.getRecordPersonSystemId(this.datingAppType, true);
                 const completeId: string | null = dataRecord.getRecordPersonSystemId(this.datingAppType, false);
                 if(!tempId || !completeId){
@@ -248,16 +248,23 @@ export class Main {
                     return this.autoReminder.getReminderHttpMap(tempId, completeId, name, reminderTextMessageList, englishOnly);
                 }
             });
-            reminderHttpList = reminderHttpList.filter(reminder => !!reminder); // should filter out all the null values if any exist
 
+            const reminderHttpListWithoutNulls = reminderHttpList.filter(reminder => !!reminder) as ReminderHttp[]; // should filter out all the null values if any exist
+            
             // Send remidners to max. 5 persons at a time
-            reminderHttpList = reminderHttpList.length >= 5 ? [reminderHttpList[0], reminderHttpList[1], reminderHttpList[2], reminderHttpList[3], reminderHttpList[4]] : reminderHttpList;
+            const first5RemindersOnly = [];
+            first5RemindersOnly.push(reminderHttpListWithoutNulls[0]);
+            first5RemindersOnly.push(reminderHttpListWithoutNulls[1]);
+            first5RemindersOnly.push(reminderHttpListWithoutNulls[2]);
+            first5RemindersOnly.push(reminderHttpListWithoutNulls[3]);
+            first5RemindersOnly.push(reminderHttpListWithoutNulls[4]);
+            debugger;
 
             console.log("Reminder list");
             reminderHttpList.forEach((reminderHttp, index)=>{
                 console.log(index + " | TempId: " + reminderHttp?.getTempId() + " - CompleteId: "+reminderHttp?.getCompleteId() + " - MyId: "+reminderHttp?.getMyId() + " - " + reminderHttp?.getMessage());
             });
-            this.datingAppController?.getReminders(reminderHttpList);
+            this.datingAppController?.getReminders(first5RemindersOnly);
         });
     }
 

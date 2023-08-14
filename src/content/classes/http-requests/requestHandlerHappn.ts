@@ -272,8 +272,26 @@ export class RequestHandlerHappn {
         });
     }
 
-     // example: https://api.happn.fr/api/conversations/17846212729_9e7b04a7-12f6-438c-8608-c921bd80a765/messages?fields=id,message,creation_date,sender.fields(id),previous_message_id&conversation_id=17846212729_9e7b04a7-12f6-438c-8608-c921bd80a765
-     // (Iris)
+
+
+    public async postReminderList(reminderHttpList: ReminderHttp[], progressCallBack?: (Function)): Promise<ReminderHttp[]> {
+        for (let i = 0; i < reminderHttpList.length; i++) {
+            console.log(`%cPOSTLIST - Now sending reminder to: ${i} - ${reminderHttpList[i].getTempId()}`, `color: red`);
+            const result = await this.postMessage(reminderHttpList[i].getCompleteId(), reminderHttpList[i].getMessage());
+            if(!result){
+                const errorText = "";
+                reminderHttpList[i].setReminderSentError(errorText);
+            }
+            reminderHttpList[i].setReminderSent();
+            if(progressCallBack){
+                progressCallBack(i, reminderHttpList.length, `Sent reminder to ${reminderHttpList[i].getName()}`);
+            }
+            console.log(`%cPOSTLIST - Reminder has been sent, going to send a new one now!`, `color: red`);
+        }
+        console.log(`%cPOSTLIST - this probably returns earlier than the reminders are actually sent`, `color: red; background: white`);
+        return reminderHttpList;
+    }
+
     public postMessage(matchId: string, message: string): Promise<PostMessageSuccessHappn> {
         return new Promise<PostMessageSuccessHappn>((resolve, reject) => {
             setTimeout(() => {

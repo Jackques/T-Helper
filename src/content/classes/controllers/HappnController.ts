@@ -441,17 +441,14 @@ export class HappnController implements datingAppController {
         return this.watchersUIList.getEntriesAmount() === 0 ? true : false;
     }
 
-    // public getReminders(reminderHttpList: ReminderHttp[]){
-    //     //todo: show overlay
-    //     Overlay.setLoadingOverlay('reminderOverlay', true);
-    //     this.requestHandler.postReminderList(reminderHttpList, (currentIndex: number, totalLength: number, statusText: string)=>{
-    //         console.log(`${currentIndex}, / ${totalLength} - ${statusText}`);
-    //         Overlay.setLoadingOverlayProgress('reminderOverlay', currentIndex, totalLength, statusText);
-    //     }).then((reminderHttpList)=>{
-    //         console.dir(reminderHttpList);
-    //         debugger;
-    //         //todo: hide overlay
-    //         Overlay.setLoadingOverlay('reminderOverlay', false);
-    //     });
-    // }
+    public getReminders(reminderHttpList: ReminderHttp[]): void {
+        Overlay.setLoadingOverlay('reminderOverlay', true);
+        this.requestHandler.postReminderList(reminderHttpList, (currentIndex: number, totalLength: number, statusText: string)=>{
+            console.log(`${currentIndex}, / ${totalLength} - ${statusText}`);
+            Overlay.setLoadingOverlayProgress('reminderOverlay', currentIndex, totalLength, statusText);
+        }).then((reminderHttpList)=>{
+            console.dir(reminderHttpList);
+            Overlay.setLoadingOverlay('reminderOverlay', false);
+        });
+    }
 }
