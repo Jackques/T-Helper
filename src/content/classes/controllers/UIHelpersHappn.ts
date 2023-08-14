@@ -161,7 +161,7 @@ export class UIHelpersHappn {
                                                 (matchDetails?.data.verification.status !== "unverified")
 
                                         },
-                                        //TODO TODO TODO: Figure out if I want to include distance & how (last crossed/know location maybe? but maybe i'll need a lat/long for that with external api?..hmm..)
+                                        //todo: Figure out if I want to include distance & how (last crossed/know location maybe? but maybe i'll need a lat/long for that with external api?..hmm..)
                                         // {
                                         //     label: 'Distance-in-km',
                                         //     value: [{
