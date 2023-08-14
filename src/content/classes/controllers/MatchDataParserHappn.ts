@@ -119,7 +119,7 @@ export class MatchDataParser {
                 }
                 case 'Type-of-match-or-like': {
                     const typeOfMatchFromProfile = match?.addedProperties.getPersonGenericPropertyByKey('Type-of-match-or-like')?.value ? match?.addedProperties.getPersonGenericPropertyByKey('Type-of-match-or-like')?.value as string : '';
-
+                    //TODO TODO TODO: Figure out type of match, different types of matches (i.e. like with blocked match or removed profile match; show alert when a match is of a different type than a regular like)?
                     dataRecordValuesList.push({
                         'label': 'Type-of-match-or-like',
                         'value': dataField.getValue() ? dataField.getValue() : typeOfMatchFromProfile
@@ -194,6 +194,7 @@ export class MatchDataParser {
                     dataRecordValuesList.push({ 'label': 'Seems-to-be-active', 'value': dataField.getValue() || hasMatchGivenResponse ? true : false });
                     break;
                 }
+                //TODO TODO TODO; GET HEIGHT FROM PROFILE DETAILS, WRITE LOGIC TO CONVERT ACTUAL HEIGHT TO HEIGHT TAG & ADD IT HERE
                 case 'Did-i-like':
                     dataRecordValuesList.push({ 'label': 'Did-i-like', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
                     break;
