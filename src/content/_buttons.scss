@@ -39,3 +39,17 @@
 
     z-index: 99999;
 }
+
+.downloadNetworkLogs {
+    display: inline-block;
+    position: absolute;
+    z-index: 1;
+    background-color: darkcyan;
+    color: white;
+    top: 25px;
+    right: 58%;
+    height: 35px;
+    width: 175px;
+
+    z-index: 99999;
+}

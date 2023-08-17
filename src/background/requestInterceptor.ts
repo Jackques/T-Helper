@@ -35,6 +35,23 @@ export class requestInterceptor {
       // keep alive? since this service worker (previously; background script) terminates after ~5 min;
       // https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension
       console.log(`Message is: ${message}, and port is: ${port.name}`);
+
+      if(message === "getNetworkLogs" && port.name === "jack"){
+        console.log("%cGoing to return backupped requests,.. just wait for promise", "color: blue");
+        backgroundScriptErrorHelper.getBackupRequests().then((result)=>{
+          if(result === undefined){
+            console.log("%cGot the backupped requests! BUT is undefined :(", "color: blue");
+            return;
+          }
+          console.log("%cGot the backupped requests! sending them to content now!", "color: blue");
+          const message: PortMessage = {
+            messageSender: 'BACKGROUND',
+            action: 'GET_NETWORK_LOGS',
+            payload: result
+          };
+          port.postMessage(message);
+        });
+      }
     });
 
     globalThis.port.onDisconnect.addListener(() => {
@@ -69,6 +86,7 @@ export class requestInterceptor {
     // 1. if for whatever reason the like/pass/superlike/whatever is not being sent to the contentscript, the swiped person datarecord will contain an tempId along the lines of; 'idNotRetrievedPleaseCheckBackgroundRequestsBackupsInLocalStorage'
       // thus I can get the id from the localStorage for future reference
     // 2. if the api for like/pass/superlike/whatever changes, i can look back at these logs and determine the new api without losing any data
+    console.log("%cGoing to store this request in cache: "+details.url, "color: orange");
     backgroundScriptErrorHelper.storeRequestInBackgroundBackup(details);
 
     if (!globalThis.tinderRequestInterceptorHelper.isTinderSwipeRequest(details)) {

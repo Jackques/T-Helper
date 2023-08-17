@@ -25,6 +25,8 @@ export class Main {
     private backgroundChannelPort: chrome.runtime.Port | null = null;
     private keepAliveIntervalNumber: number | null = null;
 
+    private downloadNetworkLogsActiveNo: number | null = null;
+
     constructor() {
         //console.log(`The main app constructor content works`);
 
@@ -66,6 +68,7 @@ export class Main {
                         this.datingAppController = this.initAppController(this.datingAppType, this.dataTable, this.dataStorage);
                         this.setSendReminderButton();
                         this.setCloseButton();
+                        this.setDownloadNetworkLogs();
                         this.keepAliveIntervalNumber = this.activateKeepAlive();
                     }
                 }
@@ -89,6 +92,26 @@ export class Main {
                     const message = msg.payload as any[];
                     this.dataStorage.addActionToDataStore(<SubmitAction>message[0]);
                 }
+
+                if (msg.messageSender === 'BACKGROUND' && msg.action === 'GET_NETWORK_LOGS') {
+                    console.log(`Received download network logs: `);
+                    console.table(msg.payload);
+
+                    const element = document.createElement('a');
+                    // debugger;
+                    element.setAttribute('href', 'data:text/plain;charset=utf-8, ' + encodeURIComponent(
+                            this._convertObjectsToCSV(msg.payload as unknown as Record<string, string>[])
+                    )
+                    );
+                    // debugger;
+                    element.setAttribute('download', 'network-logs-'+new Date().toISOString()+".csv");
+                    document.body.appendChild(element);
+                    element.click();
+
+                    Overlay.setLoadingOverlay('downloadNetworkLogs', false);
+                    this.downloadNetworkLogsActiveNo = null;
+                }
+                
             });
             this.backgroundChannelPort.onDisconnect.addListener(()=>{
                 if(this.datingAppType.length > 0){
@@ -116,6 +139,17 @@ export class Main {
                 console.error(`backgroundChannelPort was disconnected succesfully, but this log should never be shown. Something is wrong?`);
             });
         });
+    }
+    private _convertObjectsToCSV(objList: Record<string, string>[]): string {
+        let result = "";
+        objList.forEach((obj, index)=>{
+            // debugger;
+            if(index === 0){
+                result = result + Object.keys(obj).join(",") + "\r\n";
+            }
+            result = result + Object.values(obj).join(",") +  "\r\n";
+        });
+        return result;
     }
 
     private checkDatingApp(): string {
@@ -268,6 +302,31 @@ export class Main {
         });
     }
 
+    public setDownloadNetworkLogs(): void {
+        $('body').prepend(`
+            <button class="downloadNetworkLogs" id="downloadNetworkLogs">Download logs</button>
+        `);
+        
+        $(`body`).on("click", '[id="downloadNetworkLogs"]', () => {
+            Overlay.setLoadingOverlay('downloadNetworkLogs', true);
+
+            this.backgroundChannelPort?.postMessage("getNetworkLogs");
+            
+            if(!this.downloadNetworkLogsActiveNo){
+                this.downloadNetworkLogsActiveNo = setTimeout(()=>{
+                    if(this.downloadNetworkLogsActiveNo === null){
+                        // apparantly even though the property above is set to null, this callback still fires after a certain amount of time
+                        return;
+                    }
+
+                    Overlay.setLoadingOverlay('downloadNetworkLogs', false);
+                    alert(`The call to get the network logs took had a timeout. Please check the console & console of the extension itself to find any errors.`);
+                    this.downloadNetworkLogsActiveNo = null;
+                }, 10000);
+            }
+        });
+    }
+
     private deleteAppState(): void {
         if(this.keepAliveIntervalNumber != null){
             clearInterval(this.keepAliveIntervalNumber);
@@ -297,10 +356,12 @@ export class Main {
         $(`body`).off("click", '[id="downloadButton"]');
         $(`body`).off("click", '[id="closeButton"]');
         $(`body`).off("click", '[id="reminderButton"]');
+        $(`body`).off("click", '[id="downloadNetworkLogs"]');
 
         $('body #downloadButton').remove();
         $('body #closeButton').remove();
         $('body #reminderButton').remove();
+        $('body #downloadNetworkLogs').remove();
     }
 
     private activateKeepAlive() {

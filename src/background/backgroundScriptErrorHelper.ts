@@ -13,6 +13,7 @@ export class backgroundScriptErrorHelper {
 
     const localStorageCurrentItem = await this.localStorage.getItem('requests-backup');
     if (localStorageCurrentItem !== null) {
+      console.log("%crequests-backup exist already", "color: red");
       // for simplicity sake, i know for a fact that it will always return an array with objects with string key, values inside
       listOfRequests = JSON.parse(localStorageCurrentItem) as { timestamp: string; url: string; httpMethod: string; }[];
 
@@ -25,9 +26,41 @@ export class backgroundScriptErrorHelper {
         console.warn(`Could not remove item from localStorage, please check the localStorage: ${listOfRequests}`);
       });
     }
+    console.log("%crequests-backup can be added", "color: red");
     listOfRequests.push({ timestamp: new Date().toISOString(), url: details.url, httpMethod: details.method });
-    this.localStorage.setItem('requests-backup', JSON.stringify(listOfRequests)).catch(() => {
+    this.localStorage.setItem('requests-backup', JSON.stringify(listOfRequests)).then(()=>{
+      console.log("%crequests-backup updated/added", "color: red");
+
+      if(details.url === "https://api.gotinder.com/user/55f552a8bc127eb908a785de?locale=nl"){
+        this.localStorage.getItem('requests-backup').then((result)=>{
+          if(result === null){
+            console.log("%cRESULT APPEARED TO BE NULL!?", "color: red");
+            return;
+          }
+          const parsedResult = JSON.parse(result) as { timestamp: string; url: string; httpMethod: string; }[];
+          console.log(`I got the requests-backup: `);
+          console.table(parsedResult);
+          console.log(`I got the requests-backup: `);
+          console.log(`===========================`);
+        });
+      }
+
+    }).catch(() => {
       console.warn(`Could not set item from localStorage, please check the localStorage: ${listOfRequests}`);
+    });
+  }
+
+  public static async getBackupRequests():Promise<{ timestamp: string; url: string; httpMethod: string; }[] | undefined> {
+    return this.localStorage.getItem('requests-backup').then((result)=>{
+      if(result === null){
+        console.log("%cRESULT APPEARED TO BE NULL!?!?!?", "color: red");
+        return;
+      }
+      const parsedResult = JSON.parse(result) as { timestamp: string; url: string; httpMethod: string; }[];
+      console.log(`I got the requests-backup 2: `);
+      console.table(parsedResult);
+      console.log(`I got the requests-backup 2: `);
+      return parsedResult;
     });
   }
 
