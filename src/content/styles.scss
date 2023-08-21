@@ -2,30 +2,40 @@
 
 .uiHelperFieldsContainer{
     position: absolute;
+    top: 0px;
+    right: 0px;
+    left: auto;
+
     z-index: 2;
     background-color: grey;
 
     //todo: refactor values below to (r)em's to make it flexible on any screen size instead of my desktop screens
-    &--select {
-        width: 350px;
-        height: 100%;
-        left: 200px;
-        top: 0px;
-    }
+    // &--select {
+    //     width: 350px;
+    //     height: 100%;
+    //     left: 200px;
+    //     top: 0px;
+    // }
 
-    &--chat {
-        height: calc(100% - 170px);
-        width: 300px;
-        top: 99px;
-        right: 0px;
-    }
+    // &--chat {
+    //     height: calc(100% - 170px);
+    //     width: 300px;
+    //     top: 99px;
+    //     right: 0px;
+    // }
 
-    height: 708px;
-    right: 0px;
-    width: 40%;
+    height: 100%;
+    width: 300px;
     overflow-y: scroll;
-    
-    top: 99px;
+}
+
+#uiHelperFieldsShow {
+    position: absolute;
+    right: 0px;
+    width: 50px;
+    height: 50px;
+    z-index: 9999;
+    background-color: red;
 }
 
 .loadingOverlay {
