@@ -3,9 +3,10 @@ import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.inter
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataField, UIRequiredType } from "../data/dataField";
 import { SubmitType } from "../../../SubmitType";
-import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
+import { ScreenNavStateComboTinder } from "../util/Screen/screenStateComboTinder.enum";
 import { DOMHelper } from "../util/DOMHelper";
 import { DOMRefs } from "src/content/interfaces/data/domReferences.interface";
+import { ScreenList } from "../util/Screen/ScreenList";
 
 export class UIFieldsRenderer {
     private decoratedSubmitEventsDOMElementsList: HTMLElement[] = [];
@@ -176,10 +177,10 @@ export class UIFieldsRenderer {
         }
     };
 
-    private domRef: DOMRefs;
+    private screenList: ScreenList;
 
-    constructor(DOMReferences: DOMRefs){
-        this.domRef = DOMReferences;
+    constructor(screenList: ScreenList){
+        this.screenList = screenList;
         console.log(`UIRenderer init`);
     }
     
@@ -231,11 +232,15 @@ export class UIFieldsRenderer {
         return currentTarget && Object.prototype.hasOwnProperty.call(currentTarget.dataset, "type") ? currentTarget.dataset.type : undefined;
     }
 
-    public renderFieldsContainerForScreen(screen: ScreenNavStateCombo, additionalScreenAdjustments?: () => void): void {
-        if(screen === ScreenNavStateCombo.Swipe){
+    public renderFieldsContainerForScreen(screen: ScreenNavStateComboTinder, additionalScreenAdjustments?: () => void): void {
+        if(screen === ScreenNavStateComboTinder.Swipe){
             // $('body .recsCardboard__cardsContainer').prepend(`
-            $(this.domRef.fieldsContainerSwipeScreen).prepend(`
+            // $(this.domRef.fieldsContainerSwipeScreen).prepend(`
+            $('body').prepend(`
                 <div id="uiHelperFields" class="uiHelperFieldsContainer uiHelperFieldsContainer--select">
+                    <div id="uiHelperFieldsHide">
+                        <button id="uiHelperFieldsHideButton">Hide</button>
+                    </div>
                     <form id="uiHelperFieldsForm">
                         <div class="container">
                             <div class="row">
@@ -246,13 +251,20 @@ export class UIFieldsRenderer {
                         </div>
                     </form>
                 </div>
+                <div id="uiHelperFieldsShow">
+                    <button id="uiHelperFieldsShowButton">show</button>
+                </div>
             `);
         }
 
-        if(screen === ScreenNavStateCombo.Chat){
+        if(screen === ScreenNavStateComboTinder.Chat){
             // $('body div.chat').prepend(`
-            $(this.domRef.fieldsContainerChatScreen).prepend(`
+            // $(this.domRef.fieldsContainerChatScreen).prepend(`
+            $('body').prepend(`
             <div id="uiHelperFields" class="uiHelperFieldsContainer uiHelperFieldsContainer--chat">
+                <div id="uiHelperFieldsHide">
+                    <button id="uiHelperFieldsHideButton">Hide</button>
+                </div>
                 <form id="uiHelperFieldsForm">
                     <div class="container">
                         <div class="row">
@@ -262,6 +274,9 @@ export class UIFieldsRenderer {
                         </div>
                     </div>
                 </form>
+            </div>
+            <div id="uiHelperFieldsShow">
+                <button id="uiHelperFieldsShowButton">show</button>
             </div>
         `);
         }
@@ -275,13 +290,25 @@ export class UIFieldsRenderer {
         $(`body`).on("blur", '#uiHelperFieldsContainer [id^="datafieldUI_"]', this.valuesEventHandler);
         $(`body`).on("change", '#uiHelperFieldsContainer .select2', this.valuesEventHandler);
         $(`body`).on("click", '[id^="submitAction_"]', this.submitEventHandler);
+
+        $(`body`).on("click", '[id="uiHelperFieldsShowButton"]', ()=>{
+            $(`#uiHelperFields`).show();
+            $(`#uiHelperFieldsShowButton`).hide();
+        });
+        $(`body`).on("click", '[id="uiHelperFieldsHideButton"]', ()=>{
+            $(`#uiHelperFields`).hide();
+            $(`#uiHelperFieldsShowButton`).show();
+        });
     }
 
-    private _setSubmitEventHandlers(screen: ScreenNavStateCombo): void {
+    private _setSubmitEventHandlers(screen: ScreenNavStateComboTinder): void {
 
-        if(screen === ScreenNavStateCombo.Swipe){
+        if(screen === ScreenNavStateComboTinder.Swipe){
             // const submitButtonDOMType_pass = $(".recsCardboard__cards div[class*=c-pink] button").first();
-            const submitButtonDOMType_pass = DOMHelper.getFirstDOMNodeByJquerySelector(this.domRef.swipeActionPass);
+            const submitButtonDOMType_pass = DOMHelper.getFirstDOMNodeByJquerySelector(
+                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.Swipe, 'pass')
+            );
+
             if(submitButtonDOMType_pass !== null){
                 $(submitButtonDOMType_pass).attr('id', 'submitAction_passed');
                 this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_pass);
@@ -290,7 +317,9 @@ export class UIFieldsRenderer {
             }
 
             // const submitButtonDOMType_superlike = $(".recsCardboard__cards div[class*=c-superlike-blue] button").first();
-            const submitButtonDOMType_superlike = DOMHelper.getFirstDOMNodeByJquerySelector(this.domRef.swipeActionSuperlike);
+            const submitButtonDOMType_superlike = DOMHelper.getFirstDOMNodeByJquerySelector(
+                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.Swipe, 'superlike')
+                );
             if(submitButtonDOMType_superlike !== null){
                 $(submitButtonDOMType_superlike).attr('id', 'submitAction_superliked');
                 this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_superlike);
@@ -299,7 +328,9 @@ export class UIFieldsRenderer {
             }
 
             // const submitButtonDOMType_like = $(".recsCardboard__cards div[class*=c-like-green] button").first();
-            const submitButtonDOMType_like = DOMHelper.getFirstDOMNodeByJquerySelector(this.domRef.swipeActionLike);
+            const submitButtonDOMType_like = DOMHelper.getFirstDOMNodeByJquerySelector(
+                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.Swipe, 'like')
+                );
             if(submitButtonDOMType_like !== null){
                 $(submitButtonDOMType_like).attr('id', 'submitAction_liked');
                 this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_like);
@@ -308,9 +339,11 @@ export class UIFieldsRenderer {
             }
         }
 
-        if(screen === ScreenNavStateCombo.Chat){
+        if(screen === ScreenNavStateComboTinder.Chat){
             // const submitButtonDOMType_sendMessage = $("div.BdT > form > button[type='submit']").first();
-            const submitButtonDOMType_sendMessage = DOMHelper.getFirstDOMNodeByJquerySelector(this.domRef.chatActionSendMessage);
+            const submitButtonDOMType_sendMessage = DOMHelper.getFirstDOMNodeByJquerySelector(
+                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.Chat, 'sendMessage')
+                );
             if(submitButtonDOMType_sendMessage !== null){
                 $(submitButtonDOMType_sendMessage).attr('id', 'submitAction_sendMessage');
                 this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_sendMessage);

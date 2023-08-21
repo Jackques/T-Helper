@@ -1,8 +1,13 @@
+import { screenDOMHref } from "./screenDOMHref.interface";
+
 export interface DOMRefs {
     fieldsContainerSwipeScreen: string,
     fieldsContainerChatScreen: string,
-    swipeActionLike: string,
-    swipeActionPass: string,
-    swipeActionSuperlike: string,
-    chatActionSendMessage: string,
+    screenRefs: screenDOMHref[];
+
+    // swipeActionLike: string,
+    // swipeActionPass: string,
+    // swipeActionSuperlike: string,
+    
+    // chatActionSendMessage: string,
 }

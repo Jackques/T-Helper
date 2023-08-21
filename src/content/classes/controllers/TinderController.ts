@@ -10,7 +10,7 @@ import { SubmitType } from "../../../SubmitType";
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DateHelper, DateHelperTimeStamp } from "../util/dateHelper";
 import { GhostStatus } from "../data/dataItems/dataItemGhost";
-import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
+import { ScreenNavStateComboTinder } from "../util/Screen/screenStateComboTinder.enum";
 import { UIFieldsRenderer } from "./UIFieldsRenderer";
 import { RequestHandlerTinder } from "../http-requests/requestHandlerTinder";
 import { Person } from "../tinder/Person";
@@ -26,19 +26,17 @@ import { reminderAmountItem } from "src/content/interfaces/data/reminderAmountIt
 import { Reminder } from "../util/NeedsReminder";
 import { ReminderHttp } from "../data/ReminderHttp";
 import { Overlay } from "../serrvices/Overlay";
+import { Screen } from "../util/Screen/Screen";
+import { ScreenAction } from "../util/Screen/ScreenAction";
+import { ScreenList } from "../util/Screen/ScreenList";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
     private hasCredentials = false;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
-    private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer({
-        fieldsContainerSwipeScreen: 'body .recsCardboard__cardsContainer',
-        fieldsContainerChatScreen: 'body div.chat',
-        swipeActionLike: ".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-like-default)" )+"] button",
-        swipeActionPass: ".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-nope-default)" )+"] button",
-        swipeActionSuperlike: ".recsCardboard__cards div[class*="+$.escapeSelector( "Bdc($c-ds-border-gamepad-super-like-default)" )+"] button",
-        chatActionSendMessage: "div.BdT > form > button[type='submit']",
-    });
+
+    private screenList: ScreenList = this._setScreens();
+    private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer(this.screenList);
 
     private xAuthToken = '';
     private requestHandler!: RequestHandlerTinder; // 'definite assignment assertion proerty (!) added here, is this a good practice?'
@@ -47,7 +45,7 @@ export class TinderController implements datingAppController {
     private dataStorage: DataStorage;
 
     private currentScreenTimeoutId: number | null = null;
-    private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
+    private currentScreen: ScreenNavStateComboTinder = this.getCurrentScreenByDOM();
     private currentMatchIdByUrlChat: string | null = null;
 
     private amountOfUnmessagedMatches = 0;
@@ -105,6 +103,24 @@ export class TinderController implements datingAppController {
         } else {
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
         }
+    }
+    private _setScreens(): ScreenList {
+
+        const screenActionsList: Screen[] = [];
+
+        screenActionsList.push(
+            new Screen(ScreenNavStateComboTinder.Swipe, [
+                new ScreenAction('like', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-like-default\\)"] button'),
+                new ScreenAction('pass', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button'),
+                new ScreenAction('superlike', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button')
+        ]),
+            // new Screen(ScreenNavStateComboTinder.SwipeGold, []),
+            new Screen(ScreenNavStateComboTinder.Chat, [new ScreenAction('sendMessage', "div.BdT > form > button[type='submit']")]),
+        );
+
+        const screenlist = new ScreenList(screenActionsList);
+
+        return screenlist;
     }
 
     private refreshDataTableMatchesAndMatchMessages(requestHandler: RequestHandlerTinder): Promise<void> {
@@ -200,7 +216,7 @@ export class TinderController implements datingAppController {
                 return;
             }
 
-            if (this.currentScreen === ScreenNavStateCombo.Chat) {
+            if (this.currentScreen === ScreenNavStateComboTinder.Chat) {
                 const newMatchIdFromUrl = this.getMatchIdFromMessageHrefSDtring(window.location.href);
                 if (this.currentMatchIdByUrlChat === null || this.currentMatchIdByUrlChat !== newMatchIdFromUrl) {
                     console.log(`%c Switched CHAT from match with id ${this.currentMatchIdByUrlChat} to match with id: ${newMatchIdFromUrl}`, "color: green");
@@ -950,8 +966,8 @@ export class TinderController implements datingAppController {
         this.addUIHelpers(this.currentScreen);
     }
 
-    public addUIHelpers(currentScreen: ScreenNavStateCombo, forceRefresh?: boolean): void {
-        if (currentScreen === ScreenNavStateCombo.Chat) {
+    public addUIHelpers(currentScreen: ScreenNavStateComboTinder, forceRefresh?: boolean): void {
+        if (currentScreen === ScreenNavStateComboTinder.Chat) {
 
             if (forceRefresh) {
                 this.uiRenderer.removeAllUIHelpers();
@@ -1112,7 +1128,7 @@ export class TinderController implements datingAppController {
 
         }
 
-        if (currentScreen === ScreenNavStateCombo.Swipe) {
+        if (currentScreen === ScreenNavStateComboTinder.Swipe) {
 
             if (forceRefresh) {
                 this.uiRenderer.removeAllUIHelpers();
@@ -1446,27 +1462,27 @@ export class TinderController implements datingAppController {
         return href.substring(href.lastIndexOf('/') + 1);
     }
 
-    public getCurrentScreenByDOM(): ScreenNavStateCombo {
+    public getCurrentScreenByDOM(): ScreenNavStateComboTinder {
         const swipeIdentifier = '.recsToolbar';
         const chatIdentifier = '.chat';
         const chatProfileIdentifier = '.chatProfile';
 
         const backButtonOnMainPanelIdentifier = 'a[href="/app/recs"].focus-button-style';
 
-        let currentPage: ScreenNavStateCombo;
+        let currentPage: ScreenNavStateComboTinder;
 
         switch (true) {
             case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length === 0 ? true : false:
-                currentPage = ScreenNavStateCombo.Swipe;
+                currentPage = ScreenNavStateComboTinder.Swipe;
                 break;
             case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length > 0 ? true : false:
-                currentPage = ScreenNavStateCombo.SwipeProfile;
+                currentPage = ScreenNavStateComboTinder.SwipeProfile;
                 break;
             case $(chatIdentifier).length > 0 && $(chatProfileIdentifier).length > 0 ? true : false:
-                currentPage = ScreenNavStateCombo.Chat;
+                currentPage = ScreenNavStateComboTinder.Chat;
                 break;
             default:
-                currentPage = ScreenNavStateCombo.UnknownScreen;
+                currentPage = ScreenNavStateComboTinder.UnknownScreen;
                 break;
         }
         console.log(`You are on page: ${currentPage}`);

@@ -2,7 +2,7 @@ import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.i
 import { DataField, DataFieldDistances, UIRequired } from "../data/dataField";
 import { DataRecord } from "../data/dataRecord";
 import { DataTable } from "../data/dataTable";
-import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
+import { ScreenNavStateComboTinder } from "../util/Screen/screenStateComboTinder.enum";
 import { DOMHelper } from "../util/DOMHelper";
 import { UIFieldsRenderer } from "./UIFieldsRenderer";
 import { SubmitType } from "src/SubmitType";
@@ -34,8 +34,8 @@ export class UIHelpersHappn {
         this.dataStorage = dataStorage;
     }
 
-    public addUIHelpers(currentScreen: ScreenNavStateCombo, forceRefresh?: boolean): void {
-        if (currentScreen === ScreenNavStateCombo.Chat) {
+    public addUIHelpers(currentScreen: ScreenNavStateComboTinder, forceRefresh?: boolean): void {
+        if (currentScreen === ScreenNavStateComboTinder.Chat) {
 
             if (forceRefresh) {
                 this.uiRenderer.removeAllUIHelpers();
@@ -192,7 +192,7 @@ export class UIHelpersHappn {
             }
         }
 
-        if (currentScreen === ScreenNavStateCombo.Swipe) {
+        if (currentScreen === ScreenNavStateComboTinder.Swipe) {
 
             if (forceRefresh) {
                 this.uiRenderer.removeAllUIHelpers();

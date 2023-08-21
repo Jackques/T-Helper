@@ -9,7 +9,7 @@ import { SubmitType } from "../../../SubmitType";
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DateHelper, DateHelperTimeStamp } from "../util/dateHelper";
 import { GhostStatus } from "../data/dataItems/dataItemGhost";
-import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
+import { ScreenNavStateComboTinder } from "../util/Screen/screenStateComboTinder.enum";
 import { UIFieldsRenderer } from "./UIFieldsRenderer";
 import { RequestHandlerTinder } from "../http-requests/requestHandlerTinder";
 import { Person } from "../tinder/Person";
@@ -63,7 +63,7 @@ export class HappnController implements datingAppController {
     private dataStorage: DataStorage;
 
     private currentScreenTimeoutId: number | null = null;
-    private currentScreen: ScreenNavStateCombo = this.getCurrentScreenByDOM();
+    private currentScreen: ScreenNavStateComboTinder = this.getCurrentScreenByDOM();
     private currentMatchIdByUrlChat: string | null = UrlHelper.getCurrentMatchIdFromUrl();
 
     private dataTableNeedsToBeUpdated = false;
@@ -285,16 +285,16 @@ export class HappnController implements datingAppController {
                 this.setRefreshDataTable(true);
             }
 
-            if (this.currentScreen === ScreenNavStateCombo.Chat) {
-                ConsoleColorLog.singleLog(`Switched to screen: `, ScreenNavStateCombo.Chat, LogColors.GREEN);
+            if (this.currentScreen === ScreenNavStateComboTinder.Chat) {
+                ConsoleColorLog.singleLog(`Switched to screen: `, ScreenNavStateComboTinder.Chat, LogColors.GREEN);
                 const newMatchIdFromUrl = UrlHelper.getCurrentMatchIdFromUrl();
 
                 this.setMessagesWatcher();
 
                 this.setMatchesWatcher();
 
-            } else if (this.currentScreen === ScreenNavStateCombo.Swipe) {
-                ConsoleColorLog.singleLog(`Switched to screen: `, ScreenNavStateCombo.Swipe, LogColors.BLUE);
+            } else if (this.currentScreen === ScreenNavStateComboTinder.Swipe) {
+                ConsoleColorLog.singleLog(`Switched to screen: `, ScreenNavStateComboTinder.Swipe, LogColors.BLUE);
             }
 
             Overlay.setLoadingOverlay('switchScreen', true);
@@ -349,7 +349,7 @@ export class HappnController implements datingAppController {
         this.uIHelpersHappn?.addUIHelpers(this.currentScreen, true);
     }
 
-    public getCurrentScreenByDOM(): ScreenNavStateCombo {
+    public getCurrentScreenByDOM(): ScreenNavStateComboTinder {
         const bodyPageRef = $('body')[0];
         if (bodyPageRef) {
             const bodyPageDataPageAttr = bodyPageRef.getAttribute('data-page');
@@ -358,17 +358,17 @@ export class HappnController implements datingAppController {
                 throw new Error(`Could not get current page, please check the DOM properties & code references`);
             }
 
-            let currentPage: ScreenNavStateCombo;
+            let currentPage: ScreenNavStateComboTinder;
 
             switch (true) {
                 case bodyPageDataPageAttr === '/home':
-                    currentPage = ScreenNavStateCombo.Swipe;
+                    currentPage = ScreenNavStateComboTinder.Swipe;
                     break;
                 case bodyPageDataPageAttr.startsWith('/conversations/'):
-                    currentPage = ScreenNavStateCombo.Chat;
+                    currentPage = ScreenNavStateComboTinder.Chat;
                     break;
                 default:
-                    currentPage = ScreenNavStateCombo.UnknownScreen;
+                    currentPage = ScreenNavStateComboTinder.UnknownScreen;
                     break;
             }
             return currentPage;

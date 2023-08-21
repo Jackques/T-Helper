@@ -18,7 +18,7 @@ import {dataCheckReminders} from "./dataCheckLogic/dataCheckReminders";
 import {DataRecordValues} from "src/content/interfaces/data/dataRecordValues.interface";
 import {dataCheckSystemId} from "./dataCheckLogic/dataCheckSystemId";
 import {DataFieldTypes} from "src/content/interfaces/data/dataFieldTypes.interface";
-import { ScreenNavStateCombo } from "../tinder/screenStateCombo.enum";
+import { ScreenNavStateComboTinder } from "../util/Screen/screenStateComboTinder.enum";
 import { dataCheckMessage } from "./dataCheckLogic/dataCheckMessage";
 import { Message } from "src/message.interface";
 import { dataCheckDistances } from "./dataCheckLogic/dataCheckDistances";
