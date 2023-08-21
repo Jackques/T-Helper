@@ -30,7 +30,7 @@ export class Overlay {
                 </div>
             </div>`);
         }else{
-            $(`body #${uniqueId}`).remove();
+            $(`body #${uniqueId}.loadingOverlay`).remove();
         }
     }
 
