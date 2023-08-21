@@ -86,10 +86,13 @@ export class requestInterceptor {
     // 1. if for whatever reason the like/pass/superlike/whatever is not being sent to the contentscript, the swiped person datarecord will contain an tempId along the lines of; 'idNotRetrievedPleaseCheckBackgroundRequestsBackupsInLocalStorage'
       // thus I can get the id from the localStorage for future reference
     // 2. if the api for like/pass/superlike/whatever changes, i can look back at these logs and determine the new api without losing any data
-    console.log("%cGoing to store this request in cache: "+details.url, "color: orange");
-    backgroundScriptErrorHelper.storeRequestInBackgroundBackup(details);
 
-    if (!globalThis.tinderRequestInterceptorHelper.isTinderSwipeRequest(details)) {
+    const isTinderSwipeRequest = globalThis.tinderRequestInterceptorHelper.isTinderSwipeRequest(details);
+
+    console.log("%cGoing to store this request in cache: "+details.url, "color: orange");
+    backgroundScriptErrorHelper.storeRequestInBackgroundBackup(details, isTinderSwipeRequest);
+
+    if (!isTinderSwipeRequest) {
       return;
     }
 
