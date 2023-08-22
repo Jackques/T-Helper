@@ -1353,10 +1353,14 @@ export class TinderController implements datingAppController {
                             },
                         ]);
                         this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
+
                         this.addUIHelpers(currentScreen, true);
+
                         Overlay.setLoadingOverlay('loadingSwipeAction', false);
 
+                        debugger;
                         console.error(`Swiped person received no tempId! Saving inserted info of record regardless.. Don't forget to check background local storage requests backup to get the corresponding personid and to overwrite the tempId later!`);
+                        alert(`Swiped person received no tempId! Saving inserted info of record regardless.. Don't forget to check background local storage requests backup to get the corresponding personid and to overwrite the tempId later!`);
                         //todo: Should REALLY throw a important alert to notify myself what I need to pay extra attention!
                     }
                 }, ms);
