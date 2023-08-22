@@ -72,7 +72,7 @@ export class UIFieldsRenderer {
                     htmlElement = htmlElement as HTMLInputElement;
                     return htmlElement.value;
                 }
-                console.error(`Event target nog set`);
+                console.error(`Event target not set`);
                 return '';
             },
             template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null):string => {
@@ -81,6 +81,29 @@ export class UIFieldsRenderer {
                 <div class="fieldContainer fieldContainer--input">
                     <div class="input-group mb-12">
                         <input id="${id}" value="${defaultValue}" data-type="${dataType}" data-templatename="inputBootstrap" type="text" class="form-control" placeholder="${label}" aria-recordref="${label}" data-recordref="${label}" aria-describedby="basic-addon1">
+                    </div>
+                </div>`}
+        },
+        {
+            name: 'inputBootstrapNumeric',
+            label: UIRequiredType.NUMERIC_INPUT,
+            getValueMethod: (htmlElement:HTMLInputElement | HTMLSelectElement): number => {
+                if(htmlElement && htmlElement.tagName === 'INPUT'){
+                    htmlElement = htmlElement as HTMLInputElement;
+                    if(isNaN(parseInt(htmlElement.value))){
+                        console.error(`Inserted value: ${htmlElement.value} cannot be converted to a number. please check the input.`);
+                    }
+                    return htmlElement.valueAsNumber;
+                }
+                console.error(`Event target not set`);
+                return NaN;
+            },
+            template: (id:string, label:string, dataType:string, defaultValue: string | number | boolean | null):string => {
+                defaultValue = defaultValue === null || defaultValue === undefined ? '' : defaultValue;
+                return `
+                <div class="fieldContainer fieldContainer--input">
+                    <div class="input-group mb-12">
+                        <input id="${id}" value="${defaultValue}" data-type="${dataType}" data-templatename="inputBootstrapNumeric" type="number" class="form-control" placeholder="${label}" aria-recordref="${label}" data-recordref="${label}" aria-describedby="basic-addon1">
                     </div>
                 </div>`}
         },

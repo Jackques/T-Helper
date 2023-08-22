@@ -5,7 +5,7 @@ import { GhostStatus } from "./dataItems/dataItemGhost";
 import { DateHelper } from "../util/dateHelper";
 
 export enum UIRequired { SELECT_ONLY = 'select_only', CHAT_ONLY = 'chat_only', ALL = 'all', NONE = 'none' }
-export enum UIRequiredType { TEXTAREA = 'textarea', ALPHANUMERIC_INPUT = 'alphanumeric-input', SLIDER = 'slider', SWITCH = 'switch', MULTISELECT = 'multiselect' }
+export enum UIRequiredType { TEXTAREA = 'textarea', ALPHANUMERIC_INPUT = 'alphanumeric-input', NUMERIC_INPUT = 'numeric-input', SLIDER = 'slider', SWITCH = 'switch', MULTISELECT = 'multiselect' }
 
 export interface UISetting {
     UIrequired: UIRequired,
