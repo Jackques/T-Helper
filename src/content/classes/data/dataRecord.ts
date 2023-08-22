@@ -237,7 +237,8 @@ export class DataRecord {
             }, 
             [
                 'got-number', 
-                'match-never-responded', 
+                'match-never-responded',
+                'too-far-away',
                 'nasty-person',
                 'recognized-or-dated-previously',
                 'matched-previously-on-datingapp-same-number',
