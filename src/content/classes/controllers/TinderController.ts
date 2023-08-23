@@ -1329,22 +1329,6 @@ export class TinderController implements datingAppController {
 
                             newDataRecord.addDataToDataFields(dataForDataFields);
                             
-
-                            //TODO:
-                            // 1. V Test when swiping and CAN retrieve all data if this still works
-                            // 2. V Test when swiping and CANNOT reach getProfileDetails endpoint if this still works
-                            // 3. V Test when swiping and CANNOT reach getProfileDetails endpoint NOR dataStorage has been set if this still works
-
-                            // BONUS: Add updated dataRecords to localStorage? or even simply use the FileSystemApi (the one exclusive to chrome, since my chrome extension is chrome exclusive anwyay..)
-                            // would be very usefull for temporary storing data if...
-                                // 1. my browser were to suddenly crash for whatever reason, or my entire computer
-                                // 2. for whatever reason i need to run (catch train?) thus aborting export for storing data records
-
-                            // works =
-                            // swiped profile is still added to the dataRecords
-                            // screen is still reset correctly
-                            // overlay is gone
-                            
                         }).catch(()=>{
                             console.error(`Swiped person received tempId, but could not get details of swiped person! Saving inserted info of record regardless`);
                         }).finally(()=>{
