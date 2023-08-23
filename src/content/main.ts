@@ -13,6 +13,8 @@ import { ReminderHttp } from './classes/data/ReminderHttp';
 import { ghostMoment } from './interfaces/data/ghostMoment.interface';
 import { HappnController } from './classes/controllers/HappnController';
 import { Overlay } from './classes/serrvices/Overlay';
+import { ConsoleColorLog } from './classes/util/ConsoleColorLog/ConsoleColorLog';
+import { LogColors } from './classes/util/ConsoleColorLog/LogColors';
 
 export class Main {
     private datingAppController: TinderController | HappnController | undefined | null; //todo: should remove undefined/null properties in the future
@@ -286,12 +288,14 @@ export class Main {
             const reminderHttpListWithoutNulls = reminderHttpList.filter(reminder => !!reminder) as ReminderHttp[]; // should filter out all the null values if any exist
             
             // Send remidners to max. 5 persons at a time
-            const first5RemindersOnly = [];
-            first5RemindersOnly.push(reminderHttpListWithoutNulls[0]);
-            first5RemindersOnly.push(reminderHttpListWithoutNulls[1]);
-            first5RemindersOnly.push(reminderHttpListWithoutNulls[2]);
-            first5RemindersOnly.push(reminderHttpListWithoutNulls[3]);
-            first5RemindersOnly.push(reminderHttpListWithoutNulls[4]);
+            const first5RemindersOnly: ReminderHttp[] = [];
+            reminderHttpListWithoutNulls.forEach((reminderHttpWithoutNulls, index)=>{
+                index <= 4 ? first5RemindersOnly.push(reminderHttpWithoutNulls) : null;
+            });
+
+            if(reminderHttpListWithoutNulls.length === 0){
+                ConsoleColorLog.singleLog(`No datarecords/persons need a reminder right now.`, '', LogColors.GREEN);
+            }
             debugger;
 
             console.log("Reminder list");
