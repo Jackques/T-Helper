@@ -4,6 +4,34 @@ import { LocalStorageFacade } from "./Storage";
 
 
 export class backgroundScriptErrorHelper {
+  public static async storeMessageForRequestInBackgroundBackup(message: string): Promise<void> {
+    //TODO TODO TODO: since i literally copied this code from storeRequestInBackgroundBackup i might want to refactor all of this some time
+    const maximumDaysBackupRequests = 3;
+    let listOfRequests: { timestamp: string; url: string; httpMethod: string; isKnownSwipeRequest: boolean }[] = [];
+
+    const localStorageCurrentItem = await this.localStorage.getItem('requests-backup');
+    if (localStorageCurrentItem !== null) {
+      console.log("%crequests-backup exist already", "color: red");
+      // for simplicity sake, i know for a fact that it will always return an array with objects with string key, values inside
+      listOfRequests = JSON.parse(localStorageCurrentItem) as { timestamp: string; url: string; httpMethod: string; isKnownSwipeRequest: boolean }[];
+
+      //TODO: Should create check which filters out urls with the same text content (and only keep the most recent one). This will greatly help reduce the amount of data being stored as it may get big really soon!
+      listOfRequests = listOfRequests.filter((requestItem) => {
+        return DateHelper.isDateBetweenGreaterThanAmountOfDays(requestItem.timestamp, new Date().toISOString(), maximumDaysBackupRequests) ? false : true;
+      });
+
+      this.localStorage.removeItem('requests-backup').catch(() => {
+        console.warn(`Could not remove item from localStorage, please check the localStorage: ${listOfRequests}`);
+      });
+    }
+    console.log("%crequests-backup can be added", "color: red");
+    listOfRequests.push({ timestamp: new Date().toISOString(), url: message, httpMethod: 'NA', isKnownSwipeRequest: true });
+    this.localStorage.setItem('requests-backup', JSON.stringify(listOfRequests)).then(()=>{
+      console.log("%crequests-backup updated/added", "color: red");
+    }).catch(() => {
+      console.warn(`Could not set item from localStorage, please check the localStorage: ${listOfRequests}`);
+    });
+  }
 
   private static localStorage = new LocalStorageFacade();
 

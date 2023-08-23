@@ -52,6 +52,22 @@ export class requestInterceptor {
           port.postMessage(message);
         });
       }
+
+      if(message === "swiped-person-action-start" && port.name === "jack"){
+        console.log("%cReceived swiped-person-action", "color: blue");
+        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-start");
+      }
+
+      if(message === "swiped-person-action-process" && port.name === "jack"){
+        console.log("%cReceived swiped-person-action", "color: blue");
+        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-process");
+      }
+
+      if(message === "swiped-person-action-end" && port.name === "jack"){
+        console.log("%cReceived swiped-person-action", "color: blue");
+        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-end");
+      }
+
     });
 
     globalThis.port.onDisconnect.addListener(() => {

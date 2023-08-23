@@ -43,6 +43,7 @@ export class TinderController implements datingAppController {
     public matches: Person[] = [];
     private dataTable: DataTable;
     private dataStorage: DataStorage;
+    private dataPort: chrome.runtime.Port | null;
 
     private currentScreenTimeoutId: number | null = null;
     private currentScreen: ScreenNavStateComboTinder = this.getCurrentScreenByDOM();
@@ -55,11 +56,12 @@ export class TinderController implements datingAppController {
 
     private watchersUIList: MutationObserver[] = [];
 
-    constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: DataStorage) {
+    constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: DataStorage, dataPort: chrome.runtime.Port | null) {
 
         this.dataRetrievalMethod = dataRetrievalMethod;
         this.dataTable = dataTable;
         this.dataStorage = dataStorage;
+        this.dataPort = dataPort;
 
         if (this.dataRetrievalMethod === 'api' || this.dataRetrievalMethod === 'dom') {
             if (this.dataRetrievalMethod === 'api') {
@@ -104,6 +106,7 @@ export class TinderController implements datingAppController {
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
         }
     }
+
     private _setScreens(): ScreenList {
 
         const screenActionsList: Screen[] = [];
@@ -991,13 +994,15 @@ export class TinderController implements datingAppController {
                         // 3. show helpers for chat (all?), make space above messagebox, put helper container there?
                         this.uiRenderer.renderFieldsContainerForScreen(currentScreen, () => {
                             // $('div[id*="SC.chat"]').first().css('width', '730px');
-                            const chatContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div[id*="SC.chat"]');
-                            if (chatContainerDOM !== null) {
-                                $(chatContainerDOM).css('padding-right', '315px');
-                            } else {
-                                console.error(`Cannot find chat container DOM element. Please update the selectors.`);
-                                return;
-                            }
+
+                            // since the uiHelpers are now being put on the body, the code below is no longer necessary
+                            // const chatContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div[id*="SC.chat"]');
+                            // if (chatContainerDOM !== null) {
+                            //     $(chatContainerDOM).css('padding-right', '315px');
+                            // } else {
+                            //     console.error(`Cannot find chat container DOM element. Please update the selectors.`);
+                            //     return;
+                            // }
 
                         });
                         let uiRequiredDataFields: DataField[] = [];
@@ -1027,6 +1032,8 @@ export class TinderController implements datingAppController {
                                     dataRecord?.addDataToDataFields(updatedValuesForDataFields);
                                     console.log(`Updated dataRecord: `);
                                     console.dir(dataRecord);
+                                }, (submitType: SubmitType)=>{
+                                    console.log("pre-submit, not relevant for chat page");
                                 }, (submitType: SubmitType) => {
                                     dataRecord?.setUpdateMessages(true);
                                 });
@@ -1191,6 +1198,7 @@ export class TinderController implements datingAppController {
             ]);
 
             // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
+            let timeoutSubmit: number | null = null;
             this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields, (value: DataRecordValues) => {
                 console.log(`Added value to new data record; label: ${value.label}, value: ${value.value}`);
                 newDataRecord.addDataToDataFields([value]);
@@ -1198,9 +1206,15 @@ export class TinderController implements datingAppController {
                 console.dir(newDataRecord);
 
             }, (submitType: SubmitType) => {
+                console.log('Callback received a (pre-)submit type! But it will only be used if no response from background can be retrieved');
+                this._postMessageBackgroundScript("swiped-person-action-start");
+
+            },(submitType: SubmitType) => {
                 console.log('Callback received a submit type! But it will only be used if no response from background can be retrieved');
                 Overlay.setLoadingOverlay('loadingSwipeAction', true);
                 console.log(submitType);
+
+                this._postMessageBackgroundScript("swiped-person-action-process");
 
                 console.log(this.dataStorage);
                 console.assert(this.dataStorage.popLastActionFromDataStore() === undefined);
@@ -1210,9 +1224,14 @@ export class TinderController implements datingAppController {
                 // OR EVEN BETTER YET; this code (except for when the timeout begins should always run first, sooner than my backgroundscript can receive a response..), so; create a new promise, add it to the dataStore, let the eventlistener from backgroundscript trigger the resolve, if no response comes make my script below (with timeout) trigger the reject after 1 min orso
 
                 // get (request) personid from backgroundscript (get response), after 1 sec
-                const ms = 1000;
-                setTimeout(() => {
-                    console.log('this is what is found in dataStore after 1 sec: ');
+                const ms = 2000;
+
+                if(timeoutSubmit !== null){
+                    return;
+                }
+
+                timeoutSubmit = setTimeout(() => {
+                    console.log('this is what is found in dataStore after 2 sec: ');
                     console.log(this.dataStorage);
                     const submitAction: SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
                     console.log(submitAction);
@@ -1363,6 +1382,8 @@ export class TinderController implements datingAppController {
                         alert(`Swiped person received no tempId! Saving inserted info of record regardless.. Don't forget to check background local storage requests backup to get the corresponding personid and to overwrite the tempId later!`);
                         //todo: Should REALLY throw a important alert to notify myself what I need to pay extra attention!
                     }
+                    this._postMessageBackgroundScript("swiped-person-action-end");
+                    timeoutSubmit = null;
                 }, ms);
             });
         }
@@ -1809,6 +1830,10 @@ export class TinderController implements datingAppController {
             //todo: hide overlay
             Overlay.setLoadingOverlay('reminderOverlay', false);
         });
+    }
+
+    private _postMessageBackgroundScript(simpleMessage: string): void {
+        this.dataPort?.postMessage(simpleMessage);
     }
 
 }

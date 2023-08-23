@@ -168,6 +168,7 @@ export class UIFieldsRenderer {
         }
     ];
     private valuesCallback: ((value: DataRecordValues) => void) | undefined;
+    private preSubmitCallback: ((submitType: SubmitType) => void) | undefined;
     private submitCallback: ((submitType: SubmitType) => void) | undefined;
 
     private valuesEventHandler = (event:Event) => {
@@ -193,7 +194,14 @@ export class UIFieldsRenderer {
 
     private submitEventHandler = (event:Event) => {
         const submitType:SubmitType | undefined = this._getSubmitType(<HTMLInputElement>event.currentTarget);
-        if(this.submitCallback && submitType){
+        
+        if(this.preSubmitCallback && this.submitCallback && submitType){
+
+            if(event.type === "mousedown" && this.preSubmitCallback){
+                this.preSubmitCallback(submitType);
+                return;
+            }
+        
             this.submitCallback(submitType);
         }else{
             console.error(`Could not submit type. Please ensure it is set.`);
@@ -312,7 +320,9 @@ export class UIFieldsRenderer {
 
         $(`body`).on("blur", '#uiHelperFieldsContainer [id^="datafieldUI_"]', this.valuesEventHandler);
         $(`body`).on("change", '#uiHelperFieldsContainer .select2', this.valuesEventHandler);
-        $(`body`).on("click", '[id^="submitAction_"]', this.submitEventHandler);
+        $(`body`).on("mouseup", '[id^="submitAction_"]', this.submitEventHandler);
+        $(`body`).on("mousedown", '[id^="submitAction_"]', this.submitEventHandler);
+        // NOTE: Due to my mouse or otherwise; the mouseup/mousedown fires 5-6 times in short succession
 
         $(`body`).on("click", '[id="uiHelperFieldsShowButton"]', ()=>{
             $(`#uiHelperFields`).show();
@@ -376,7 +386,7 @@ export class UIFieldsRenderer {
         }
     }
 
-    public renderFieldsFromDataFields(dataFields: DataField[], valuesCallback: (value: DataRecordValues) => void, submitCallback: (submitType: SubmitType) => void){
+    public renderFieldsFromDataFields(dataFields: DataField[], valuesCallback: (value: DataRecordValues) => void, preSubmitCallback: (submitType: SubmitType) => void, submitCallback: (submitType: SubmitType) => void){
         if(!$('body').find('#uiHelperFieldsContainer').first()[0]){
             console.error(`Could not place helper fields because helper container with id ${'uiHelperFieldsContainer'} does not exist.`);
         }
@@ -385,11 +395,12 @@ export class UIFieldsRenderer {
             console.error(`Provided datafields do not have a requiredFieldType: ${dataFields}`);
         }
 
-        if(!valuesCallback || !submitCallback){
-            console.error(`Callback method for values or submit was not set`);
+        if(!valuesCallback || !submitCallback || ! preSubmitCallback){
+            console.error(`Callback method for values or (pre-)submit was not set`);
         }
 
         this.valuesCallback = valuesCallback;
+        this.preSubmitCallback = preSubmitCallback;
         this.submitCallback = submitCallback;
 
         dataFields.forEach((dataField, index) => {
@@ -422,6 +433,7 @@ export class UIFieldsRenderer {
         }
 
         this.valuesCallback = undefined;
+        this.preSubmitCallback = undefined;
         this.submitCallback = undefined;
 
         const helperFieldsContainer = $(`#uiHelperFields`);

@@ -35,6 +35,8 @@ export class Main {
         // POPUP
         chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
             console.log(`Content Port activated! ${port.name}`);
+            this.backgroundChannelPort = chrome.runtime.connect({name: 'jack'});
+            
             port.onMessage.addListener((portMessage: PortMessage) => {
                 console.log(`Content Port received a message!`);
                 if (portMessage.messageSender === 'POPUP' && portMessage.action === 'INIT') {
@@ -83,7 +85,6 @@ export class Main {
             });
 
             // BACKGROUND
-            this.backgroundChannelPort = chrome.runtime.connect({name: 'jack'});
             this.backgroundChannelPort.onMessage.addListener((msg: PortMessage) => {
                 console.log(`i received a portmessage:`);
                 console.dir(msg);
@@ -171,7 +172,7 @@ export class Main {
     private initAppController(appType: string, dataTable: DataTable, dataStorage: DataStorage) {
         switch (appType) {
             case "tinder":
-                return new TinderController('api', dataTable, dataStorage);
+                return new TinderController('api', dataTable, dataStorage, this.backgroundChannelPort);
             case "happn":
                 return new HappnController('api', dataTable, dataStorage);
                 // alert('Happn is not yet supported');
