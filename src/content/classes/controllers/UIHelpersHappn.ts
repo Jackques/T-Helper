@@ -97,6 +97,8 @@ export class UIHelpersHappn {
                                     dataRecord?.addDataToDataFields(updatedValuesForDataFields);
                                     console.log(`Updated dataRecord: `);
                                     console.dir(dataRecord);
+                                }, (preSubmitType: SubmitType) => {
+                                    // no preSubmit needed for chat screen
                                 }, (submitType: SubmitType) => {
                                     dataRecord?.setUpdateMessages(true);
                                 });
@@ -252,12 +254,15 @@ export class UIHelpersHappn {
             ]);
 
             // todo: WHY NOT DIRECTLY GET/USE DATA FIELDS? WHY GET DATAFIELDTYPES AT ALL? cuz i might also need required property in the future, i need a default value (which i'm going to set on data field), i DO need a already set property for use when chatting etc..
+            let timeoutSubmit: number | null = null;
             this.uiRenderer.renderFieldsFromDataFields(uiRequiredDataFields, (value: DataRecordValues) => {
                 console.log(`Added value to new data record; label: ${value.label}, value: ${value.value}`);
                 newDataRecord.addDataToDataFields([value]);
                 console.log(`Updated dataRecord: `);
                 console.dir(newDataRecord);
 
+            },(preSubmitType: SubmitType) => {
+                // TODO TODO TODO: Do i want a preSubmit event (i.e. to send a logmessage to background script that i swiped on a person)? Similaie to how I do this in the tindercontroller?
             }, (submitType: SubmitType) => {
                 console.log('Callback received a submit type! But it will only be used if no response from background can be retrieved');
                 Overlay.setLoadingOverlay('loadingSwipeAction', true);
@@ -272,7 +277,12 @@ export class UIHelpersHappn {
 
                 // get (request) personid from backgroundscript (get response), after 1 sec
                 const ms = 1000;
-                setTimeout(() => {
+
+                if(timeoutSubmit !== null){
+                    return;
+                }
+
+                timeoutSubmit = setTimeout(() => {
                     console.log('this is what is found in dataStore after 1 sec: ');
                     console.log(this.dataStorage);
                     const submitAction: SubmitAction | undefined = this.dataStorage.popLastActionFromDataStore();
