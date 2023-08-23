@@ -117,8 +117,12 @@ export class TinderController implements datingAppController {
                 new ScreenAction('pass', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button'),
                 new ScreenAction('superlike', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button')
         ]),
-            // new Screen(ScreenNavStateComboTinder.SwipeGold, []),
-            new Screen(ScreenNavStateComboTinder.Chat, [new ScreenAction('sendMessage', "div.BdT > form > button[type='submit']")]),
+            new Screen(ScreenNavStateComboTinder.SwipeGold, [
+                new ScreenAction('like', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Like"):not(:contains("Super"))'),
+                new ScreenAction('pass', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Nope")'),
+                new ScreenAction('superlike', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Super Like")')
+        ]),
+        new Screen(ScreenNavStateComboTinder.Chat, [new ScreenAction('sendMessage', "div.BdT > form > button[type='submit']")]),
         );
 
         const screenlist = new ScreenList(screenActionsList);
@@ -1135,7 +1139,7 @@ export class TinderController implements datingAppController {
 
         }
 
-        if (currentScreen === ScreenNavStateComboTinder.Swipe) {
+        if (currentScreen === ScreenNavStateComboTinder.Swipe || currentScreen === ScreenNavStateComboTinder.SwipeGold) {
 
             if (forceRefresh) {
                 this.uiRenderer.removeAllUIHelpers();
@@ -1145,13 +1149,15 @@ export class TinderController implements datingAppController {
 
             this.uiRenderer.renderFieldsContainerForScreen(currentScreen, ()=>{
 
-                const swipeContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('.recsCardboard__cards');
-                if (swipeContainerDOM !== null) {
-                    $(swipeContainerDOM).css('position', 'absolute');
-                    $(swipeContainerDOM).css('left', '-200px');
-                } else {
-                    console.error(`Cannot find swipe container DOM element. Please update the selectors.`);
-                    return;
+                if(this.currentScreen !== ScreenNavStateComboTinder.SwipeGold){
+                    const swipeContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('.recsCardboard__cards');
+                    if (swipeContainerDOM !== null) {
+                        $(swipeContainerDOM).css('position', 'absolute');
+                        $(swipeContainerDOM).css('left', '-200px');
+                    } else {
+                        console.error(`Cannot find swipe container DOM element. Please update the selectors.`);
+                        return;
+                    }
                 }
             });
 
@@ -1333,7 +1339,11 @@ export class TinderController implements datingAppController {
                             console.error(`Swiped person received tempId, but could not get details of swiped person! Saving inserted info of record regardless`);
                         }).finally(()=>{
                             this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
-                            this.addUIHelpers(currentScreen, true);
+                            if(this.currentScreen === ScreenNavStateComboTinder.SwipeGold){
+                                this.uiRenderer.removeAllUIHelpers();
+                            }else{
+                                this.addUIHelpers(currentScreen, true);
+                            }
                             Overlay.setLoadingOverlay('loadingSwipeAction', false);
                         });
                     }else{
@@ -1481,6 +1491,9 @@ export class TinderController implements datingAppController {
         let currentPage: ScreenNavStateComboTinder;
 
         switch (true) {
+            case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length === 0 && window.location.href.endsWith("app/likes-you") ? true : false:
+                currentPage = ScreenNavStateComboTinder.SwipeGold;
+                break;
             case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length === 0 ? true : false:
                 currentPage = ScreenNavStateComboTinder.Swipe;
                 break;
