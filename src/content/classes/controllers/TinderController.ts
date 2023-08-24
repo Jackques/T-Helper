@@ -122,6 +122,11 @@ export class TinderController implements datingAppController {
                 new ScreenAction('pass', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Nope")'),
                 new ScreenAction('superlike', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Super Like")')
         ]),
+            new Screen(ScreenNavStateComboTinder.SwipeExplore, [
+                new ScreenAction('like', 'div[class*="Bdc\\($c-ds-border-gamepad-like-default\\)"] button:contains("Like"):not(:contains("Super"))'),
+                new ScreenAction('pass', 'div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button:contains("Nope")'),
+                new ScreenAction('superlike', 'div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button:contains("Super Like")')
+        ]),
         new Screen(ScreenNavStateComboTinder.Chat, [new ScreenAction('sendMessage', "div.BdT > form > button[type='submit']")]),
         );
 
@@ -1139,7 +1144,7 @@ export class TinderController implements datingAppController {
 
         }
 
-        if (currentScreen === ScreenNavStateComboTinder.Swipe || currentScreen === ScreenNavStateComboTinder.SwipeGold) {
+        if (currentScreen === ScreenNavStateComboTinder.Swipe || currentScreen === ScreenNavStateComboTinder.SwipeGold || currentScreen === ScreenNavStateComboTinder.SwipeExplore) {
 
             if (forceRefresh) {
                 this.uiRenderer.removeAllUIHelpers();
@@ -1149,7 +1154,7 @@ export class TinderController implements datingAppController {
 
             this.uiRenderer.renderFieldsContainerForScreen(currentScreen, ()=>{
 
-                if(this.currentScreen !== ScreenNavStateComboTinder.SwipeGold){
+                if(this.currentScreen === ScreenNavStateComboTinder.Swipe){
                     const swipeContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('.recsCardboard__cards');
                     if (swipeContainerDOM !== null) {
                         $(swipeContainerDOM).css('position', 'absolute');
@@ -1339,13 +1344,15 @@ export class TinderController implements datingAppController {
                             console.error(`Swiped person received tempId, but could not get details of swiped person! Saving inserted info of record regardless`);
                         }).finally(()=>{
                             this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
-                            if(this.currentScreen !== ScreenNavStateComboTinder.Swipe){
-                                console.log(`CURRENT SCREEN IS SWIPEGOLD, THUS REMOVING ALL UI HELPERS NOW`);
-                                this.uiRenderer.removeAllUIHelpers();
-                            }else{
-                                console.log(`CURRENT SCREEN IS NOT SWIPEGOLD, thus re-adding UI HELPERS NOW`);
+
+                            if(this.currentScreen === ScreenNavStateComboTinder.Swipe || this.currentScreen === ScreenNavStateComboTinder.SwipeExplore){
+                                console.log(`CURRENT SCREEN IS SWIPE OR SWIPEEXPLORE, thus re-adding UI HELPERS NOW`);
                                 this.addUIHelpers(currentScreen, true);
+                            }else{
+                                console.log(`CURRENT SCREEN IS ${this.currentScreen}, THUS REMOVING ALL UI HELPERS NOW`);
+                                this.uiRenderer.removeAllUIHelpers();
                             }
+
                             Overlay.setLoadingOverlay('loadingSwipeAction', false);
                         });
                     }else{
@@ -1369,13 +1376,12 @@ export class TinderController implements datingAppController {
                         ]);
                         this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
 
-                        // this.addUIHelpers(currentScreen, true);
-                        if(this.currentScreen !== ScreenNavStateComboTinder.Swipe){
-                            console.log(`CURRENT SCREEN IS SWIPEGOLD, THUS REMOVING ALL UI HELPERS NOW`);
-                            this.uiRenderer.removeAllUIHelpers();
-                        }else{
-                            console.log(`CURRENT SCREEN IS NOT SWIPEGOLD, thus re-adding UI HELPERS NOW`);
+                        if(this.currentScreen === ScreenNavStateComboTinder.Swipe || this.currentScreen === ScreenNavStateComboTinder.SwipeExplore){
+                            console.log(`CURRENT SCREEN IS SWIPE OR SWIPEEXPLORE, thus re-adding UI HELPERS NOW`);
                             this.addUIHelpers(currentScreen, true);
+                        }else{
+                            console.log(`CURRENT SCREEN IS ${this.currentScreen}, THUS REMOVING ALL UI HELPERS NOW`);
+                            this.uiRenderer.removeAllUIHelpers();
                         }
 
                         Overlay.setLoadingOverlay('loadingSwipeAction', false);
@@ -1497,6 +1503,9 @@ export class TinderController implements datingAppController {
         let currentPage: ScreenNavStateComboTinder;
 
         switch (true) {
+            case $(swipeIdentifier).length > 0 && window.location.href.includes("/app/explore/"):
+                currentPage = ScreenNavStateComboTinder.SwipeExplore;
+                break;
             case $(swipeIdentifier).length > 0 && window.location.href.endsWith("app/likes-you"):
                 currentPage = ScreenNavStateComboTinder.SwipeGold;
                 break;
