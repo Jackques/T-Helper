@@ -1339,9 +1339,11 @@ export class TinderController implements datingAppController {
                             console.error(`Swiped person received tempId, but could not get details of swiped person! Saving inserted info of record regardless`);
                         }).finally(()=>{
                             this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
-                            if(this.currentScreen === ScreenNavStateComboTinder.SwipeGold){
+                            if(this.currentScreen !== ScreenNavStateComboTinder.Swipe){
+                                console.log(`CURRENT SCREEN IS SWIPEGOLD, THUS REMOVING ALL UI HELPERS NOW`);
                                 this.uiRenderer.removeAllUIHelpers();
                             }else{
+                                console.log(`CURRENT SCREEN IS NOT SWIPEGOLD, thus re-adding UI HELPERS NOW`);
                                 this.addUIHelpers(currentScreen, true);
                             }
                             Overlay.setLoadingOverlay('loadingSwipeAction', false);
@@ -1367,7 +1369,14 @@ export class TinderController implements datingAppController {
                         ]);
                         this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
 
-                        this.addUIHelpers(currentScreen, true);
+                        // this.addUIHelpers(currentScreen, true);
+                        if(this.currentScreen !== ScreenNavStateComboTinder.Swipe){
+                            console.log(`CURRENT SCREEN IS SWIPEGOLD, THUS REMOVING ALL UI HELPERS NOW`);
+                            this.uiRenderer.removeAllUIHelpers();
+                        }else{
+                            console.log(`CURRENT SCREEN IS NOT SWIPEGOLD, thus re-adding UI HELPERS NOW`);
+                            this.addUIHelpers(currentScreen, true);
+                        }
 
                         Overlay.setLoadingOverlay('loadingSwipeAction', false);
 
@@ -1484,23 +1493,20 @@ export class TinderController implements datingAppController {
     public getCurrentScreenByDOM(): ScreenNavStateComboTinder {
         const swipeIdentifier = '.recsToolbar';
         const chatIdentifier = '.chat';
-        const chatProfileIdentifier = '.chatProfile';
-
-        const backButtonOnMainPanelIdentifier = 'a[href="/app/recs"].focus-button-style';
 
         let currentPage: ScreenNavStateComboTinder;
 
         switch (true) {
-            case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length === 0 && window.location.href.endsWith("app/likes-you") ? true : false:
+            case $(swipeIdentifier).length > 0 && window.location.href.endsWith("app/likes-you"):
                 currentPage = ScreenNavStateComboTinder.SwipeGold;
                 break;
-            case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length === 0 ? true : false:
+            case $(swipeIdentifier).length > 0 && window.location.href.endsWith("recs"):
                 currentPage = ScreenNavStateComboTinder.Swipe;
                 break;
-            case $(swipeIdentifier).length > 0 && $(backButtonOnMainPanelIdentifier).length > 0 ? true : false:
+            case $(swipeIdentifier).length > 0 && window.location.href.endsWith("recs/profile"):
                 currentPage = ScreenNavStateComboTinder.SwipeProfile;
                 break;
-            case $(chatIdentifier).length > 0 && $(chatProfileIdentifier).length > 0 ? true : false:
+            case $(chatIdentifier).length > 0 && window.location.href.includes('messages'):
                 currentPage = ScreenNavStateComboTinder.Chat;
                 break;
             default:
