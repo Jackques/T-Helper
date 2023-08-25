@@ -6,7 +6,7 @@ import { SubmitType } from "../../../SubmitType";
 import { ScreenNavStateComboTinder } from "../util/Screen/screenStateComboTinder.enum";
 import { DOMHelper } from "../util/DOMHelper";
 import { DOMRefs } from "src/content/interfaces/data/domReferences.interface";
-import { ScreenList } from "../util/Screen/ScreenList";
+import { ScreenController } from "../util/Screen/ScreenList";
 
 export class UIFieldsRenderer {
     private decoratedSubmitEventsDOMElementsList: HTMLElement[] = [];
@@ -208,9 +208,9 @@ export class UIFieldsRenderer {
         }
     };
 
-    private screenList: ScreenList;
+    private screenList: ScreenController;
 
-    constructor(screenList: ScreenList){
+    constructor(screenList: ScreenController){
         this.screenList = screenList;
         console.log(`UIRenderer init`);
     }
@@ -263,10 +263,8 @@ export class UIFieldsRenderer {
         return currentTarget && Object.prototype.hasOwnProperty.call(currentTarget.dataset, "type") ? currentTarget.dataset.type : undefined;
     }
 
-    public renderFieldsContainerForScreen(screen: ScreenNavStateComboTinder, additionalScreenAdjustments?: () => void): void {
-        if(screen === ScreenNavStateComboTinder.Swipe || screen === ScreenNavStateComboTinder.SwipeGold || screen === ScreenNavStateComboTinder.SwipeExplore){
-            // $('body .recsCardboard__cardsContainer').prepend(`
-            // $(this.domRef.fieldsContainerSwipeScreen).prepend(`
+    public renderFieldsContainerForScreen(screenController: ScreenController, additionalScreenAdjustments?: () => void): void {
+        if(screenController.isSwipeScreen()){
             $('body').prepend(`
                 <div id="uiHelperFields" class="uiHelperFieldsContainer uiHelperFieldsContainer--select">
                     <div id="uiHelperFieldsHide">
@@ -288,9 +286,7 @@ export class UIFieldsRenderer {
             `);
         }
 
-        if(screen === ScreenNavStateComboTinder.Chat){
-            // $('body div.chat').prepend(`
-            // $(this.domRef.fieldsContainerChatScreen).prepend(`
+        if(screenController.isChatScreen()){
             $('body').prepend(`
             <div id="uiHelperFields" class="uiHelperFieldsContainer uiHelperFieldsContainer--chat">
                 <div id="uiHelperFieldsHide">
@@ -312,7 +308,7 @@ export class UIFieldsRenderer {
         `);
         }
 
-        this._setSubmitEventHandlers(screen);
+        this._setSubmitEventHandlers(screenController);
 
         if(additionalScreenAdjustments){
             additionalScreenAdjustments();
@@ -334,12 +330,13 @@ export class UIFieldsRenderer {
         });
     }
 
-    private _setSubmitEventHandlers(screen: ScreenNavStateComboTinder): void {
+    private _setSubmitEventHandlers(screenController: ScreenController): void {
 
-        if(screen === ScreenNavStateComboTinder.Swipe){
+
+        if(screenController.isSwipeScreen()){
             // const submitButtonDOMType_pass = $(".recsCardboard__cards div[class*=c-pink] button").first();
             const submitButtonDOMType_pass = DOMHelper.getFirstDOMNodeByJquerySelector(
-                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.Swipe, 'pass')
+                screenController.getCurrentScreen().getScreenActionActionDOMRefByActionName('pass')
             );
 
             if(submitButtonDOMType_pass !== null){
@@ -349,9 +346,9 @@ export class UIFieldsRenderer {
                 console.error(`submitAction_passed could not be set! submit button not found. Please update the selector.`);
             }
 
-            // const submitButtonDOMType_superlike = $(".recsCardboard__cards div[class*=c-superlike-blue] button").first();
             const submitButtonDOMType_superlike = DOMHelper.getFirstDOMNodeByJquerySelector(
-                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.Swipe, 'superlike')
+                // this.screenList.getActionDOMRef(ScreenNavStateComboTinder.Swipe, 'superlike')
+                screenController.getCurrentScreen().getScreenActionActionDOMRefByActionName('superlike')
                 );
             if(submitButtonDOMType_superlike !== null){
                 $(submitButtonDOMType_superlike).attr('id', 'submitAction_superliked');
@@ -360,9 +357,9 @@ export class UIFieldsRenderer {
                 console.error(`submitAction_superliked could not be set! submit button not found. Please update the selector.`);
             }
 
-            // const submitButtonDOMType_like = $(".recsCardboard__cards div[class*=c-like-green] button").first();
             const submitButtonDOMType_like = DOMHelper.getFirstDOMNodeByJquerySelector(
-                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.Swipe, 'like')
+                // this.screenList.getActionDOMRef(ScreenNavStateComboTinder.Swipe, 'like')
+                screenController.getCurrentScreen().getScreenActionActionDOMRefByActionName('like')
                 );
             if(submitButtonDOMType_like !== null){
                 $(submitButtonDOMType_like).attr('id', 'submitAction_liked');
@@ -371,80 +368,8 @@ export class UIFieldsRenderer {
                 console.error(`submitAction_pass could not be set! submit button not found. Please update the selector.`);
             }
         }
-
-        if(screen === ScreenNavStateComboTinder.SwipeGold){
-            // const submitButtonDOMType_pass = $(".recsCardboard__cards div[class*=c-pink] button").first();
-            const submitButtonDOMType_pass = DOMHelper.getFirstDOMNodeByJquerySelector(
-                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.SwipeGold, 'pass')
-            );
-
-            if(submitButtonDOMType_pass !== null){
-                $(submitButtonDOMType_pass).attr('id', 'submitAction_passed');
-                this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_pass);
-            }else{
-                console.error(`submitAction_passed could not be set! submit button not found. Please update the selector.`);
-            }
-
-            // const submitButtonDOMType_superlike = $(".recsCardboard__cards div[class*=c-superlike-blue] button").first();
-            const submitButtonDOMType_superlike = DOMHelper.getFirstDOMNodeByJquerySelector(
-                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.SwipeGold, 'superlike')
-                );
-            if(submitButtonDOMType_superlike !== null){
-                $(submitButtonDOMType_superlike).attr('id', 'submitAction_superliked');
-                this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_superlike);
-            }else{
-                console.error(`submitAction_superliked could not be set! submit button not found. Please update the selector.`);
-            }
-
-            // const submitButtonDOMType_like = $(".recsCardboard__cards div[class*=c-like-green] button").first();
-            const submitButtonDOMType_like = DOMHelper.getFirstDOMNodeByJquerySelector(
-                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.SwipeGold, 'like')
-                );
-            if(submitButtonDOMType_like !== null){
-                $(submitButtonDOMType_like).attr('id', 'submitAction_liked');
-                this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_like);
-            }else{
-                console.error(`submitAction_pass could not be set! submit button not found. Please update the selector.`);
-            }
-        }
-
-        if(screen === ScreenNavStateComboTinder.SwipeExplore){
-            // const submitButtonDOMType_pass = $(".recsCardboard__cards div[class*=c-pink] button").first();
-            const submitButtonDOMType_pass = DOMHelper.getFirstDOMNodeByJquerySelector(
-                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.SwipeExplore, 'pass')
-            );
-
-            if(submitButtonDOMType_pass !== null){
-                $(submitButtonDOMType_pass).attr('id', 'submitAction_passed');
-                this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_pass);
-            }else{
-                console.error(`submitAction_passed could not be set! submit button not found. Please update the selector.`);
-            }
-
-            // const submitButtonDOMType_superlike = $(".recsCardboard__cards div[class*=c-superlike-blue] button").first();
-            const submitButtonDOMType_superlike = DOMHelper.getFirstDOMNodeByJquerySelector(
-                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.SwipeExplore, 'superlike')
-                );
-            if(submitButtonDOMType_superlike !== null){
-                $(submitButtonDOMType_superlike).attr('id', 'submitAction_superliked');
-                this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_superlike);
-            }else{
-                console.error(`submitAction_superliked could not be set! submit button not found. Please update the selector.`);
-            }
-
-            // const submitButtonDOMType_like = $(".recsCardboard__cards div[class*=c-like-green] button").first();
-            const submitButtonDOMType_like = DOMHelper.getFirstDOMNodeByJquerySelector(
-                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.SwipeExplore, 'like')
-                );
-            if(submitButtonDOMType_like !== null){
-                $(submitButtonDOMType_like).attr('id', 'submitAction_liked');
-                this.decoratedSubmitEventsDOMElementsList.push(submitButtonDOMType_like);
-            }else{
-                console.error(`submitAction_pass could not be set! submit button not found. Please update the selector.`);
-            }
-        }
-
-        if(screen === ScreenNavStateComboTinder.Chat){
+        
+        if(screenController.getCurrentScreen().getScreenIsChatScreen()){
             // const submitButtonDOMType_sendMessage = $("div.BdT > form > button[type='submit']").first();
             const submitButtonDOMType_sendMessage = DOMHelper.getFirstDOMNodeByJquerySelector(
                 this.screenList.getActionDOMRef(ScreenNavStateComboTinder.Chat, 'sendMessage')
