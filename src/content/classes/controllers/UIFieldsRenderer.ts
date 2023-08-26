@@ -368,11 +368,11 @@ export class UIFieldsRenderer {
                 console.error(`submitAction_pass could not be set! submit button not found. Please update the selector.`);
             }
         }
-        
+
         if(screenController.getCurrentScreen().getScreenIsChatScreen()){
             // const submitButtonDOMType_sendMessage = $("div.BdT > form > button[type='submit']").first();
             const submitButtonDOMType_sendMessage = DOMHelper.getFirstDOMNodeByJquerySelector(
-                this.screenList.getActionDOMRef(ScreenNavStateComboTinder.Chat, 'sendMessage')
+                screenController.getCurrentScreen().getScreenActionActionDOMRefByActionName('sendMessage')
                 );
             if(submitButtonDOMType_sendMessage !== null){
                 $(submitButtonDOMType_sendMessage).attr('id', 'submitAction_sendMessage');
