@@ -3,6 +3,5 @@ export enum ScreenNavStateComboTinder {
     Swipe = "SWIPE",
     SwipeGold = "SWIPEGOLD",
     SwipeExplore = "SWIPEEXPLORE",
-    SwipeProfile = "SWIPEPROFILE",
     Chat = "CHAT",
 }

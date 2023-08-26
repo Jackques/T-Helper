@@ -117,11 +117,6 @@ export class TinderController implements datingAppController {
                 new ScreenAction('pass', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button'),
                 new ScreenAction('superlike', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button')
         ], 'swipe', true, true),
-            new Screen(ScreenNavStateComboTinder.SwipeProfile, [
-                new ScreenAction('like', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-like-default\\)"] button'),
-                new ScreenAction('pass', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button'),
-                new ScreenAction('superlike', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button')
-        ], 'swipe', true, false),
             new Screen(ScreenNavStateComboTinder.SwipeGold, [
                 new ScreenAction('like', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Like"):not(:contains("Super"))'),
                 new ScreenAction('pass', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Nope")'),
@@ -1525,11 +1520,8 @@ export class TinderController implements datingAppController {
             case $(swipeIdentifier).length > 0 && window.location.href.endsWith("app/likes-you"):
                 currentPage = ScreenNavStateComboTinder.SwipeGold;
                 break;
-            case $(swipeIdentifier).length > 0 && window.location.href.endsWith("recs"):
+            case $(swipeIdentifier).length > 0 && window.location.href.includes("recs"):
                 currentPage = ScreenNavStateComboTinder.Swipe;
-                break;
-            case $(swipeIdentifier).length > 0 && window.location.href.endsWith("recs/profile"):
-                currentPage = ScreenNavStateComboTinder.SwipeProfile;
                 break;
             case $(chatIdentifier).length > 0 && window.location.href.includes('messages'):
                 currentPage = ScreenNavStateComboTinder.Chat;
