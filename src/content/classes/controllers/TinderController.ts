@@ -390,6 +390,7 @@ export class TinderController implements datingAppController {
             return;
         }
     }
+
     private setRefreshDataTable(shouldDataTableBeRefreshed: boolean) {
         this.dataTableNeedsToBeUpdated = shouldDataTableBeRefreshed;
     }
@@ -1010,7 +1011,6 @@ export class TinderController implements datingAppController {
                         dataFields = dataRecord.getDataRecordDataFields();
 
                         // 3. show helpers for chat (all?), make space above messagebox, put helper container there?
-                        // this.uiRenderer.renderFieldsContainerForScreen(currentScreen, () => {
                         this.uiRenderer.renderFieldsContainerForScreen(screenController, () => {
                             // $('div[id*="SC.chat"]').first().css('width', '730px');
 
@@ -1174,6 +1174,15 @@ export class TinderController implements datingAppController {
                         return;
                     }
                 }
+            }, 
+            ()=>{
+                //TODO TODO TODO: add to be added profile data here
+                // TIP: Keep it stupidly simple; collect data from DOM & put them in the correct fields manually
+                const personName = $(`div[data-keyboard-gamepad="true"][aria-hidden="false"] *[itemprop="name"]`).first().text();
+                console.log(`Name is: ${personName}`);
+                $(`*[data-recordref="Name"]`).val(personName);
+
+                // TODO TODO TODO: first get if user is on swipe or swipe profile screen? both delivers different DOM,.. but wait! i removed swipe-profile screen..
             });
 
             const uiRequiredDataFields: DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);

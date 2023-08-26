@@ -171,6 +171,8 @@ export class UIFieldsRenderer {
     private preSubmitCallback: ((submitType: SubmitType) => void) | undefined;
     private submitCallback: ((submitType: SubmitType) => void) | undefined;
 
+    private _collectProfileDataFromDOMCallback: (() => void) | undefined;
+
     private valuesEventHandler = (event:Event) => {
         const dataType = this._getDataType(<HTMLInputElement>event.currentTarget);
         const templateName = this._getTemplateName(<HTMLInputElement>event.currentTarget);
@@ -263,11 +265,15 @@ export class UIFieldsRenderer {
         return currentTarget && Object.prototype.hasOwnProperty.call(currentTarget.dataset, "type") ? currentTarget.dataset.type : undefined;
     }
 
-    public renderFieldsContainerForScreen(screenController: ScreenController, additionalScreenAdjustments?: () => void): void {
+    public renderFieldsContainerForScreen(screenController: ScreenController, additionalScreenAdjustments?: () => void, collectProfileDataFromDOMCallback?: () => void): void {
+        this._collectProfileDataFromDOMCallback = collectProfileDataFromDOMCallback;
         if(screenController.isSwipeScreen()){
             $('body').prepend(`
                 <div id="uiHelperFields" class="uiHelperFieldsContainer uiHelperFieldsContainer--select">
-                    <div id="uiHelperFieldsHide">
+                <div id="uiHelperFieldsCollectData">
+                    <button id="uiHelperFieldsCollectDataButton">Collect Data</button>
+                </div>
+                <div id="uiHelperFieldsHide">
                         <button id="uiHelperFieldsHideButton">Hide</button>
                     </div>
                     <form id="uiHelperFieldsForm">
@@ -320,6 +326,14 @@ export class UIFieldsRenderer {
         $(`body`).on("mousedown", '[id^="submitAction_"]', this.submitEventHandler);
         // NOTE: Due to my mouse or otherwise; the mouseup/mousedown fires 5-6 times in short succession
 
+        $(`body`).on("click", '[id="uiHelperFieldsCollectDataButton"]', ()=>{
+            if(this._collectProfileDataFromDOMCallback){
+                this._collectProfileDataFromDOMCallback();
+            }else{
+                alert(`Whoops! Seems like `);
+            }
+        });
+
         $(`body`).on("click", '[id="uiHelperFieldsShowButton"]', ()=>{
             $(`#uiHelperFields`).show();
             $(`#uiHelperFieldsShowButton`).hide();
@@ -328,6 +342,8 @@ export class UIFieldsRenderer {
             $(`#uiHelperFields`).hide();
             $(`#uiHelperFieldsShowButton`).show();
         });
+
+        
     }
 
     private _setSubmitEventHandlers(screenController: ScreenController): void {
@@ -383,7 +399,11 @@ export class UIFieldsRenderer {
         }
     }
 
-    public renderFieldsFromDataFields(dataFields: DataField[], valuesCallback: (value: DataRecordValues) => void, preSubmitCallback: (submitType: SubmitType) => void, submitCallback: (submitType: SubmitType) => void){
+    public renderFieldsFromDataFields(
+        dataFields: DataField[], 
+        valuesCallback: (value: DataRecordValues) => void, 
+        preSubmitCallback: (submitType: SubmitType) => void, 
+        submitCallback: (submitType: SubmitType) => void): void {
         if(!$('body').find('#uiHelperFieldsContainer').first()[0]){
             console.error(`Could not place helper fields because helper container with id ${'uiHelperFieldsContainer'} does not exist.`);
         }
@@ -432,6 +452,7 @@ export class UIFieldsRenderer {
         this.valuesCallback = undefined;
         this.preSubmitCallback = undefined;
         this.submitCallback = undefined;
+        this._collectProfileDataFromDOMCallback = undefined;
 
         const helperFieldsContainer = $(`#uiHelperFields`);
         if(helperFieldsContainer.length > 0){
@@ -453,5 +474,4 @@ export class UIFieldsRenderer {
             });
         }
     }
-
 }
