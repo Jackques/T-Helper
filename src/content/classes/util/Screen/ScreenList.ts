@@ -10,12 +10,6 @@ export class ScreenController {
         this.screenList = screenList;
     }
 
-    // TODO TODO TODO: Can io hopefully remove this soon to be unused method?
-    public getActionDOMRef(screenName: ScreenNavStateComboTinder, screenActionName: string): string {
-        const screen = this.getScreenByScreenName(screenName);
-        return screen.getScreenActionActionDOMRefByActionName(screenActionName);
-    }
-
     public updateCurrentScreen(newScreen: ScreenNavStateComboTinder): void {
         this.previousScreen = this.currentScreen;
         this.currentScreen = newScreen;
