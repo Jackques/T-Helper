@@ -167,6 +167,8 @@ export class UIFieldsRenderer {
                 </div>`}
         }
     ];
+
+    private dataFields: DataField[] = [];
     private valuesCallback: ((value: DataRecordValues) => void) | undefined;
     private preSubmitCallback: ((submitType: SubmitType) => void) | undefined;
     private submitCallback: ((submitType: SubmitType) => void) | undefined;
@@ -404,6 +406,9 @@ export class UIFieldsRenderer {
         valuesCallback: (value: DataRecordValues) => void, 
         preSubmitCallback: (submitType: SubmitType) => void, 
         submitCallback: (submitType: SubmitType) => void): void {
+
+        this.dataFields = this.dataFields.concat(dataFields);
+
         if(!$('body').find('#uiHelperFieldsContainer').first()[0]){
             console.error(`Could not place helper fields because helper container with id ${'uiHelperFieldsContainer'} does not exist.`);
         }
@@ -420,7 +425,15 @@ export class UIFieldsRenderer {
         this.preSubmitCallback = preSubmitCallback;
         this.submitCallback = submitCallback;
 
-        dataFields.forEach((dataField, index) => {
+        this.updateDataFieldValues();
+    }
+
+    public updateDataFieldValues(): void {
+        $('body').find('#uiHelperFieldsContainer').empty();
+        $('body').find('#uiHelperFieldsContainer').append('<p class="h5">T-Helper fields</p>');
+
+
+        this.dataFields.forEach((dataField, index) => {
             const requiredTemplateIndex = this.templatesList.findIndex(template => template.label === dataField.UISetting.UIrequiredType);
             const dataFieldValue: string | number | boolean | null = dataField.getValue();
             // console.log(`RENDERING UI FIELD. DEFAULT VALUE FOR ${dataField.title} SHOULD BE: ${dataField.getValue()}`);
@@ -453,6 +466,7 @@ export class UIFieldsRenderer {
         this.preSubmitCallback = undefined;
         this.submitCallback = undefined;
         this._collectProfileDataFromDOMCallback = undefined;
+        this.dataFields = [];
 
         const helperFieldsContainer = $(`#uiHelperFields`);
         if(helperFieldsContainer.length > 0){

@@ -1180,7 +1180,15 @@ export class TinderController implements datingAppController {
                 // TIP: Keep it stupidly simple; collect data from DOM & put them in the correct fields manually
                 const personName = $(`div[data-keyboard-gamepad="true"][aria-hidden="false"] *[itemprop="name"]`).first().text();
                 console.log(`Name is: ${personName}`);
-                $(`*[data-recordref="Name"]`).val(personName);
+                // $(`*[data-recordref="Name"]`).val(personName);
+
+                const dataRecordValuesFromCollectedData: DataRecordValues = {
+                    label: "Name",
+                    value: personName
+                };
+                newDataRecord.addDataToDataFields([dataRecordValuesFromCollectedData]);
+
+                this.uiRenderer.updateDataFieldValues();
 
                 // TODO TODO TODO: first get if user is on swipe or swipe profile screen? both delivers different DOM,.. but wait! i removed swipe-profile screen..
             });
