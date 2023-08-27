@@ -1384,6 +1384,8 @@ export class TinderController implements datingAppController {
                                 this.uiRenderer.removeAllUIHelpers();
                             }
 
+                            this._logLatestDataRecord(newDataRecord);
+
                             Overlay.setLoadingOverlay('loadingSwipeAction', false);
                         });
                     }else{
@@ -1415,6 +1417,8 @@ export class TinderController implements datingAppController {
                             this.uiRenderer.removeAllUIHelpers();
                         }
 
+                        this._logLatestDataRecord(newDataRecord);
+
                         Overlay.setLoadingOverlay('loadingSwipeAction', false);
 
                         // eslint-disable-next-line no-debugger
@@ -1441,6 +1445,14 @@ export class TinderController implements datingAppController {
 
         //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
     }
+    private _logLatestDataRecord(newDataRecord: DataRecord) {
+        const name = newDataRecord.getDataFields().find((dataField)=>dataField.title === "Name")?.getValue();
+        const notes = newDataRecord.getDataFields().find((dataField)=>dataField.title === "Notes")?.getValue();
+
+        console.log(`%c I just added the new dataRecord to dataTable: ${newDataRecord}`, "color: DarkOliveGreen");
+        console.log(`%c New dataRecord name: ${name}, && Notes: ${notes}`, "color: DarkOliveGreen");
+    }
+
     private _getTypeOfMatchAndLike(matchDetailsResults: Match): string[] {
         const matchOrLikeStringsList: string[] = [];
         
