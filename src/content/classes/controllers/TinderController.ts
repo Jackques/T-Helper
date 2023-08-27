@@ -1186,6 +1186,10 @@ export class TinderController implements datingAppController {
                     label: "Name",
                     value: personName
                 };
+                                const test: DataField[] = newDataRecord.getAllAutoGatherDataFields();
+                                test.map((dataField: DataField)=>{
+                                    console.log(`This dataField is auto Gather: ${dataField.title}`);
+                                });
                 newDataRecord.addDataToDataFields([dataRecordValuesFromCollectedData]);
 
                 this.uiRenderer.updateDataFieldValues();
