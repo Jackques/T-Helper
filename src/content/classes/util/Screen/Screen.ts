@@ -5,13 +5,15 @@ import { ScreenType } from "./ScreenTypeEnum";
 export class Screen {
     private screenName: ScreenNavStateComboTinder | null = null;
     private screenActionsList: ScreenAction[] = [];
+    private screenElementsList: ScreenElement[] = [];
     private isSwipeScreen: ScreenType = ScreenType.OTHER;
     private isMultiSwipeScreen = false;
     private isNeedsUIAdjustments = false;
 
-    constructor(screenName: ScreenNavStateComboTinder, screenActionsList: ScreenAction[], screenType: string, isMultiSwipeScreen: boolean, isNeedsUIAdjustments: boolean){
+    constructor(screenName: ScreenNavStateComboTinder, screenActionsList: ScreenAction[], screenElementsList: ScreenElement[], screenType: string, isMultiSwipeScreen: boolean, isNeedsUIAdjustments: boolean){
         this.screenName = screenName;
         this.screenActionsList = screenActionsList;
+        this.screenElementsList = screenElementsList;
         this.isSwipeScreen = this._setScreenType(screenType);
         this.isMultiSwipeScreen = isMultiSwipeScreen;
         this.isNeedsUIAdjustments = isNeedsUIAdjustments;
