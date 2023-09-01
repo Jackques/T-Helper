@@ -116,19 +116,19 @@ export class TinderController implements datingAppController {
                 new ScreenAction('like', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-like-default\\)"] button'),
                 new ScreenAction('pass', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button'),
                 new ScreenAction('superlike', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button')
-        ], 'swipe', true, true),
+        ], [], 'swipe', true, true),
             new Screen(ScreenNavStateComboTinder.SwipeGold, [
                 new ScreenAction('like', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Like"):not(:contains("Super"))'),
                 new ScreenAction('pass', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Nope")'),
                 new ScreenAction('superlike', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Super Like")')
-        ], 'swipe', false, false),
+        ], [], 'swipe', false, false),
             new Screen(ScreenNavStateComboTinder.SwipeExplore, [
                 new ScreenAction('like', 'div[class*="Bdc\\($c-ds-border-gamepad-like-default\\)"] button:contains("Like"):not(:contains("Super"))'),
                 new ScreenAction('pass', 'div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button:contains("Nope")'),
                 new ScreenAction('superlike', 'div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button:contains("Super Like")')
-        ], 'swipe', true, false),
-            new Screen(ScreenNavStateComboTinder.Chat, [new ScreenAction('sendMessage', "div.BdT > form > button[type='submit']")], 'chat', false, false),
-            new Screen(ScreenNavStateComboTinder.UnknownScreen, [], 'other', false, false),
+        ], [], 'swipe', true, false),
+            new Screen(ScreenNavStateComboTinder.Chat, [new ScreenAction('sendMessage', "div.BdT > form > button[type='submit']")], [], 'chat', false, false),
+            new Screen(ScreenNavStateComboTinder.UnknownScreen, [], [], 'other', false, false),
         );
 
         const screenlist = new ScreenController(screenActionsList);
