@@ -161,46 +161,46 @@ export class TinderController implements datingAppController {
 
                 this.updateDataTable(matches);
 
-                this.setUnupdatedMatchesToBlocked(matches, this.dataTable).finally(()=>{
+                this.setUnupdatedMatchesToBlocked(matches, this.dataTable).finally(() => {
                     const dataRecordsWhereMessagesNeedToBeUpdated = this.dataTable.getAllDataRecordsWhereMessageNeedTobeUpdated();
                     if (dataRecordsWhereMessagesNeedToBeUpdated.length === 0) {
                         return resolve();
                     }
-    
+
                     this.updateMessagesDataRecords(requestHandler, dataRecordsWhereMessagesNeedToBeUpdated, matches).then((hasMessagesBeenRetrieved) => {
-    
+
                         if (!hasMessagesBeenRetrieved) {
                             console.error(`Something went wrong with getting messages! Check the network logs.`);
                             return reject();
                         }
-    
+
                         // eslint-disable-next-line no-debugger
                         // debugger;
-    
+
                         const dataRecords: DataRecord[] = this.dataTable.getAllDataRecords();
                         dataRecords.forEach((dataRecord) => {
                             const dataFields: DataField[] = dataRecord.getDataFields();
-    
+
                             const systemId: string | null = dataRecord.getRecordPersonSystemId(this.nameController)
-                            if(!systemId){
+                            if (!systemId) {
                                 console.warn(`Could not update messages because systemid for this record was: ${systemId}`);
-                            }else{
+                            } else {
                                 const matchRecordIndex: number = this.dataTable.getRecordIndexBySystemId(systemId, this.nameController);
                                 const tinderMatchDataRecordValues: DataRecordValues[] = this.parseMatchDataToDataRecordValues(dataFields, undefined, systemId);
                                 this.dataTable.updateDataRecordByIndex(matchRecordIndex, tinderMatchDataRecordValues);
                             }
 
                         });
-    
+
                         // eslint-disable-next-line no-debugger
                         // debugger;
-    
+
                         return resolve();
 
                     }).catch((error) => {
                         console.dir(error);
                         console.error(`Error occured getting matchMessages`);
-                    }).finally(()=>{
+                    }).finally(() => {
                         console.log(`And here is my data table:`);
                         console.dir(this.dataTable);
                     });
@@ -247,7 +247,7 @@ export class TinderController implements datingAppController {
             } else if (this.screenList.getCurrentScreen().getScreenName() === ScreenNavStateComboTinder.SwipeExplore) {
                 const urlPartsList = window.location.href.split('/');
                 const newExploreCategory = urlPartsList[urlPartsList.length - 1] === 'explore' ? null : urlPartsList[urlPartsList.length - 1];
-                if(this.currentExploreCategory === newExploreCategory){
+                if (this.currentExploreCategory === newExploreCategory) {
                     return;
                 }
                 console.log(`Switched from SWIPEEXPLORE page: ${this.currentExploreCategory} to page: ${newExploreCategory}`);
@@ -642,7 +642,7 @@ export class TinderController implements datingAppController {
                     });
                     break;
                 }
-                case 'Amount-of-pictures': 
+                case 'Amount-of-pictures':
                     dataRecordValuesList.push({ 'label': 'Amount-of-pictures', 'value': dataField.getValue() === null && match?.match.person !== undefined ? this.getAmountOfPictures(match?.match.person) : null });
                     break;
                 case 'Attractiveness-score':
@@ -727,7 +727,7 @@ export class TinderController implements datingAppController {
                             // 'value': messagesDataField.hasMessages() ? this._getReminderAmount(messagesDataField.getAllMessages(), dateAcquiredNumber, dateBlockedOrRemoved) : []
                             'value': messagesDataField.hasMessages() ? reminder.getReminderAmountItems() : []
                         });
-                    }
+                }
                     break;
                 case 'Match-wants-no-contact':
                     dataRecordValuesList.push({ 'label': 'Match-wants-no-contact', 'value': dataField.getValue() || dataField.getValue() === false ? dataField.getValue() : null });
@@ -765,15 +765,15 @@ export class TinderController implements datingAppController {
         //todo: why can't i set the interface to {message: string, timestamp: number, author: 'me' | 'match'}[] ?
         const messagesForDataRecord: Message[] = [];
         matchMessages.forEach((matchMessage) => {
-            
+
             const datetime = (matchMessage: TinderMessage) => {
-                if(DateHelper.isValidDate(matchMessage.sent_date)){
+                if (DateHelper.isValidDate(matchMessage.sent_date)) {
                     return matchMessage.sent_date;
                 }
-                if(DateHelper.isValidDate(matchMessage.created_date)){
+                if (DateHelper.isValidDate(matchMessage.created_date)) {
                     return matchMessage.created_date;
                 }
-                if(DateHelper.isValidDate(new Date(matchMessage.timestamp).toISOString())){
+                if (DateHelper.isValidDate(new Date(matchMessage.timestamp).toISOString())) {
                     return new Date(matchMessage.timestamp).toISOString();
                 }
                 console.error(`Failed to get proper datetime for message`);
@@ -842,36 +842,36 @@ export class TinderController implements datingAppController {
             // 1. is there 2 days or more in between my last message and her reply message? = ghost moment
             // if(myMessage.from !== matchPersonId && matchMessageReply.from === matchPersonId){
 
-                const isMatchMessageLaterThanAcquiredNumberDate: boolean = dateAcquiredNumber ? DateHelper.isDateLaterThanDate(formerMessage.datetime, dateAcquiredNumber) : false;
-                const isMyMessageLaterThanAcquiredNumberDate: boolean = dateAcquiredNumber ? DateHelper.isDateLaterThanDate(laterMessage.datetime, dateAcquiredNumber) : false;
-                if(isMatchMessageLaterThanAcquiredNumberDate || isMyMessageLaterThanAcquiredNumberDate){
-                    // date is later thasn acquired number date, thus should no longer add ghostMoments.
-                    return laterMessage;
-                }
+            const isMatchMessageLaterThanAcquiredNumberDate: boolean = dateAcquiredNumber ? DateHelper.isDateLaterThanDate(formerMessage.datetime, dateAcquiredNumber) : false;
+            const isMyMessageLaterThanAcquiredNumberDate: boolean = dateAcquiredNumber ? DateHelper.isDateLaterThanDate(laterMessage.datetime, dateAcquiredNumber) : false;
+            if (isMatchMessageLaterThanAcquiredNumberDate || isMyMessageLaterThanAcquiredNumberDate) {
+                // date is later thasn acquired number date, thus should no longer add ghostMoments.
+                return laterMessage;
+            }
 
-                const isMatchMessageLaterThanBlockedDate: boolean = dateBlockedOrRemoved ? DateHelper.isDateLaterThanDate(formerMessage.datetime, dateBlockedOrRemoved) : false;
-                const isMyMessageLaterThanBlockedDate: boolean = dateBlockedOrRemoved ? DateHelper.isDateLaterThanDate(laterMessage.datetime, dateBlockedOrRemoved) : false;
-                if(isMatchMessageLaterThanBlockedDate || isMyMessageLaterThanBlockedDate){
-                    // date is later than blocked or removed date, thus should no longer add ghostMoments.
-                    return laterMessage;
-                }
+            const isMatchMessageLaterThanBlockedDate: boolean = dateBlockedOrRemoved ? DateHelper.isDateLaterThanDate(formerMessage.datetime, dateBlockedOrRemoved) : false;
+            const isMyMessageLaterThanBlockedDate: boolean = dateBlockedOrRemoved ? DateHelper.isDateLaterThanDate(laterMessage.datetime, dateBlockedOrRemoved) : false;
+            if (isMatchMessageLaterThanBlockedDate || isMyMessageLaterThanBlockedDate) {
+                // date is later than blocked or removed date, thus should no longer add ghostMoments.
+                return laterMessage;
+            }
 
-                const matchMessageReplyTimeStamp = new Date(laterMessage.datetime).getTime();
-                const myMessageTimeStamp = new Date(formerMessage.datetime).getTime();
+            const matchMessageReplyTimeStamp = new Date(laterMessage.datetime).getTime();
+            const myMessageTimeStamp = new Date(formerMessage.datetime).getTime();
 
-                const isGhostMoment = DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(myMessageTimeStamp, matchMessageReplyTimeStamp, 2);
-                //todo: What if I ghost her!? she sends me message after message.. will get registered as a ghost moment..
-                if (isGhostMoment) {
-                    ghostsList.push(
-                        {
-                            number: amountOfGhosts,
-                            timeSinceLastMessageMS: matchMessageReplyTimeStamp - myMessageTimeStamp,
-                            status: laterMessage.author === MessageAuthorEnum.Match ? GhostStatus.REPLIED : GhostStatus.NOT_REPLIED_TO_REMINDER
-                        }
-                    );
-                    amountOfGhosts = amountOfGhosts + 1;
-                }
-            
+            const isGhostMoment = DateHelperTimeStamp.isDateBetweenGreaterThanAmountOfDays(myMessageTimeStamp, matchMessageReplyTimeStamp, 2);
+            //todo: What if I ghost her!? she sends me message after message.. will get registered as a ghost moment..
+            if (isGhostMoment) {
+                ghostsList.push(
+                    {
+                        number: amountOfGhosts,
+                        timeSinceLastMessageMS: matchMessageReplyTimeStamp - myMessageTimeStamp,
+                        status: laterMessage.author === MessageAuthorEnum.Match ? GhostStatus.REPLIED : GhostStatus.NOT_REPLIED_TO_REMINDER
+                    }
+                );
+                amountOfGhosts = amountOfGhosts + 1;
+            }
+
             return laterMessage;
         });
 
@@ -884,13 +884,13 @@ export class TinderController implements datingAppController {
 
         if (dateBlockedOrRemoved && dateBlockedOrRemoved.length > 0) {
             const lastGhostMoment = ghostsList.pop();
-            if(lastGhostMoment && lastGhostMoment.status === GhostStatus.NOT_REPLIED_TO_REMINDER){
+            if (lastGhostMoment && lastGhostMoment.status === GhostStatus.NOT_REPLIED_TO_REMINDER) {
                 lastGhostMoment.status = GhostStatus.BLOCKED;
                 ghostsList.push(lastGhostMoment);
             }
         }
-        
-        if(isLastMessageLaterThanAcquiredNumberDate || isLastMessageLaterThanBlockedDate){
+
+        if (isLastMessageLaterThanAcquiredNumberDate || isLastMessageLaterThanBlockedDate) {
             // lastMessage date is later than blocked or removed date, thus should no longer add ghostMoments.
             return ghostsList;
         }
@@ -1043,12 +1043,12 @@ export class TinderController implements datingAppController {
                                     console.log(`Updated value to existing data record; label: ${value.label}, value: ${value.value}`);
                                     const updatedValuesForDataFields: DataRecordValues[] = [value];
 
-                                    if(value.label === "Acquired-number" && value.value){
+                                    if (value.label === "Acquired-number" && value.value) {
                                         updatedValuesForDataFields.push({
                                             label: 'Date-of-acquired-number',
                                             value: new Date().toISOString()
                                         });
-                                    }else if(value.label === "Acquired-number" && !value.value){
+                                    } else if (value.label === "Acquired-number" && !value.value) {
                                         updatedValuesForDataFields.push({
                                             label: 'Date-of-acquired-number',
                                             value: null
@@ -1058,7 +1058,7 @@ export class TinderController implements datingAppController {
                                     dataRecord?.addDataToDataFields(updatedValuesForDataFields);
                                     console.log(`Updated dataRecord: `);
                                     console.dir(dataRecord);
-                                }, (submitType: SubmitType)=>{
+                                }, (submitType: SubmitType) => {
                                     console.log("pre-submit, not relevant for chat page");
                                 }, (submitType: SubmitType) => {
                                     dataRecord?.setUpdateMessages(true);
@@ -1169,9 +1169,9 @@ export class TinderController implements datingAppController {
 
             const newDataRecord: DataRecord = new DataRecord();
 
-            this.uiRenderer.renderFieldsContainerForScreen(screenController, ()=>{
+            this.uiRenderer.renderFieldsContainerForScreen(screenController, () => {
 
-                if(this.screenList.isCurrentScreenNeedsUIAdjustments()){
+                if (this.screenList.isCurrentScreenNeedsUIAdjustments()) {
                     const swipeContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('.recsCardboard__cards');
                     if (swipeContainerDOM !== null) {
                         $(swipeContainerDOM).css('position', 'absolute');
@@ -1297,7 +1297,7 @@ export class TinderController implements datingAppController {
                 console.log('Callback received a (pre-)submit type! But it will only be used if no response from background can be retrieved');
                 this._postMessageBackgroundScript("swiped-person-action-start");
 
-            },(submitType: SubmitType) => {
+            }, (submitType: SubmitType) => {
                 console.log('Callback received a submit type! But it will only be used if no response from background can be retrieved');
                 Overlay.setLoadingOverlay('loadingSwipeAction', true);
                 console.log(submitType);
@@ -1314,7 +1314,7 @@ export class TinderController implements datingAppController {
                 // get (request) personid from backgroundscript (get response), after 1 sec
                 const ms = 2000;
 
-                if(timeoutSubmit !== null){
+                if (timeoutSubmit !== null) {
                     return;
                 }
 
@@ -1416,16 +1416,16 @@ export class TinderController implements datingAppController {
                             }
 
                             newDataRecord.addDataToDataFields(dataForDataFields);
-                            
-                        }).catch(()=>{
+
+                        }).catch(() => {
                             console.error(`Swiped person received tempId, but could not get details of swiped person! Saving inserted info of record regardless`);
-                        }).finally(()=>{
+                        }).finally(() => {
                             this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
 
-                            if(this.screenList.isCurrentScreenMultiSwipe()){
+                            if (this.screenList.isCurrentScreenMultiSwipe()) {
                                 console.log(`CURRENT SCREEN IS SWIPE OR SWIPEEXPLORE, thus re-adding UI HELPERS NOW`);
                                 this.addUIHelpers(this.screenList, true);
-                            }else{
+                            } else {
                                 console.log(`CURRENT SCREEN IS ${this.screenList.getCurrentScreen()}, THUS REMOVING ALL UI HELPERS NOW`);
                                 this.uiRenderer.removeAllUIHelpers();
                             }
@@ -1434,7 +1434,7 @@ export class TinderController implements datingAppController {
 
                             Overlay.setLoadingOverlay('loadingSwipeAction', false);
                         });
-                    }else{
+                    } else {
                         newDataRecord.addDataToDataFields([
                             // set initial value to later be adjusted by ui control
                             {
@@ -1455,10 +1455,10 @@ export class TinderController implements datingAppController {
                         ]);
                         this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
 
-                        if(this.screenList.isCurrentScreenMultiSwipe()){
+                        if (this.screenList.isCurrentScreenMultiSwipe()) {
                             console.log(`CURRENT SCREEN IS SWIPE OR SWIPEEXPLORE, thus re-adding UI HELPERS NOW`);
                             this.addUIHelpers(this.screenList, true);
-                        }else{
+                        } else {
                             console.log(`CURRENT SCREEN IS ${this.screenList.getCurrentScreen()}, THUS REMOVING ALL UI HELPERS NOW`);
                             this.uiRenderer.removeAllUIHelpers();
                         }
@@ -1492,8 +1492,8 @@ export class TinderController implements datingAppController {
         //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
     }
     private _logLatestDataRecord(newDataRecord: DataRecord) {
-        const name = newDataRecord.getDataFields().find((dataField)=>dataField.title === "Name")?.getValue();
-        const notes = newDataRecord.getDataFields().find((dataField)=>dataField.title === "Notes")?.getValue();
+        const name = newDataRecord.getDataFields().find((dataField) => dataField.title === "Name")?.getValue();
+        const notes = newDataRecord.getDataFields().find((dataField) => dataField.title === "Notes")?.getValue();
 
         console.log(`%c I just added the new dataRecord to dataTable: ${newDataRecord}`, "color: DarkOliveGreen");
         console.log(`%c New dataRecord name: ${name}, && Notes: ${notes}`, "color: DarkOliveGreen");
@@ -1501,30 +1501,30 @@ export class TinderController implements datingAppController {
 
     private _getTypeOfMatchAndLike(matchDetailsResults: Match): string[] {
         const matchOrLikeStringsList: string[] = [];
-        
-            if(matchDetailsResults.is_boost_match){
-                matchOrLikeStringsList.push('boost_match');
+
+        if (matchDetailsResults.is_boost_match) {
+            matchOrLikeStringsList.push('boost_match');
+        }
+        if (matchDetailsResults.is_experiences_match) {
+            matchOrLikeStringsList.push('experiences_match');
+        }
+        if (matchDetailsResults.is_fast_match) {
+            matchOrLikeStringsList.push('fast_match');
+        }
+        if (matchDetailsResults.is_super_boost_match) {
+            matchOrLikeStringsList.push('super_boost_match');
+        }
+        if (matchDetailsResults.is_super_like) {
+            matchOrLikeStringsList.push('super_like_match');
+        }
+        if (matchDetailsResults.super_liker && typeof matchDetailsResults.super_liker === 'string') {
+            if (matchDetailsResults.super_liker === matchDetailsResults.person._id) {
+                matchOrLikeStringsList.push('match_sent_me_superlike');
+            } else {
+                matchOrLikeStringsList.push('i_sent_match_superlike');
             }
-            if(matchDetailsResults.is_experiences_match){
-                matchOrLikeStringsList.push('experiences_match');
-            }
-            if(matchDetailsResults.is_fast_match){
-                matchOrLikeStringsList.push('fast_match');
-            }
-            if(matchDetailsResults.is_super_boost_match){
-                matchOrLikeStringsList.push('super_boost_match');
-            }
-            if(matchDetailsResults.is_super_like){
-                matchOrLikeStringsList.push('super_like_match');
-            }
-            if(matchDetailsResults.super_liker && typeof matchDetailsResults.super_liker === 'string'){
-                if (matchDetailsResults.super_liker === matchDetailsResults.person._id) {
-                    matchOrLikeStringsList.push('match_sent_me_superlike');
-                } else {
-                    matchOrLikeStringsList.push('i_sent_match_superlike');
-                }
-            }
-        
+        }
+
         return matchOrLikeStringsList;
     }
 
@@ -1621,7 +1621,7 @@ export class TinderController implements datingAppController {
             if (useMock) {
 
                 console.error(`Mock unavailable, please set a (new) mock first`);
-                
+
                 resolve([]);
 
                 // const test: ParsedResultMatch[] = <ParsedResultMatch[]><unknown>matchMockTwo;
@@ -1687,12 +1687,12 @@ export class TinderController implements datingAppController {
                 console.log(`GETTING MESSAGES now for: ${i} - ${dataRecords[i].usedDataFields[5].getValue()}`);
                 const systemIdMatch = dataRecords[i].getRecordPersonSystemId('tinder');
 
-                if(!systemIdMatch){
+                if (!systemIdMatch) {
                     console.warn(`Could not get messages because systemidMatch was: ${systemIdMatch}`);
-                }else{
+                } else {
                     const personId = this.getPersonIdFromMatch(systemIdMatch, matches);
                     const messages = await requestHandler.getMatchesMessagesStart(systemIdMatch);
-    
+
                     if (personId) {
                         const messagesDataField = dataRecords[i].usedDataFields[2] as DataFieldMessages;
                         messagesDataField.updateMessagesList(this._convertTinderMessagesForDataRecord(messages.reverse(), personId), true)
@@ -1806,9 +1806,9 @@ export class TinderController implements datingAppController {
                 if (!unupdatedMatch.usedDataFields[indexDataFieldSeeminglyDeletedProfile].getValue()) {
                     hasDataFieldSeeminglyDeletedProfile = false;
                 }
-                
-                if(isDataFieldBlocked || hasDataFieldSeeminglyDeletedProfile || !isDataFieldIsMatch){
-                    if(i === (unupdatedMatchesList.length - 1)){
+
+                if (isDataFieldBlocked || hasDataFieldSeeminglyDeletedProfile || !isDataFieldIsMatch) {
+                    if (i === (unupdatedMatchesList.length - 1)) {
                         resolve();
                     }
                     continue;
@@ -1818,13 +1818,13 @@ export class TinderController implements datingAppController {
                 const matchId = unupdatedMatch.getRecordPersonSystemId('tinder');
                 const matchName = unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Name')].getValue();
 
-                if(!matchId){
+                if (!matchId) {
                     console.warn(`Could not get matchId from DataRecord, matcId result: ${matchId}, dataRecord: ${unupdatedMatch}`);
                     continue;
                 }
 
                 this.requestHandler.getMatchDetailsStart(matchId).then((matchDetails: Match | 404 | 500) => {
-                    if(matchDetails === 404){
+                    if (matchDetails === 404) {
                         console.warn(`Matchdetails: ${matchName} with id: ${matchId} gave a 404. Probably deleted profile?`);
                         console.dir(unupdatedMatchesList[i]);
 
@@ -1846,16 +1846,16 @@ export class TinderController implements datingAppController {
                         unupdatedMatch.setUpdateMessages(false);
                     }
 
-                    if(matchDetails === 500){
+                    if (matchDetails === 500) {
                         console.error(`Matchdetails: ${matchName} with id: ${matchId} request returned a 500. Probably only removed me as match?`);
                     }
 
-                    if(typeof matchDetails !== 'number' && matchDetails?.closed){
+                    if (typeof matchDetails !== 'number' && matchDetails?.closed) {
                         const indexUnmatchDatafield = unupdatedMatch.getIndexOfDataFieldByTitle('Did-i-unmatch');
-                        if(unupdatedMatch.usedDataFields[indexUnmatchDatafield].getValue()){
+                        if (unupdatedMatch.usedDataFields[indexUnmatchDatafield].getValue()) {
                             console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. I (ME) deleted our match!`);
                             console.warn(unupdatedMatchesList[i]);
-                        }else{
+                        } else {
                             console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. Match deleted our match!`);
                             console.warn(unupdatedMatchesList[i]);
                         }
@@ -1874,15 +1874,15 @@ export class TinderController implements datingAppController {
                                 value: false
                             }
                         ]);
-        
+
                         unupdatedMatch.setUpdateMessages(false);
                     }
 
                     actualRequestsFired = actualRequestsFired + 1;
-                    if(presumedRequestsFired === actualRequestsFired){
+                    if (presumedRequestsFired === actualRequestsFired) {
                         resolve();
                     }
-                }).catch(()=>{
+                }).catch(() => {
                     const indexDataFieldName: number = unupdatedMatch.getIndexOfDataFieldByTitle('Name');
                     console.log(`Failed to get matchDetails for profile with name: ${unupdatedMatch.usedDataFields[indexDataFieldName].getValue()}. Please check if request adress is still correct.`);
                 });
@@ -1893,10 +1893,10 @@ export class TinderController implements datingAppController {
 
     private getAmountOfPictures(personDetails: Match["person"] | MatchDetailsAPI["results"]): number | null {
         let amountOfPictures: null | number = null;
-                                                
-        try{
+
+        try {
             amountOfPictures = personDetails.photos.length;
-        } catch(err){
+        } catch (err) {
             console.log(`Attempted to get amount of pictures for profile: ${personDetails.name} with id: ${personDetails._id} but failed due to error: ${err}`);
         }
         return amountOfPictures;
@@ -1917,13 +1917,13 @@ export class TinderController implements datingAppController {
         return this.watchersUIList.length === 0 ? true : false;
     }
 
-    public getReminders(reminderHttpList: ReminderHttp[]){
+    public getReminders(reminderHttpList: ReminderHttp[]) {
         //todo: show overlay
         Overlay.setLoadingOverlay('reminderOverlay', true);
-        this.requestHandler.postReminderList(reminderHttpList, (currentIndex: number, totalLength: number, statusText: string)=>{
+        this.requestHandler.postReminderList(reminderHttpList, (currentIndex: number, totalLength: number, statusText: string) => {
             console.log(`${currentIndex}, / ${totalLength} - ${statusText}`);
             Overlay.setLoadingOverlayProgress('reminderOverlay', currentIndex, totalLength, statusText);
-        }).then((reminderHttpList)=>{
+        }).then((reminderHttpList) => {
             console.dir(reminderHttpList);
             // eslint-disable-next-line no-debugger
             debugger;
