@@ -130,11 +130,15 @@
   height: 175px;
 }
 
+.fieldContainer--textarea .form-floating textarea::placeholder {
+  color: grey;
+}
+
 .select2-container--default .select2-selection--multiple li.select2-selection__choice {
   background-color: #646464;
 }
 
-.select2-dropdown.select2-dropdown--below {
+.select2-dropdown.select2-dropdown--below, .select2-dropdown.select2-dropdown--above {
   background-color: #bdbdbd;
 }
 
