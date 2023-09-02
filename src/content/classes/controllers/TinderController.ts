@@ -29,6 +29,10 @@ import { Overlay } from "../serrvices/Overlay";
 import { Screen } from "../util/Screen/Screen";
 import { ScreenAction } from "../util/Screen/ScreenAction";
 import { ScreenController } from "../util/Screen/ScreenList";
+import { ScreenElement } from "../util/Screen/ScreenElement";
+import { ScreenRetrievalMethod } from "../util/Screen/ScreenRetrievalMethod.enum";
+import { ConsoleColorLog } from "../util/ConsoleColorLog/ConsoleColorLog";
+import { LogColors } from "../util/ConsoleColorLog/LogColors";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
@@ -116,17 +120,20 @@ export class TinderController implements datingAppController {
                 new ScreenAction('like', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-like-default\\)"] button'),
                 new ScreenAction('pass', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button'),
                 new ScreenAction('superlike', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button')
-        ], [], 'swipe', true, true),
+            ], [
+                new ScreenElement('Name', '.recsCardboard__cards div.Ell', 'span[itemprop="name"]', true, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
+                new ScreenElement('Age', '.recsCardboard__cards div[class*="Animn\\($anim-slide-in-left\\)"]', 'span[itemprop="age"]', true, ScreenRetrievalMethod.GET_TEXT_ELEMENT)
+            ], 'swipe', true, true),
             new Screen(ScreenNavStateComboTinder.SwipeGold, [
                 new ScreenAction('like', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Like"):not(:contains("Super"))'),
                 new ScreenAction('pass', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Nope")'),
                 new ScreenAction('superlike', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Super Like")')
-        ], [], 'swipe', false, false),
+            ], [], 'swipe', false, false),
             new Screen(ScreenNavStateComboTinder.SwipeExplore, [
                 new ScreenAction('like', 'div[class*="Bdc\\($c-ds-border-gamepad-like-default\\)"] button:contains("Like"):not(:contains("Super"))'),
                 new ScreenAction('pass', 'div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button:contains("Nope")'),
                 new ScreenAction('superlike', 'div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button:contains("Super Like")')
-        ], [], 'swipe', true, false),
+            ], [], 'swipe', true, false),
             new Screen(ScreenNavStateComboTinder.Chat, [new ScreenAction('sendMessage', "div.BdT > form > button[type='submit']")], [], 'chat', false, false),
             new Screen(ScreenNavStateComboTinder.UnknownScreen, [], [], 'other', false, false),
         );
@@ -1174,28 +1181,67 @@ export class TinderController implements datingAppController {
                         return;
                     }
                 }
-            }, 
-            ()=>{
-                //TODO TODO TODO: add to be added profile data here
-                // TIP: Keep it stupidly simple; collect data from DOM & put them in the correct fields manually
-                const personName = $(`div[data-keyboard-gamepad="true"][aria-hidden="false"] *[itemprop="name"]`).first().text();
-                console.log(`Name is: ${personName}`);
-                // $(`*[data-recordref="Name"]`).val(personName);
+            },
+                () => {
+                    // //TODO TODO TODO: add to be added profile data here
+                    // // TIP: Keep it stupidly simple; collect data from DOM & put them in the correct fields manually
+                    // const personName = $(`div[data-keyboard-gamepad="true"][aria-hidden="false"] *[itemprop="name"]`).first().text();
+                    // console.log(`Name is: ${personName}`);
+                    // // $(`*[data-recordref="Name"]`).val(personName);
 
-                const dataRecordValuesFromCollectedData: DataRecordValues = {
-                    label: "Name",
-                    value: personName
-                };
-                                const test: DataField[] = newDataRecord.getAllAutoGatherDataFields();
-                                test.map((dataField: DataField)=>{
-                                    console.log(`This dataField is auto Gather: ${dataField.title}`);
-                                });
-                newDataRecord.addDataToDataFields([dataRecordValuesFromCollectedData]);
+                    // const dataRecordValuesFromCollectedData: DataRecordValues = {
+                    //     label: "Name",
+                    //     value: personName
+                    // };
+                    //                 const test: DataField[] = newDataRecord.getAllAutoGatherDataFields();
+                    //                 test.map((dataField: DataField)=>{
+                    //                     console.log(`This dataField is auto Gather: ${dataField.title}`);
+                    //                 });
+                    // newDataRecord.addDataToDataFields([dataRecordValuesFromCollectedData]);
 
-                this.uiRenderer.updateDataFieldValues();
+                    const screenElementsList: ScreenElement[] = this.screenList.getCurrentScreen().getScreenElements();
 
-                // TODO TODO TODO: first get if user is on swipe or swipe profile screen? both delivers different DOM,.. but wait! i removed swipe-profile screen..
-            });
+                    const dataRecordValuesFromCollectedData: DataRecordValues[] = [];
+                    screenElementsList.forEach((screenElement) => {
+                        const hasCollectedData = screenElement.collectData();
+
+                        if (hasCollectedData) {
+                            switch (screenElement.getName()) {
+                                case "Name": {
+                                    dataRecordValuesFromCollectedData.push(
+                                        {
+                                            label: screenElement.getName(),
+                                            value: screenElement.getValueAsString() //todo: figure out how to send to correct data type back to controller
+                                        });
+                                    break;
+                                }
+                                case "Age": {
+                                    dataRecordValuesFromCollectedData.push(
+                                        {
+                                            label: screenElement.getName(),
+                                            value: screenElement.getValueAsNumber() //todo: figure out how to send to correct data type back to controller
+                                        });
+                                    break;
+                                }
+                            }
+                        }
+
+                        // if (hasCollectedData) {
+                        //     dataRecordValuesFromCollectedData.push(
+                        //         {
+                        //             label: screenElement.getName(),
+                        //             value: screenElement.getValueAsString() //todo: figure out how to send to correct data type back to controller
+                        //         });
+                        // }
+                    });
+
+                    ConsoleColorLog.multiLog(`Here is the collected data from DOM: `, dataRecordValuesFromCollectedData, LogColors.RED, true);
+
+                    newDataRecord.addDataToDataFields(dataRecordValuesFromCollectedData);
+                    this.uiRenderer.updateDataFieldValues();
+
+                    // TODO TODO TODO: first get if user is on swipe or swipe profile screen? both delivers different DOM,.. but wait! i removed swipe-profile screen..
+                });
 
             const uiRequiredDataFields: DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
 

@@ -1,6 +1,7 @@
 import { ScreenNavStateComboTinder } from "./screenStateComboTinder.enum";
 import { ScreenAction } from "./ScreenAction";
 import { ScreenType } from "./ScreenTypeEnum";
+import { ScreenElement } from "./ScreenElement";
 
 export class Screen {
     private screenName: ScreenNavStateComboTinder | null = null;
@@ -17,18 +18,6 @@ export class Screen {
         this.isSwipeScreen = this._setScreenType(screenType);
         this.isMultiSwipeScreen = isMultiSwipeScreen;
         this.isNeedsUIAdjustments = isNeedsUIAdjustments;
-    }
-    private _setScreenType(screenType: string): ScreenType {
-        switch (screenType) {
-            case ScreenType.SWIPE:
-                return ScreenType.SWIPE
-            case ScreenType.CHAT:
-                return ScreenType.CHAT
-            case ScreenType.OTHER:
-                return ScreenType.OTHER;
-            default:
-                throw new Error(`ScreenType: ${screenType} was not recognized. Please make sure the provided screenType is a recognized screen type as defined in the screen type enum.`);
-        }
     }
 
     public getScreenName(): ScreenNavStateComboTinder | null {
@@ -61,6 +50,23 @@ export class Screen {
 
     public getScreenNeedsUiAdjustments(): boolean {
         return this.isNeedsUIAdjustments;
+    }
+
+    public getScreenElements(): ScreenElement[] {
+        return this.screenElementsList;
+    }
+
+    private _setScreenType(screenType: string): ScreenType {
+        switch (screenType) {
+            case ScreenType.SWIPE:
+                return ScreenType.SWIPE
+            case ScreenType.CHAT:
+                return ScreenType.CHAT
+            case ScreenType.OTHER:
+                return ScreenType.OTHER;
+            default:
+                throw new Error(`ScreenType: ${screenType} was not recognized. Please make sure the provided screenType is a recognized screen type as defined in the screen type enum.`);
+        }
     }
 }
 

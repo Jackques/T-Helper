@@ -84,6 +84,10 @@ export class ScreenElement {
         return this.currentValue as unknown as boolean;
     }
 
+    public getName(): string {
+        return this.name;
+    }
+
     private _isConfigDataValid(): void {
         switch (true) {
             case !this.name || this.name.length === 0:
@@ -124,7 +128,7 @@ export class ScreenElement {
         if (!this._lastElementExists($element, lastElementPath)) {
             ConsoleColorLog.singleLog(`Could not find element: ${lastElementPath}, tried to find it in DOMPath: ${this.DOMPath}`, false, LogColors.RED);
         }
-        const text = $element.find(lastElementPath).first().text();
+        const text = $element.find(lastElementPath).last().text();
         debugger;
         return text;
     }
