@@ -102,6 +102,10 @@ export class ScreenElement {
         return this.name;
     }
 
+    public clearValue(): void {
+        this.currentValue = null;
+    }
+
     private _isConfigDataValid(): void {
         switch (true) {
             case !this.name || this.name.length === 0:

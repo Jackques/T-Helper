@@ -36,6 +36,12 @@ export class Screen {
         return screenAction.getScreenActionDOMRef();
     }
 
+    public clearValuesScreenElements(): void {
+        this.screenElementsList.forEach((screenElement: ScreenElement) => {
+            screenElement.clearValue();
+        });
+    }
+
     public getScreenIsChatScreen(): boolean {
         return this.isSwipeScreen === ScreenType.CHAT;
     }
