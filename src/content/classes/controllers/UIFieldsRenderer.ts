@@ -456,7 +456,10 @@ export class UIFieldsRenderer {
         this.resetExistingFields();
 
         $(`body`).off("blur", '#uiHelperFieldsContainer [id^="datafieldUI_"]');
-        $(`body`).off("click", '[id^="submitAction_"]');
+        // $(`body`).off("click", '[id^="submitAction_"]');
+
+        $(`body`).off("mouseup", '[id^="submitAction_"]');
+        $(`body`).off("mousedown", '[id^="submitAction_"]');
 
         $(`body`).off("click", '[id="uiHelperFieldsCollectDataButton"]');
 
