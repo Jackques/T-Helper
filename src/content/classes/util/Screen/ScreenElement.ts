@@ -42,10 +42,10 @@ export class ScreenElement {
         if (elementPrePath !== null) {
             switch (this.DOMRetrievalMethod) {
                 case ScreenRetrievalMethod.GET_TEXT_ELEMENT:
-                    this.currentValue = this.getTextFromElement(elementPrePath, this.DOMPathLastElement);
+                    this.currentValue = this._getTextFromElement(elementPrePath, this.DOMPathLastElement);
                     return typeof this.currentValue === 'string' ? true : false;
                 case ScreenRetrievalMethod.GET_ELEMENT_EXISTS:
-                    this.currentValue = this.getIfElementExists(elementPrePath, this.DOMPathLastElement);
+                    this.currentValue = this._getIfElementExists(elementPrePath, this.DOMPathLastElement);
                     return typeof this.currentValue === 'boolean' ? true : false;
                 case ScreenRetrievalMethod.GET_ELEMENTS_AMOUNT:
                     this.currentValue = this.getAmountOfElements(elementPrePath, this.DOMPathLastElement);
@@ -122,18 +122,18 @@ export class ScreenElement {
     private _isCurrentValueValid(): boolean {
         switch (this.DOMRetrievalMethod) {
             case ScreenRetrievalMethod.GET_TEXT_ELEMENT:
-                return this.currentValue && typeof this.currentValue === 'string' ? true : false;
+                return typeof this.currentValue === 'string' ? true : false;
             case ScreenRetrievalMethod.GET_ELEMENT_EXISTS:
-                return this.currentValue && typeof this.currentValue === 'boolean' ? true : false;
+                return typeof this.currentValue === 'boolean' ? true : false;
             case ScreenRetrievalMethod.GET_ELEMENTS_AMOUNT:
-                return this.currentValue && typeof this.currentValue === 'number' ? true : false;
+                return typeof this.currentValue === 'number' ? true : false;
             default:
                 throw new Error(`Unexpected ScreenRetrievalMethod which is not included in checking if the currentValue is valid.`);
         }
     }
 
-    private getIfElementExists($element: JQuery<HTMLElement>, lastElementPath: string): boolean {
-        if(lastElementPath.length === 0){
+    private _getIfElementExists($element: JQuery<HTMLElement>, lastElementPath: string): boolean {
+        if(this.isLastElementPathEmpty(lastElementPath)){
             return $element.length > 0 ? true : false;
         }
         return this._lastElementExists($element, lastElementPath);
@@ -145,9 +145,9 @@ export class ScreenElement {
         }
     }
 
-    private getTextFromElement($element: JQuery<HTMLElement>, lastElementPath: string): string {
+    private _getTextFromElement($element: JQuery<HTMLElement>, lastElementPath: string): string {
         let resultText = '';
-        if(lastElementPath.length === 0){
+        if(this.isLastElementPathEmpty(lastElementPath)){
             resultText = $element.last().text();
             return resultText;
         }
@@ -166,7 +166,7 @@ export class ScreenElement {
     }
 
     private getAmountOfElements($element: JQuery<HTMLElement>, lastElementPath: string): number {
-        if(lastElementPath.length === 0){
+        if(this.isLastElementPathEmpty(lastElementPath)){
             return $element.length;
         }
         if (!this._lastElementExists($element, lastElementPath)) {
@@ -185,6 +185,11 @@ export class ScreenElement {
             return false;
         }
         return true;
+    }
+
+    private isLastElementPathEmpty(lastElementPath: string): boolean {
+        // if last element path is empty, then only the first element should be used to retrieve data from
+        return lastElementPath.length === 0 ? true : false;
     }
 
     // data retrieval methods;

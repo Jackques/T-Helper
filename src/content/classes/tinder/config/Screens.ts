@@ -29,7 +29,7 @@ new Screen(ScreenNavStateComboTinder.SwipeGold, [
     new ScreenElement('Job', getDOMPathForJob, 'div:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
     new ScreenElement('School', getDOMPathForSchool, 'div:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
     new ScreenElement('City', getDOMPathForCity, 'div:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT, (value: string) => value.replace("Woont in", "")),
-    new ScreenElement('Has-profiletext', 'div.profileCard__card div[class*="$c-ds-background-primary"]', 'div.BreakWord div', false, ScreenRetrievalMethod.GET_ELEMENT_EXISTS),
+    new ScreenElement('Has-profiletext', 'div.profileCard__card div[class*="$c-ds-background-primary"] div.BreakWord div', '', false, ScreenRetrievalMethod.GET_ELEMENT_EXISTS),
     new ScreenElement('Amount-of-pictures', 'div.profileCard__slider', 'span.keen-slider__slide', false, ScreenRetrievalMethod.GET_ELEMENTS_AMOUNT),
     new ScreenElement('Distance-in-km', getDOMPathForDistance, 'div[class*="$c-ds-text-secondary"]', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT, (value: string) => value.replace(" km uit de buurt", "")),
 ], 'swipe', false, false),
