@@ -458,6 +458,11 @@ export class UIFieldsRenderer {
         $(`body`).off("blur", '#uiHelperFieldsContainer [id^="datafieldUI_"]');
         $(`body`).off("click", '[id^="submitAction_"]');
 
+        $(`body`).off("click", '[id="uiHelperFieldsCollectDataButton"]'); // TODO TODO TODO: Collect data button??
+
+        $(`body`).off("click", '[id="uiHelperFieldsShowButton"]'); // TODO TODO TODO: show button??
+        $(`body`).off("click", '[id="uiHelperFieldsHideButton"]'); // TODO TODO TODO:hide button??
+
         for(let i=0; i <= (this.decoratedSubmitEventsDOMElementsList.length - 1); i = i+1){
             $(this.decoratedSubmitEventsDOMElementsList[i]).removeAttr('id');
         }
