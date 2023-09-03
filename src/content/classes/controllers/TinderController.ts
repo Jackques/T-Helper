@@ -1150,29 +1150,10 @@ export class TinderController implements datingAppController {
                 }
             },
                 () => {
-                    // //TODO TODO TODO: add to be added profile data here
-                    // // TIP: Keep it stupidly simple; collect data from DOM & put them in the correct fields manually
-                    // const personName = $(`div[data-keyboard-gamepad="true"][aria-hidden="false"] *[itemprop="name"]`).first().text();
-                    // console.log(`Name is: ${personName}`);
-                    // // $(`*[data-recordref="Name"]`).val(personName);
-
-                    // const dataRecordValuesFromCollectedData: DataRecordValues = {
-                    //     label: "Name",
-                    //     value: personName
-                    // };
-                    // const test: string[] = newDataRecord.getAllAutoGatherDataFields().map((dataField)=> dataField.title);
-                    //                 test.map((dataField: DataField)=>{
-                    //                     console.log(`This dataField is auto Gather: ${dataField.title}`);
-                    //                 });
-                    // newDataRecord.addDataToDataFields([dataRecordValuesFromCollectedData]);
-
-                    // const screenElementsList: ScreenElement[] = this.screenList.getCurrentScreen().getScreenElements();
-
                     const dataRecordValuesFromCollectedData: DataRecordValues[] = [];
                     this.screenList.getCurrentScreen().getScreenElements().forEach((screenElement: ScreenElement) => {
                         const hasCollectedData = screenElement.collectData();
 
-                        // if (hasCollectedData) {
                             switch (screenElement.getName()) {
                                 case "Name": {
                                     dataRecordValuesFromCollectedData.push(
@@ -1234,7 +1215,6 @@ export class TinderController implements datingAppController {
                                     hasCollectedData ? dataRecordValuesFromCollectedData.push(
                                         {
                                             label: screenElement.getName(),
-                                            // value: screenElement.getValueAsNumber() //todo: add config for collection
                                             value: [{
                                                 dateTime: new Date().toISOString(),
                                                 distanceInKM: screenElement.getValueAsNumber()
@@ -1245,15 +1225,6 @@ export class TinderController implements datingAppController {
                                 default:
                                     ConsoleColorLog.singleLog(`Screen element with name: ${screenElement.getName()} is not collected for adding to the dataRecord. Please check if this is correct.`, screenElement.getValueAsString(), LogColors.YELLOW);
                             }
-                        // }
-
-                        // if (hasCollectedData) {
-                        //     dataRecordValuesFromCollectedData.push(
-                        //         {
-                        //             label: screenElement.getName(),
-                        //             value: screenElement.getValueAsString() //todo: figure out how to send to correct data type back to controller
-                        //         });
-                        // }
                     });
                     this.screenList.getCurrentScreen().clearValuesScreenElements();
 
