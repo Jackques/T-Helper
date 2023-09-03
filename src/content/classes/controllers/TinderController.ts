@@ -212,10 +212,22 @@ export class TinderController implements datingAppController {
                 } else {
                     return;
                 }
-            } else if (this.screenList.getCurrentScreen().getScreenName() === ScreenNavStateComboTinder.SwipeExplore) {
+            // } else if (this.screenList.getCurrentScreen().getScreenName() === ScreenNavStateComboTinder.SwipeExplore) {
+            } else if (this.getCurrentScreenByUrlAndDOM() === ScreenNavStateComboTinder.SwipeExplore) {
                 const urlPartsList = window.location.href.split('/');
                 const newExploreCategory = urlPartsList[urlPartsList.length - 1] === 'explore' ? null : urlPartsList[urlPartsList.length - 1];
-                if (this.currentExploreCategory === newExploreCategory) {
+
+                // TODO TODO TODO: REFACTOR LOGIC TO GETSCREENBYURL&DOM BECAUSE THIS IS GETTING RIDICULOUS;
+                // THAT METHOD GETS & SETS chat url extension AND category extension for screen in a different "special set properties to check" and MAYBE a different method on screenList like screenList.screenisDifferentBecauseWeOnDifferentcategoryOrChatSoNeedsUpdate()
+                // if we are on swipeexplore, 
+                    // was the app on swipeexploredetail? 
+                        // if yes, refresh because we need to recognize the correct screen we are on for the collect data button
+                        // is no (so the app was on swipeexplore) continue.. 
+                    // are we on swipeexplore same category? 
+                        // if so do nothing to prevent thousands of overlays
+                        // if not, we want a refresh
+                if (this.screenList.getCurrentScreen().getScreenName() === ScreenNavStateComboTinder.SwipeExplore && this.currentExploreCategory === newExploreCategory) {
+
                     return;
                 }
                 console.log(`Switched from SWIPEEXPLORE page: ${this.currentExploreCategory} to page: ${newExploreCategory}`);
