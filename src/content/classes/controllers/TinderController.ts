@@ -1203,6 +1203,14 @@ export class TinderController implements datingAppController {
                                         });
                                     break;
                                 }
+                                case "Is-verified": {
+                                    dataRecordValuesFromCollectedData.push(
+                                        {
+                                            label: screenElement.getName(),
+                                            value: hasCollectedData ? screenElement.getValueAsBoolean() : false
+                                        });
+                                    break;
+                                }
                                 case "Amount-of-pictures": {
                                     dataRecordValuesFromCollectedData.push(
                                         {
