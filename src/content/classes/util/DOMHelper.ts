@@ -16,4 +16,18 @@ export class DOMHelper {
             return null;
         }
     }
+
+    static getJqueryElementsByFindingInJqueryElement($baseElement: JQuery<HTMLElement>, searchElementPath: string): JQuery<HTMLElement> | null {
+        const baseElement: JQuery | null = $($baseElement);
+        const JqueryElements: JQuery | null = $(searchElementPath);
+        if (baseElement.length > 0 && JqueryElements.length > 0) {
+            const foundElements = $($baseElement).find(searchElementPath);
+            if(foundElements.length > 0){
+                return foundElements;
+            }
+            return null;
+        } else {
+            return null;
+        }
+    }
 }
