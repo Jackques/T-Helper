@@ -5,26 +5,40 @@ import { ScreenRetrievalMethod } from "./ScreenRetrievalMethod.enum";
 
 export class ScreenElement {
     private name = "";
-    private DOMPath = "";
+    private DOMPath: string | (() => HTMLElement | null) = "";
     private DOMPathLastElement = "";
     private errorIfNotFound = false;
     private DOMRetrievalMethod: ScreenRetrievalMethod;
+    private preManipulateValue: ((value: string) => string) | null = null;
 
     private currentValue: unknown;
 
-    constructor(name: string, DOMPath: string, DOMPathLastElement: string, errorIfNotFound: boolean, DOMRetrievalMethod: ScreenRetrievalMethod) {
+    constructor(name: string, DOMPath: string | (() => HTMLElement | null), DOMPathLastElement: string, errorIfNotFound: boolean, DOMRetrievalMethod: ScreenRetrievalMethod, preManipulateValue?: ((value: string) => string)) {
         this.name = name;
         this.DOMPath = DOMPath;
         this.DOMPathLastElement = DOMPathLastElement;
         this.errorIfNotFound = errorIfNotFound;
         this.DOMRetrievalMethod = DOMRetrievalMethod;
+        this.preManipulateValue = preManipulateValue ? preManipulateValue : null;
 
         this._isConfigDataValid();
         this._isErrorNotFoundIncorrect();
+        this._isPreManipulateValueSet();
     }
 
     public collectData(): boolean {
-        const elementPrePath = DOMHelper.getJqueryElementsByJquerySelector(this.DOMPath);
+        let elementPrePath: JQuery<HTMLElement> | null = null;
+        // let result: string | null = null;
+        // const elementPrePath: JQuery<HTMLElement> | null = typeof this.DOMPath === 'string' ? DOMHelper.getJqueryElementsByJquerySelector(this.DOMPath) : $(this.DOMPath() ? this.DOMPath() : "");
+        if(typeof this.DOMPath === 'string'){
+            elementPrePath = DOMHelper.getJqueryElementsByJquerySelector(this.DOMPath);
+        }else if (typeof this.DOMPath === 'function'){
+            const domPath = this.DOMPath();
+            if(domPath){
+                elementPrePath = $(domPath);
+            }
+        }
+        
         if (elementPrePath !== null) {
             switch (this.DOMRetrievalMethod) {
                 case ScreenRetrievalMethod.GET_TEXT_ELEMENT:
@@ -42,7 +56,7 @@ export class ScreenElement {
             }
         }
 
-        const errorMessage = `Could not find element by DOMPath: ${this.DOMPath}. Please check the DOMpath.`;
+        const errorMessage = `${this.name} - Could not find element by DOMPath/Function: ${this.DOMPath ? typeof this.DOMPath === 'string' : 'CHECK FUNCTION'}. Please check the DOMpath/function.`;
 
         if (this.errorIfNotFound) {
             alert(errorMessage);
@@ -92,10 +106,8 @@ export class ScreenElement {
         switch (true) {
             case !this.name || this.name.length === 0:
                 throw new Error(`Provided property name: ${this.name} is not valid`);
-            case !this.DOMPath || this.DOMPath.length === 0:
+            case typeof this.DOMPath === 'string' && this.DOMPath.length === 0 || !this.DOMPath:
                 throw new Error(`Provided property name: ${this.DOMPath} is not valid`);
-            case !this.DOMPathLastElement || this.DOMPathLastElement.length === 0:
-                throw new Error(`Provided property name: ${this.DOMPathLastElement} is not valid`);
             case !this.DOMRetrievalMethod ? true : false:
                 throw new Error(`Provided property name: ${this.DOMRetrievalMethod} is not valid`);
         }
@@ -121,28 +133,54 @@ export class ScreenElement {
     }
 
     private getIfElementExists($element: JQuery<HTMLElement>, lastElementPath: string): boolean {
+        if(lastElementPath.length === 0){
+            return $element.length > 0 ? true : false;
+        }
         return this._lastElementExists($element, lastElementPath);
     }
 
+    private _isPreManipulateValueSet(): void {
+        if(this.preManipulateValue && this.DOMRetrievalMethod !== ScreenRetrievalMethod.GET_TEXT_ELEMENT){
+            throw new Error(`preManipulateValue is set on screenElement: ${this.name}, but DOMRetrievalMethod is not set to GET_TEXT_ELEMENT. Only the GET_TEXT_ELEMENT can have a preManipulateValue.`);
+        }
+    }
+
     private getTextFromElement($element: JQuery<HTMLElement>, lastElementPath: string): string {
+        let resultText = '';
+        if(lastElementPath.length === 0){
+            resultText = $element.last().text();
+            return resultText;
+        }
         if (!this._lastElementExists($element, lastElementPath)) {
             ConsoleColorLog.singleLog(`Could not find element: ${lastElementPath}, tried to find it in DOMPath: ${this.DOMPath}`, false, LogColors.RED);
         }
-        const text = $element.find(lastElementPath).last().text();
-        debugger;
-        return text;
+        // resultText = $element.find(lastElementPath).last().text();
+        const result = DOMHelper.getJqueryElementsByFindingInJqueryElement($element, lastElementPath);
+        resultText = result && result.length > 0 ? result.last().text() : '';
+        // debugger;
+
+        if(this.preManipulateValue){
+            resultText = this.preManipulateValue(resultText);
+        }
+        return resultText;
     }
 
     private getAmountOfElements($element: JQuery<HTMLElement>, lastElementPath: string): number {
+        if(lastElementPath.length === 0){
+            return $element.length;
+        }
         if (!this._lastElementExists($element, lastElementPath)) {
             ConsoleColorLog.singleLog(`Could not find element: ${lastElementPath}, tried to find it in DOMPath: ${this.DOMPath}`, false, LogColors.RED);
         }
-        return $element.find(lastElementPath).length;
+        // return $element.find(lastElementPath).length;
+        const result = DOMHelper.getJqueryElementsByFindingInJqueryElement($element, lastElementPath);
+        return result ? result.length : NaN;
     }
 
     private _lastElementExists($element: JQuery<HTMLElement>, lastElementPath: string): boolean {
-        const lastElement = $element.find(lastElementPath);
-        if (lastElement.length === 0) {
+        // const lastElement = $element.find(lastElementPath);
+        const lastElement = DOMHelper.getJqueryElementsByFindingInJqueryElement($element, lastElementPath);
+        if (!lastElement || lastElement.length === 0) {
             ConsoleColorLog.singleLog(`Could not find element: ${lastElementPath}, tried to find it in DOMPath: ${this.DOMPath}`, false, LogColors.RED);
             return false;
         }
