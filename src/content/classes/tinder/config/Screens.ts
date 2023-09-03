@@ -12,12 +12,15 @@ new Screen(
         new ScreenAction('pass', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button'),
         new ScreenAction('superlike', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button')
     ], [
-        new ScreenElement('Name', '.recsCardboard__cards div.Ell', 'span[itemprop="name"]', true, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
-        new ScreenElement('Age', '.recsCardboard__cards div[class*="Animn\\($anim-slide-in-left\\)"]', 'span[itemprop="age"]', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
-
+        new ScreenElement('Name', '.recsCardboard__cards div[aria-hidden="false"] div.Ell', 'span[itemprop="name"]', true, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
+        new ScreenElement('Age', '.recsCardboard__cards div[aria-hidden="false"] div[class*="Animn"]', 'span[itemprop="age"]', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
         new ScreenElement('Job', getDOMPathForJob, 'div:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
         new ScreenElement('School', getDOMPathForSchool, 'div:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
-        new ScreenElement('City', getDOMPathForCity, 'div.C\\($c-ds-text-secondary\\)', true, ScreenRetrievalMethod.GET_TEXT_ELEMENT) //TODO TODO TODO: Check this
+        new ScreenElement('City', getDOMPathForCity, 'div:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT, (value: string) => value.replace("Woont in", "")),
+        new ScreenElement('Has-profiletext', '.recsCardboard__cards div[aria-hidden="false"] div.BreakWord', '', false, ScreenRetrievalMethod.GET_ELEMENT_EXISTS),
+        new ScreenElement('Is-verified', 'div.recsCardboard__cards > div[aria-hidden="false"] title:contains("Geverifieerd!")', '', false, ScreenRetrievalMethod.GET_ELEMENT_EXISTS),
+        new ScreenElement('Amount-of-pictures', '.recsCardboard__cards div[aria-hidden="false"]', 'button.bullet', false, ScreenRetrievalMethod.GET_ELEMENTS_AMOUNT),
+        new ScreenElement('Distance-in-km', getDOMPathForDistance, 'div:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT, (value: string) => value.replace(" km uit de buurt", "")),
     ], 'swipe', true, true),
 new Screen(ScreenNavStateComboTinder.SwipeGold, [
     new ScreenAction('like', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Like"):not(:contains("Super"))'),
@@ -32,7 +35,7 @@ new Screen(ScreenNavStateComboTinder.SwipeGold, [
     new ScreenElement('Has-profiletext', 'div.profileCard__card div[class*="$c-ds-background-primary"] div.BreakWord div', '', false, ScreenRetrievalMethod.GET_ELEMENT_EXISTS),
     new ScreenElement('Is-verified', 'div.profileCard__card title:contains("Geverifieerd!")', '', false, ScreenRetrievalMethod.GET_ELEMENT_EXISTS),
     new ScreenElement('Amount-of-pictures', 'div.profileCard__slider', 'span.keen-slider__slide', false, ScreenRetrievalMethod.GET_ELEMENTS_AMOUNT),
-    new ScreenElement('Distance-in-km', getDOMPathForDistance, 'div[class*="$c-ds-text-secondary"]', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT, (value: string) => value.replace(" km uit de buurt", "")),
+    new ScreenElement('Distance-in-km', getDOMPathForDistance, 'div:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT, (value: string) => value.replace(" km uit de buurt", "")),
 ], 'swipe', false, false),
 new Screen(ScreenNavStateComboTinder.SwipeExplore, [
     new ScreenAction('like', 'div[class*="Bdc\\($c-ds-border-gamepad-like-default\\)"] button:contains("Like"):not(:contains("Super"))'),
