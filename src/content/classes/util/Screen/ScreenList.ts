@@ -93,6 +93,18 @@ export class ScreenController {
         return currentScreen;
     }
 
+    public getPreviousScreen(): Screen {
+        const previousScreen = this.screenList.find((screen)=>{
+            return screen.getScreenName() === this.previousScreen;
+        });
+
+        if(!previousScreen){
+            throw new Error(`Could not get screen ${this.previousScreen} in screen list. Please check the set screen list.`);
+        }
+
+        return previousScreen;
+    }
+
     private getScreenByScreenName(screenName: ScreenNavStateComboTinder): Screen {
         const screenAction = this.screenList.find(screen => screen.getScreenName() === screenName);
         if(!screenAction){

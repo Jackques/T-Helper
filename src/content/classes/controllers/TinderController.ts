@@ -59,6 +59,8 @@ export class TinderController implements datingAppController {
     private watchersUIList: MutationObserver[] = [];
     private currentExploreCategory: string | null = null;
 
+    private currentDataRecordSwipe: DataRecord = new DataRecord();
+
     constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: DataStorage, dataPort: chrome.runtime.Port | null) {
 
         this.dataRetrievalMethod = dataRetrievalMethod;
@@ -197,7 +199,7 @@ export class TinderController implements datingAppController {
         // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
         // Thus I can always apply DOM manipulations on them when needed!
         const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
-            ConsoleColorLog.singleLog(`Screen: `, this.getCurrentScreenByUrlAndDOM(), LogColors.BLUE);
+            // ConsoleColorLog.singleLog(`Screen: `, this.getCurrentScreenByUrlAndDOM(), LogColors.BLUE);
 
             if (this.currentScreenTimeoutId !== null) {
                 // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
@@ -248,15 +250,18 @@ export class TinderController implements datingAppController {
 
                 console.log(`execute add UI helpers for screen: ${this.screenList.getCurrentScreen()}`);
 
+                this.currentDataRecordSwipe = this._getCorrectNewDataRecord();
+
                 if (this.dataTableNeedsToBeUpdated) {
                     this.refreshDataTableMatchesAndMatchMessages(this.requestHandler).then(() => {
                         this.setRefreshDataTable(false);
-                        this.setSwipeHelperOnScreen();
+                        this.screenList.updateCurrentScreen(this.getCurrentScreenByUrlAndDOM());
+                        this.addUIHelpers(this.screenList, this.currentDataRecordSwipe);
                     }).finally(() => {
                         Overlay.setLoadingOverlay('switchScreen', false);
                     });
                 } else {
-                    this.addUIHelpers(this.screenList);
+                    this.addUIHelpers(this.screenList, this.currentDataRecordSwipe);
                     Overlay.setLoadingOverlay('switchScreen', false);
                 }
 
@@ -269,6 +274,24 @@ export class TinderController implements datingAppController {
         });
 
         this.watchersUIList.push(mutationObv);
+    }
+
+    private _getCorrectNewDataRecord(): DataRecord {
+        // if previous screen is swipe & current screen is swipe detail, keep the same dataRecord AND if is vice-versa
+        // if previous screen is swipeexplore & current screen is swipeexploredetail, keep the same dataRecord AND if is vice-versa
+        if(this.currentDataRecordSwipe === null){
+            this.currentDataRecordSwipe = new DataRecord();
+        }
+        
+        switch (true) {
+            case this.screenList.getPreviousScreen().getScreenName() === ScreenNavStateComboTinder.Swipe && this.screenList.getCurrentScreen().getScreenName() === ScreenNavStateComboTinder.SwipeDetail:
+            case this.screenList.getPreviousScreen().getScreenName() === ScreenNavStateComboTinder.SwipeDetail && this.screenList.getCurrentScreen().getScreenName() === ScreenNavStateComboTinder.Swipe:
+            case this.screenList.getPreviousScreen().getScreenName() === ScreenNavStateComboTinder.SwipeExplore && this.screenList.getCurrentScreen().getScreenName() === ScreenNavStateComboTinder.SwipeExploreDetail:
+            case this.screenList.getPreviousScreen().getScreenName() === ScreenNavStateComboTinder.SwipeExploreDetail && this.screenList.getCurrentScreen().getScreenName() === ScreenNavStateComboTinder.SwipeExplore:
+                return this.currentDataRecordSwipe;
+            default: 
+                return new DataRecord();
+            }
     }
 
     private setMessageListWatcherOnScreen() {
@@ -972,10 +995,10 @@ export class TinderController implements datingAppController {
 
     public setSwipeHelperOnScreen(): void {
         this.screenList.updateCurrentScreen(this.getCurrentScreenByUrlAndDOM());
-        this.addUIHelpers(this.screenList);
+        this.addUIHelpers(this.screenList, this.currentDataRecordSwipe);
     }
 
-    public addUIHelpers(screenController: ScreenController, forceRefresh?: boolean): void {
+    public addUIHelpers(screenController: ScreenController, dataRecordToBeUsedForSwipe: DataRecord, forceRefresh?: boolean): void {
         if (screenController.getCurrentScreen().getScreenIsChatScreen()) {
 
             if (forceRefresh) {
@@ -1147,7 +1170,7 @@ export class TinderController implements datingAppController {
                 this.uiRenderer.removeAllUIHelpers();
             }
 
-            const newDataRecord: DataRecord = new DataRecord();
+            const newDataRecord: DataRecord = dataRecordToBeUsedForSwipe;
 
             this.uiRenderer.renderFieldsContainerForScreen(screenController, () => {
 
@@ -1442,7 +1465,8 @@ export class TinderController implements datingAppController {
 
                             if (this.screenList.isCurrentScreenMultiSwipe()) {
                                 console.log(`CURRENT SCREEN IS SWIPE OR SWIPEEXPLORE, thus re-adding UI HELPERS NOW`);
-                                this.addUIHelpers(this.screenList, true);
+                                this.currentDataRecordSwipe = new DataRecord();
+                                this.addUIHelpers(this.screenList, this.currentDataRecordSwipe, true);
                             } else {
                                 console.log(`CURRENT SCREEN IS ${this.screenList.getCurrentScreen()}, THUS REMOVING ALL UI HELPERS NOW`);
                                 this.uiRenderer.removeAllUIHelpers();
@@ -1475,7 +1499,8 @@ export class TinderController implements datingAppController {
 
                         if (this.screenList.isCurrentScreenMultiSwipe()) {
                             console.log(`CURRENT SCREEN IS SWIPE OR SWIPEEXPLORE, thus re-adding UI HELPERS NOW`);
-                            this.addUIHelpers(this.screenList, true);
+                            this.currentDataRecordSwipe = new DataRecord();
+                            this.addUIHelpers(this.screenList, this.currentDataRecordSwipe, true);
                         } else {
                             console.log(`CURRENT SCREEN IS ${this.screenList.getCurrentScreen()}, THUS REMOVING ALL UI HELPERS NOW`);
                             this.uiRenderer.removeAllUIHelpers();
