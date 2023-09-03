@@ -1166,13 +1166,13 @@ export class TinderController implements datingAppController {
                     //                 });
                     // newDataRecord.addDataToDataFields([dataRecordValuesFromCollectedData]);
 
-                    const screenElementsList: ScreenElement[] = this.screenList.getCurrentScreen().getScreenElements();
+                    // const screenElementsList: ScreenElement[] = this.screenList.getCurrentScreen().getScreenElements();
 
                     const dataRecordValuesFromCollectedData: DataRecordValues[] = [];
-                    screenElementsList.forEach((screenElement) => {
+                    this.screenList.getCurrentScreen().getScreenElements().forEach((screenElement: ScreenElement) => {
                         const hasCollectedData = screenElement.collectData();
 
-                        if (hasCollectedData) {
+                        // if (hasCollectedData) {
                             switch (screenElement.getName()) {
                                 case "Name": {
                                     dataRecordValuesFromCollectedData.push(
@@ -1194,7 +1194,7 @@ export class TinderController implements datingAppController {
                                     dataRecordValuesFromCollectedData.push(
                                         {
                                             label: screenElement.getName(),
-                                            value: screenElement.getValueAsString()
+                                            value: hasCollectedData ? screenElement.getValueAsString() : "" 
                                         });
                                     break;
                                 }
@@ -1202,7 +1202,7 @@ export class TinderController implements datingAppController {
                                     dataRecordValuesFromCollectedData.push(
                                         {
                                             label: screenElement.getName(),
-                                            value: screenElement.getValueAsString()
+                                            value: hasCollectedData ? screenElement.getValueAsString() : ""
                                         });
                                     break;
                                 }
@@ -1210,7 +1210,7 @@ export class TinderController implements datingAppController {
                                     dataRecordValuesFromCollectedData.push(
                                         {
                                             label: screenElement.getName(),
-                                            value: screenElement.getValueAsString() //todo: add config for collection
+                                            value: hasCollectedData ? screenElement.getValueAsString() : ""
                                         });
                                     break;
                                 }
@@ -1218,7 +1218,7 @@ export class TinderController implements datingAppController {
                                     dataRecordValuesFromCollectedData.push(
                                         {
                                             label: screenElement.getName(),
-                                            value: screenElement.getValueAsBoolean() //todo: add config for collection
+                                            value: hasCollectedData ? screenElement.getValueAsString() : false
                                         });
                                     break;
                                 }
@@ -1226,12 +1226,12 @@ export class TinderController implements datingAppController {
                                     dataRecordValuesFromCollectedData.push(
                                         {
                                             label: screenElement.getName(),
-                                            value: screenElement.getValueAsNumber() //todo: add config for collection
+                                            value: hasCollectedData ? screenElement.getValueAsString() : null
                                         });
                                     break;
                                 }
                                 case "Distance-in-km": {
-                                    dataRecordValuesFromCollectedData.push(
+                                    hasCollectedData ? dataRecordValuesFromCollectedData.push(
                                         {
                                             label: screenElement.getName(),
                                             // value: screenElement.getValueAsNumber() //todo: add config for collection
@@ -1239,13 +1239,13 @@ export class TinderController implements datingAppController {
                                                 dateTime: new Date().toISOString(),
                                                 distanceInKM: screenElement.getValueAsNumber()
                                             }]
-                                        });
+                                        }) : null;
                                     break;
                                 }
                                 default:
                                     ConsoleColorLog.singleLog(`Screen element with name: ${screenElement.getName()} is not collected for adding to the dataRecord. Please check if this is correct.`, screenElement.getValueAsString(), LogColors.YELLOW);
                             }
-                        }
+                        // }
 
                         // if (hasCollectedData) {
                         //     dataRecordValuesFromCollectedData.push(
@@ -1255,6 +1255,7 @@ export class TinderController implements datingAppController {
                         //         });
                         // }
                     });
+                    this.screenList.getCurrentScreen().clearValuesScreenElements();
 
                     ConsoleColorLog.multiLog(`Here is the collected data from DOM: `, dataRecordValuesFromCollectedData, LogColors.GREEN, true);
 
