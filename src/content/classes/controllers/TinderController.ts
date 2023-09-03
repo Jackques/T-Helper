@@ -197,6 +197,7 @@ export class TinderController implements datingAppController {
         // Only need to observe the swipe-or-chat container. The matches & messageList container are always present (though not visible) anyway!
         // Thus I can always apply DOM manipulations on them when needed!
         const mutationObv = new MutationObserver((mutations: MutationRecord[]) => {
+            ConsoleColorLog.singleLog(`Screen: `, this.getCurrentScreenByUrlAndDOM(), LogColors.BLUE);
 
             if (this.currentScreenTimeoutId !== null) {
                 // if timeout below is already set once, prevent it from setting it again untill it finishes to save resources
@@ -219,7 +220,7 @@ export class TinderController implements datingAppController {
                 }
                 console.log(`Switched from SWIPEEXPLORE page: ${this.currentExploreCategory} to page: ${newExploreCategory}`);
                 this.currentExploreCategory = newExploreCategory;
-            } else if (this.screenList.getCurrentScreen().getScreenName() === this.getCurrentScreenByDOM()) {
+            } else if (this.screenList.getCurrentScreen().getScreenName() === this.getCurrentScreenByUrlAndDOM()) {
                 return;
             }
 
@@ -228,7 +229,7 @@ export class TinderController implements datingAppController {
             this.uiRenderer.removeAllUIHelpers();
 
             this.currentScreenTimeoutId = setTimeout(() => {
-                this.screenList.updateCurrentScreen(this.getCurrentScreenByDOM());
+                this.screenList.updateCurrentScreen(this.getCurrentScreenByUrlAndDOM());
                 console.log(`Current screen: ${this.screenList.getCurrentScreen()}`);
 
                 this.currentScreenTimeoutId = null;
@@ -958,7 +959,7 @@ export class TinderController implements datingAppController {
     }
 
     public setSwipeHelperOnScreen(): void {
-        this.screenList.updateCurrentScreen(this.getCurrentScreenByDOM());
+        this.screenList.updateCurrentScreen(this.getCurrentScreenByUrlAndDOM());
         this.addUIHelpers(this.screenList);
     }
 
@@ -1140,10 +1141,13 @@ export class TinderController implements datingAppController {
 
                 if (this.screenList.isCurrentScreenNeedsUIAdjustments()) {
                     const swipeContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('.recsCardboard__cards');
+                    const swipeContainerDOMProfile: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('.profileCard__card');
                     if (swipeContainerDOM !== null) {
                         $(swipeContainerDOM).css('position', 'absolute');
                         $(swipeContainerDOM).css('left', '-200px');
-                    } else {
+                    } else if(swipeContainerDOMProfile !== null){
+                        // nothing to adjust here
+                    }else {
                         console.error(`Cannot find swipe container DOM element. Please update the selectors.`);
                         return;
                     }
@@ -1588,21 +1592,29 @@ export class TinderController implements datingAppController {
         return href.substring(href.lastIndexOf('/') + 1);
     }
 
-    public getCurrentScreenByDOM(): ScreenNavStateComboTinder {
+    public getCurrentScreenByUrlAndDOM(): ScreenNavStateComboTinder {
         const swipeIdentifier = '.recsToolbar';
         const chatIdentifier = '.chat';
+
+        const detailIdentifier = '.profileCard__card';
 
         let currentPage: ScreenNavStateComboTinder;
 
         switch (true) {
-            case $(swipeIdentifier).length > 0 && window.location.href.includes("/app/explore/"):
+            case $(swipeIdentifier).length > 0 && window.location.href.includes("/app/explore/") && $(detailIdentifier).length === 0:
                 currentPage = ScreenNavStateComboTinder.SwipeExplore;
+                break;
+            case $(swipeIdentifier).length > 0 && window.location.href.includes("/app/explore/") && $(detailIdentifier).length > 0:
+                currentPage = ScreenNavStateComboTinder.SwipeExploreDetail;
                 break;
             case $(swipeIdentifier).length > 0 && window.location.href.endsWith("app/likes-you"):
                 currentPage = ScreenNavStateComboTinder.SwipeGold;
                 break;
-            case $(swipeIdentifier).length > 0 && window.location.href.includes("recs"):
+            case $(swipeIdentifier).length > 0 && window.location.href.includes("recs") && $(detailIdentifier).length === 0:
                 currentPage = ScreenNavStateComboTinder.Swipe;
+                break;
+            case $(swipeIdentifier).length > 0 && window.location.href.includes("recs")  && $(detailIdentifier).length > 0:
+                currentPage = ScreenNavStateComboTinder.SwipeDetail;
                 break;
             case $(chatIdentifier).length > 0 && window.location.href.includes('messages'):
                 currentPage = ScreenNavStateComboTinder.Chat;
