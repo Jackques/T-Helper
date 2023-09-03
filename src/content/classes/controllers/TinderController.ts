@@ -26,20 +26,19 @@ import { reminderAmountItem } from "src/content/interfaces/data/reminderAmountIt
 import { Reminder } from "../util/NeedsReminder";
 import { ReminderHttp } from "../data/ReminderHttp";
 import { Overlay } from "../serrvices/Overlay";
-import { Screen } from "../util/Screen/Screen";
-import { ScreenAction } from "../util/Screen/ScreenAction";
 import { ScreenController } from "../util/Screen/ScreenList";
 import { ScreenElement } from "../util/Screen/ScreenElement";
-import { ScreenRetrievalMethod } from "../util/Screen/ScreenRetrievalMethod.enum";
 import { ConsoleColorLog } from "../util/ConsoleColorLog/ConsoleColorLog";
 import { LogColors } from "../util/ConsoleColorLog/LogColors";
+import { Screen } from "../util/Screen/Screen";
+import { screens } from "../tinder/config/Screens";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
     private hasCredentials = false;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
 
-    private screenList: ScreenController = this._setScreens();
+    private screenList: ScreenController = new ScreenController(screens);
     private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer(this.screenList);
 
     private xAuthToken = '';
@@ -109,38 +108,6 @@ export class TinderController implements datingAppController {
         } else {
             console.error(`Unknown data retrievelMethod for ${this.nameController}`);
         }
-    }
-
-    private _setScreens(): ScreenController {
-
-        const screenActionsList: Screen[] = [];
-
-        screenActionsList.push(
-            new Screen(ScreenNavStateComboTinder.Swipe, [
-                new ScreenAction('like', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-like-default\\)"] button'),
-                new ScreenAction('pass', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button'),
-                new ScreenAction('superlike', '.recsCardboard__cards div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button')
-            ], [
-                new ScreenElement('Name', '.recsCardboard__cards div.Ell', 'span[itemprop="name"]', true, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
-                new ScreenElement('Age', '.recsCardboard__cards div[class*="Animn\\($anim-slide-in-left\\)"]', 'span[itemprop="age"]', true, ScreenRetrievalMethod.GET_TEXT_ELEMENT)
-            ], 'swipe', true, true),
-            new Screen(ScreenNavStateComboTinder.SwipeGold, [
-                new ScreenAction('like', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Like"):not(:contains("Super"))'),
-                new ScreenAction('pass', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Nope")'),
-                new ScreenAction('superlike', 'div[class*="Bgi\\($g-ds-overlay-profile-button-gamepad\\)"] button:contains("Super Like")')
-            ], [], 'swipe', false, false),
-            new Screen(ScreenNavStateComboTinder.SwipeExplore, [
-                new ScreenAction('like', 'div[class*="Bdc\\($c-ds-border-gamepad-like-default\\)"] button:contains("Like"):not(:contains("Super"))'),
-                new ScreenAction('pass', 'div[class*="Bdc\\($c-ds-border-gamepad-nope-default\\)"] button:contains("Nope")'),
-                new ScreenAction('superlike', 'div[class*="Bdc\\($c-ds-border-gamepad-super-like-default\\)"] button:contains("Super Like")')
-            ], [], 'swipe', true, false),
-            new Screen(ScreenNavStateComboTinder.Chat, [new ScreenAction('sendMessage', "div.BdT > form > button[type='submit']")], [], 'chat', false, false),
-            new Screen(ScreenNavStateComboTinder.UnknownScreen, [], [], 'other', false, false),
-        );
-
-        const screenlist = new ScreenController(screenActionsList);
-
-        return screenlist;
     }
 
     private refreshDataTableMatchesAndMatchMessages(requestHandler: RequestHandlerTinder): Promise<void> {
@@ -1193,7 +1160,7 @@ export class TinderController implements datingAppController {
                     //     label: "Name",
                     //     value: personName
                     // };
-                    //                 const test: DataField[] = newDataRecord.getAllAutoGatherDataFields();
+                    // const test: string[] = newDataRecord.getAllAutoGatherDataFields().map((dataField)=> dataField.title);
                     //                 test.map((dataField: DataField)=>{
                     //                     console.log(`This dataField is auto Gather: ${dataField.title}`);
                     //                 });
@@ -1211,7 +1178,7 @@ export class TinderController implements datingAppController {
                                     dataRecordValuesFromCollectedData.push(
                                         {
                                             label: screenElement.getName(),
-                                            value: screenElement.getValueAsString() //todo: figure out how to send to correct data type back to controller
+                                            value: screenElement.getValueAsString()
                                         });
                                     break;
                                 }
@@ -1219,10 +1186,64 @@ export class TinderController implements datingAppController {
                                     dataRecordValuesFromCollectedData.push(
                                         {
                                             label: screenElement.getName(),
-                                            value: screenElement.getValueAsNumber() //todo: figure out how to send to correct data type back to controller
+                                            value: screenElement.getValueAsNumber()
                                         });
                                     break;
                                 }
+                                case "Job": {
+                                    dataRecordValuesFromCollectedData.push(
+                                        {
+                                            label: screenElement.getName(),
+                                            value: screenElement.getValueAsString()
+                                        });
+                                    break;
+                                }
+                                case "School": {
+                                    dataRecordValuesFromCollectedData.push(
+                                        {
+                                            label: screenElement.getName(),
+                                            value: screenElement.getValueAsString()
+                                        });
+                                    break;
+                                }
+                                case "City": {
+                                    dataRecordValuesFromCollectedData.push(
+                                        {
+                                            label: screenElement.getName(),
+                                            value: screenElement.getValueAsString() //todo: add config for collection
+                                        });
+                                    break;
+                                }
+                                case "Has-profiletext": {
+                                    dataRecordValuesFromCollectedData.push(
+                                        {
+                                            label: screenElement.getName(),
+                                            value: screenElement.getValueAsBoolean() //todo: add config for collection
+                                        });
+                                    break;
+                                }
+                                case "Amount-of-pictures": {
+                                    dataRecordValuesFromCollectedData.push(
+                                        {
+                                            label: screenElement.getName(),
+                                            value: screenElement.getValueAsNumber() //todo: add config for collection
+                                        });
+                                    break;
+                                }
+                                case "Distance-in-km": {
+                                    dataRecordValuesFromCollectedData.push(
+                                        {
+                                            label: screenElement.getName(),
+                                            // value: screenElement.getValueAsNumber() //todo: add config for collection
+                                            value: [{
+                                                dateTime: new Date().toISOString(),
+                                                distanceInKM: screenElement.getValueAsNumber()
+                                            }]
+                                        });
+                                    break;
+                                }
+                                default:
+                                    ConsoleColorLog.singleLog(`Screen element with name: ${screenElement.getName()} is not collected for adding to the dataRecord. Please check if this is correct.`, screenElement.getValueAsString(), LogColors.YELLOW);
                             }
                         }
 
@@ -1235,12 +1256,13 @@ export class TinderController implements datingAppController {
                         // }
                     });
 
-                    ConsoleColorLog.multiLog(`Here is the collected data from DOM: `, dataRecordValuesFromCollectedData, LogColors.RED, true);
+                    ConsoleColorLog.multiLog(`Here is the collected data from DOM: `, dataRecordValuesFromCollectedData, LogColors.GREEN, true);
 
                     newDataRecord.addDataToDataFields(dataRecordValuesFromCollectedData);
                     this.uiRenderer.updateDataFieldValues();
 
                     // TODO TODO TODO: first get if user is on swipe or swipe profile screen? both delivers different DOM,.. but wait! i removed swipe-profile screen..
+                    // todo: nice what i thought about making each dataField autogather or not, but this was not needed.. so maybe remove the autoGather & autoGatherOnce all together to reduce unnecessary complexity?
                 });
 
             const uiRequiredDataFields: DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
