@@ -163,7 +163,7 @@ export class UIFieldsRenderer {
                 return `
                 <div class="fieldContainer fieldContainer--textarea">
                     <div class="form-floating">
-                        <textarea id="${id}" data-type="${dataType}" data-templatename="textareaBootstrap" data-recordref="${label}" class="form-control" placeholder="Leave a comment here" id="floatingTextarea">${defaultValue}</textarea>
+                        <textarea id="${id}" data-type="${dataType}" data-templatename="textareaBootstrap" data-recordref="${label}" class="form-control" id="floatingTextarea">${defaultValue}</textarea>
                         <label for="floatingTextarea">${label}</label>
                     </div>
                 </div>`}
