@@ -7,6 +7,8 @@ import { ScreenNavStateComboTinder } from "../util/Screen/screenStateComboTinder
 import { DOMHelper } from "../util/DOMHelper";
 import { DOMRefs } from "src/content/interfaces/data/domReferences.interface";
 import { ScreenController } from "../util/Screen/ScreenList";
+import { ConsoleColorLog } from "../util/ConsoleColorLog/ConsoleColorLog";
+import { LogColors } from "../util/ConsoleColorLog/LogColors";
 
 export class UIFieldsRenderer {
     private decoratedSubmitEventsDOMElementsList: HTMLElement[] = [];
@@ -314,6 +316,12 @@ export class UIFieldsRenderer {
                 <button id="uiHelperFieldsShowButton">show</button>
             </div>
         `);
+        }
+
+        if($(`#uiHelperFields`).length === 0){
+            const errUiHelperFields = `Container with id uiHelperFields was not set. Please check the logic for rendering the fields container`;
+            ConsoleColorLog.singleLog(errUiHelperFields, null, LogColors.RED);
+            throw new Error(errUiHelperFields);
         }
 
         this._setSubmitEventHandlers(screenController);
