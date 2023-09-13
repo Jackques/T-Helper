@@ -464,15 +464,15 @@ export class UIFieldsRenderer {
         this.resetExistingFields();
 
         $(`body`).off("blur", '#uiHelperFieldsContainer [id^="datafieldUI_"]');
-        // $(`body`).off("click", '[id^="submitAction_"]');
+        $(`body`).off("click", '[id="uiHelperFieldsCollectDataButton"]');
+        $(`body`).off("click", '[id="uiHelperFieldsHideButton"]');
+        $(`#uiHelperFieldsContainer`).remove();
 
         $(`body`).off("mouseup", '[id^="submitAction_"]');
         $(`body`).off("mousedown", '[id^="submitAction_"]');
 
-        $(`body`).off("click", '[id="uiHelperFieldsCollectDataButton"]');
-
         $(`body`).off("click", '[id="uiHelperFieldsShowButton"]');
-        $(`body`).off("click", '[id="uiHelperFieldsHideButton"]');
+        $(`#uiHelperFieldsShow`).remove();
 
         for(let i=0; i <= (this.decoratedSubmitEventsDOMElementsList.length - 1); i = i+1){
             $(this.decoratedSubmitEventsDOMElementsList[i]).removeAttr('id');
