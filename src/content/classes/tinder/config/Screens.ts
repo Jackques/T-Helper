@@ -4,7 +4,7 @@ import { ScreenElement } from "../../util/Screen/ScreenElement";
 import { ScreenRetrievalMethod } from "../../util/Screen/ScreenRetrievalMethod.enum";
 import { ScreenNavStateComboTinder } from "../../util/Screen/screenStateComboTinder.enum";
 
-export const screens: Screen[] = [
+export const screensTinder: Screen[] = [
 
     new Screen(
         ScreenNavStateComboTinder.Swipe, [

@@ -39,20 +39,14 @@ import { UrlHelper } from "../serrvices/UrlHelper";
 import { MessagesWatcherHappn } from "./MessagesWatcher";
 import { GenericPersonPropertiesList } from "../util/GenericPersonProperties/GenericPersonPropertiesList";
 import { MatchesWatcherHappn } from "./MatchesWatcher";
+import { ScreenController } from "../util/Screen/ScreenList";
+import { screensHappn } from "../happn/config/Screens";
 
 export class HappnController implements datingAppController {
     private nameController = 'happn';
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
-    private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer({
-        fieldsContainerSwipeScreen: 'body',
-        fieldsContainerChatScreen: 'body [data-testid="conversation-message-list-scrollbars"]',
-
-        swipeActionLike: 'body [data-testid="profile-btn-like"]',
-        swipeActionPass: 'body [data-testid="profile-btn-reject"]',
-        swipeActionSuperlike: 'body [data-testid="profile-btn-flashnote"]',
-
-        chatActionSendMessage: 'body [data-testid="conversation"] textarea',
-    });
+    private screenList: ScreenController = new ScreenController(screensHappn);
+    private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer(this.screenList);
     private uIHelpersHappn: UIHelpersHappn | null = null;
     private messagesWatcher: MessagesWatcherHappn | null = null;
     private matchesWatcher: MatchesWatcherHappn | null = null;
@@ -85,7 +79,7 @@ export class HappnController implements datingAppController {
 
                     this.requestHandler = new RequestHandlerHappn(this.happnAccessToken);
                     this.happnMatchesAndMessagesController = new HappnMatchesAndMessagesController(this.requestHandler, this.dataTable, this.nameController);
-                    this.uIHelpersHappn = new UIHelpersHappn(this.nameController, this.uiRenderer, this.dataTable, this.requestHandler, this.dataStorage);
+                    this.uIHelpersHappn = new UIHelpersHappn(this.nameController, this.screenList, this.uiRenderer, this.dataTable, this.requestHandler, this.dataStorage);
                     this.messagesWatcher = new MessagesWatcherHappn(this.nameController, this.dataTable, this.watchersUIList);
                     this.matchesWatcher = new MatchesWatcherHappn(this.nameController, this.dataTable, this.watchersUIList);
 
@@ -303,6 +297,8 @@ export class HappnController implements datingAppController {
 
             this.currentScreenTimeoutId = setTimeout(() => {
                 this.currentScreen = this.getCurrentScreenByDOM();
+                this.screenList.updateCurrentScreen(this.currentScreen);
+                
                 console.log(`Current screen: ${this.currentScreen}`);
 
                 this.currentScreenTimeoutId = null;
@@ -312,6 +308,7 @@ export class HappnController implements datingAppController {
                 if (this.dataTableNeedsToBeUpdated) {
                     this.happnMatchesAndMessagesController?.refreshDataTableMatchesAndMatchMessages().then(() => {
                         this.setRefreshDataTable(false);
+                        this.screenList.updateCurrentScreen(this.currentScreen);
                         this.setSwipeHelperOnScreen();
                     }).finally(() => {
                         Overlay.setLoadingOverlay('switchScreen', false);
@@ -345,7 +342,7 @@ export class HappnController implements datingAppController {
     }
 
     public setSwipeHelperOnScreen(): void {
-        this.currentScreen = this.getCurrentScreenByDOM();
+        this.screenList.updateCurrentScreen(this.getCurrentScreenByDOM());
         this.uIHelpersHappn?.addUIHelpers(this.currentScreen, true);
     }
 

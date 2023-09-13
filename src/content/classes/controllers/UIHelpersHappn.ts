@@ -17,17 +17,20 @@ import { SubmitAction } from "src/background/SubmitAction.interface";
 import { PersonAction } from "./../../../personAction.enum";
 import { DataStorage } from "../data/dataStorage";
 import { UrlHelper } from "../serrvices/UrlHelper";
+import { ScreenController } from "../util/Screen/ScreenList";
 
 export class UIHelpersHappn {
 
     private uiRenderer: UIFieldsRenderer;
+    private screenController: ScreenController;
     private nameController: string;
     private dataTable: DataTable;
     private requestHandler: RequestHandlerHappn;
     private dataStorage: DataStorage;
 
-    constructor(nameController: string, uiRenderer: UIFieldsRenderer, dataTable: DataTable, requestHandler: RequestHandlerHappn, dataStorage: DataStorage){
+    constructor(nameController: string, screenController: ScreenController, uiRenderer: UIFieldsRenderer, dataTable: DataTable, requestHandler: RequestHandlerHappn, dataStorage: DataStorage){
         this.uiRenderer = uiRenderer;
+        this.screenController = screenController;
         this.nameController = nameController;
         this.dataTable = dataTable;
         this.requestHandler = requestHandler;
@@ -59,7 +62,7 @@ export class UIHelpersHappn {
 
                         // 3. show helpers for chat (all?), make space above messagebox, put helper container there?
                         // debugger;
-                        this.uiRenderer.renderFieldsContainerForScreen(currentScreen, () => {
+                        this.uiRenderer.renderFieldsContainerForScreen(this.screenController, () => {
                             // $('div[id*="SC.chat"]').first().css('width', '730px');
                             const chatContainerDOM: HTMLElement | null = DOMHelper.getFirstDOMNodeByJquerySelector('div[data-testid="conversation-message-list-scrollbars"]');
                             if (chatContainerDOM !== null) {
@@ -202,7 +205,7 @@ export class UIHelpersHappn {
 
             const newDataRecord: DataRecord = new DataRecord();
 
-            this.uiRenderer.renderFieldsContainerForScreen(currentScreen, () => {
+            this.uiRenderer.renderFieldsContainerForScreen(this.screenController, () => {
                 $(".uiHelperFieldsContainer").css('height', '785px');
                 $(".uiHelperFieldsContainer").css('overflow-y', 'scroll');
                 $(".uiHelperFieldsContainer").css('position', 'absolute');

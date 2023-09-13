@@ -31,14 +31,14 @@ import { ScreenElement } from "../util/Screen/ScreenElement";
 import { ConsoleColorLog } from "../util/ConsoleColorLog/ConsoleColorLog";
 import { LogColors } from "../util/ConsoleColorLog/LogColors";
 import { Screen } from "../util/Screen/Screen";
-import { screens } from "../tinder/config/Screens";
+import { screensTinder } from "../tinder/config/Screens";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
     private hasCredentials = false;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
 
-    private screenList: ScreenController = new ScreenController(screens);
+    private screenList: ScreenController = new ScreenController(screensTinder);
     private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer(this.screenList);
 
     private xAuthToken = '';
