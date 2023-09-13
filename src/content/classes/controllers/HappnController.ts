@@ -55,6 +55,7 @@ export class HappnController implements datingAppController {
     private requestHandler!: RequestHandlerHappn; // 'definite assignment assertion proerty (!) added here, is this a good practice?'
     private dataTable: DataTable;
     private dataStorage: DataStorage;
+    private dataPort: chrome.runtime.Port | null;
 
     private currentScreenTimeoutId: number | null = null;
     private currentScreen: ScreenNavStateComboTinder = this.getCurrentScreenByDOM();
@@ -66,11 +67,12 @@ export class HappnController implements datingAppController {
 
     private happnMatchesAndMessagesController: HappnMatchesAndMessagesController | null = null;
 
-    constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: DataStorage) {
+    constructor(dataRetrievalMethod: 'api' | 'dom' | null, dataTable: DataTable, dataStorage: DataStorage, dataPort: chrome.runtime.Port | null) {
 
         this.dataRetrievalMethod = dataRetrievalMethod;
         this.dataTable = dataTable;
         this.dataStorage = dataStorage;
+        this.dataPort = dataPort;
 
         if (this.dataRetrievalMethod === 'api' || this.dataRetrievalMethod === 'dom') {
             if (this.dataRetrievalMethod === 'api') {
@@ -79,7 +81,7 @@ export class HappnController implements datingAppController {
 
                     this.requestHandler = new RequestHandlerHappn(this.happnAccessToken);
                     this.happnMatchesAndMessagesController = new HappnMatchesAndMessagesController(this.requestHandler, this.dataTable, this.nameController);
-                    this.uIHelpersHappn = new UIHelpersHappn(this.nameController, this.screenList, this.uiRenderer, this.dataTable, this.requestHandler, this.dataStorage);
+                    this.uIHelpersHappn = new UIHelpersHappn(this.nameController, this.screenList, this.uiRenderer, this.dataTable, this.requestHandler, this.dataStorage, this.dataPort);
                     this.messagesWatcher = new MessagesWatcherHappn(this.nameController, this.dataTable, this.watchersUIList);
                     this.matchesWatcher = new MatchesWatcherHappn(this.nameController, this.dataTable, this.watchersUIList);
 
