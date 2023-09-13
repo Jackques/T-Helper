@@ -32,6 +32,8 @@ import { ConsoleColorLog } from "../util/ConsoleColorLog/ConsoleColorLog";
 import { LogColors } from "../util/ConsoleColorLog/LogColors";
 import { Screen } from "../util/Screen/Screen";
 import { screensTinder } from "../tinder/config/Screens";
+import { PortMessage } from "src/content/interfaces/portMessage.interface";
+import { PortAction } from "src/PortAction.enum";
 
 export class TinderController implements datingAppController {
     private nameController = 'tinder';
@@ -1336,14 +1338,14 @@ export class TinderController implements datingAppController {
 
             }, (submitType: SubmitType) => {
                 console.log('Callback received a (pre-)submit type! But it will only be used if no response from background can be retrieved');
-                this._postMessageBackgroundScript("swiped-person-action-start");
+                this._postMessageBackgroundScript(PortAction.SWIPED_PERSON_ACTION_START);
 
             }, (submitType: SubmitType) => {
                 console.log('Callback received a submit type! But it will only be used if no response from background can be retrieved');
                 Overlay.setLoadingOverlay('loadingSwipeAction', true);
                 console.log(submitType);
 
-                this._postMessageBackgroundScript("swiped-person-action-process");
+                this._postMessageBackgroundScript(PortAction.SWIPED_PERSON_ACTION_PROCESS);
 
                 console.log(this.dataStorage);
                 console.assert(this.dataStorage.popLastActionFromDataStore() === undefined);
@@ -1516,7 +1518,7 @@ export class TinderController implements datingAppController {
                         alert(`Swiped person received no tempId! Saving inserted info of record regardless.. Don't forget to check background local storage requests backup to get the corresponding personid and to overwrite the tempId later!`);
                         //todo: Should REALLY throw a important alert to notify myself what I need to pay extra attention!
                     }
-                    this._postMessageBackgroundScript("swiped-person-action-end");
+                    this._postMessageBackgroundScript(PortAction.SWIPED_PERSON_ACTION_END);
                     timeoutSubmit = null;
                 }, ms);
             });
@@ -1968,7 +1970,7 @@ export class TinderController implements datingAppController {
         return this.watchersUIList.length === 0 ? true : false;
     }
 
-    public getReminders(reminderHttpList: ReminderHttp[]) {
+    public getReminders(reminderHttpList: ReminderHttp[]): void {
         //todo: show overlay
         Overlay.setLoadingOverlay('reminderOverlay', true);
         this.requestHandler.postReminderList(reminderHttpList, (currentIndex: number, totalLength: number, statusText: string) => {
@@ -1977,14 +1979,18 @@ export class TinderController implements datingAppController {
         }).then((reminderHttpList) => {
             console.dir(reminderHttpList);
             // eslint-disable-next-line no-debugger
-            debugger;
+            // debugger;
             //todo: hide overlay
             Overlay.setLoadingOverlay('reminderOverlay', false);
         });
     }
 
-    private _postMessageBackgroundScript(simpleMessage: string): void {
-        this.dataPort?.postMessage(simpleMessage);
+    private _postMessageBackgroundScript(actionName: PortAction): void {
+        const portMessage: PortMessage = {
+            messageSender: 'CONTENT',
+            action: actionName,
+            payload: ""
+        };
+        this.dataPort?.postMessage(portMessage);
     }
-
 }

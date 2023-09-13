@@ -6,6 +6,7 @@ import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataField } from "src/content/classes/data/dataField";
 import { FileHelper } from "../fileHelper";
+import { PortAction } from "src/PortAction.enum";
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -126,8 +127,8 @@ document.addEventListener('DOMContentLoaded', function () {
             getCurrentTabId(function (currentTabId: number) {
                 try{
                     const port = chrome.tabs.connect(currentTabId, <chrome.runtime.Port>{ name: "knockknock" });
-                    port.postMessage(<PortMessage>{ 'messageSender': 'POPUP', 'action': 'FILENAME', 'payload': uploadedFile.getFileName() });
-                    port.postMessage(<PortMessage>{ 'messageSender': 'POPUP', 'action': 'INIT', 'payload': inputDataList as any[] });
+                    port.postMessage(<PortMessage>{ 'messageSender': 'POPUP', 'action': PortAction.FILENAME, 'payload': uploadedFile.getFileName() });
+                    port.postMessage(<PortMessage>{ 'messageSender': 'POPUP', 'action': PortAction.INIT, 'payload': inputDataList as any[] });
                     port.disconnect();
                 }catch(err: unknown){
                     $('#errorText').text(`An error occured when attempting to send imported data to content script:${err}`);

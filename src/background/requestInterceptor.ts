@@ -3,6 +3,8 @@ import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { SubmitAction } from "../SubmitAction.interface";
 import { backgroundScriptErrorHelper } from "./services/ErrorHelper";
 import { tinderRequestInterceptorHelper } from "./tinderRequestInterceptorHelper";
+import { DatingAppType } from "src/datingAppType.enum";
+import { PortAction } from "src/PortAction.enum";
 
 export class requestInterceptor {
 
@@ -33,12 +35,12 @@ export class requestInterceptor {
     }
 
 
-    globalThis.port.onMessage.addListener((message, port)=>{
+    globalThis.port.onMessage.addListener((message: PortMessage, port: chrome.runtime.Port)=>{
       // keep alive? since this service worker (previously; background script) terminates after ~5 min;
       // https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension
       console.log(`Message is: ${message}, and port is: ${port.name}`);
 
-      if(message === "getNetworkLogs" && port.name === "jack"){
+      if(message.action === PortAction.GET_NETWORK_LOGS){
         console.log("%cGoing to return backupped requests,.. just wait for promise", "color: blue");
         backgroundScriptErrorHelper.getBackupRequests().then((result)=>{
           if(result === undefined){
@@ -48,26 +50,29 @@ export class requestInterceptor {
           console.log("%cGot the backupped requests! sending them to content now!", "color: blue");
           const message: PortMessage = {
             messageSender: 'BACKGROUND',
-            action: 'GET_NETWORK_LOGS',
+            action: PortAction.GET_NETWORK_LOGS,
             payload: result
           };
           port.postMessage(message);
         });
       }
 
-      if(message === "swiped-person-action-start" && port.name === "jack"){
+      // if(message.action === "swiped-person-action-start"){
+      if(message.action === PortAction.SWIPED_PERSON_ACTION_START){
         console.log("%cReceived swiped-person-action", "color: blue");
-        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-start");
+        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-start", DatingAppType.TINDER);
       }
 
-      if(message === "swiped-person-action-process" && port.name === "jack"){
+      // if(message === "swiped-person-action-process"){
+      if(message.action === PortAction.SWIPED_PERSON_ACTION_PROCESS){
         console.log("%cReceived swiped-person-action", "color: blue");
-        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-process");
+        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-process", DatingAppType.TINDER);
       }
 
-      if(message === "swiped-person-action-end" && port.name === "jack"){
+      // if(message.action === "swiped-person-action-end"){
+      if(message.action === PortAction.SWIPED_PERSON_ACTION_END){
         console.log("%cReceived swiped-person-action", "color: blue");
-        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-end");
+        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-end", DatingAppType.TINDER);
       }
     });
 
@@ -149,6 +154,9 @@ export class requestInterceptor {
         break;
     }
 
+    // TODO TODO TODO: Determine if request is from tinder or happn by checking origin?
+    // add this info as param to sendMessageToContent
+
     if (action) {
       globalThis.sendMessageToContent(action, globalThis.port);
     }
@@ -160,7 +168,7 @@ export class requestInterceptor {
 
     const message: PortMessage = {
       messageSender: 'BACKGROUND',
-      action: 'SUBMIT_ACTION',
+      action: PortAction.SUBMIT_ACTION,
       payload: [submitAction]
     };
 

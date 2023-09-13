@@ -15,6 +15,7 @@ import { HappnController } from './classes/controllers/HappnController';
 import { Overlay } from './classes/serrvices/Overlay';
 import { ConsoleColorLog } from './classes/util/ConsoleColorLog/ConsoleColorLog';
 import { LogColors } from './classes/util/ConsoleColorLog/LogColors';
+import { PortAction } from 'src/PortAction.enum';
 
 export class Main {
     private datingAppController: TinderController | HappnController | undefined | null; //todo: should remove undefined/null properties in the future
@@ -39,7 +40,7 @@ export class Main {
             
             port.onMessage.addListener((portMessage: PortMessage) => {
                 console.log(`Content Port received a message!`);
-                if (portMessage.messageSender === 'POPUP' && portMessage.action === 'INIT') {
+                if (portMessage.messageSender === 'POPUP' && portMessage.action === PortAction.INIT) {
                     //console.log(`I received the following message payload: `);
                     //console.dir(msg.payload);
 
@@ -76,7 +77,7 @@ export class Main {
                         this.keepAliveIntervalNumber = this.activateKeepAlive();
                     }
                 }
-                if (portMessage.messageSender === 'POPUP' && portMessage.action === 'FILENAME') {
+                if (portMessage.messageSender === 'POPUP' && portMessage.action === PortAction.FILENAME) {
                     console.log(`Received filename from popup: `);
                     console.dir(portMessage);
                     this.importedFile = new FileHelper(portMessage.payload as string);
@@ -89,14 +90,14 @@ export class Main {
                 console.log(`i received a portmessage:`);
                 console.dir(msg);
 
-                if (msg.messageSender === 'BACKGROUND' && msg.action === 'SUBMIT_ACTION') {
+                if (msg.messageSender === 'BACKGROUND' && msg.action === PortAction.SUBMIT_ACTION) {
                     console.log(`Received submit action from background script: `);
                     console.dir(msg);
                     const message = msg.payload as any[];
                     this.dataStorage.addActionToDataStore(<SubmitAction>message[0]);
                 }
 
-                if (msg.messageSender === 'BACKGROUND' && msg.action === 'GET_NETWORK_LOGS') {
+                if (msg.messageSender === 'BACKGROUND' && msg.action === PortAction.GET_NETWORK_LOGS) {
                     console.log(`Received download network logs: `);
                     console.table(msg.payload);
 
@@ -174,7 +175,7 @@ export class Main {
             case "tinder":
                 return new TinderController('api', dataTable, dataStorage, this.backgroundChannelPort);
             case "happn":
-                return new HappnController('api', dataTable, dataStorage);
+                return new HappnController('api', dataTable, dataStorage, this.backgroundChannelPort);
                 // alert('Happn is not yet supported');
                 // return undefined;
             default:
@@ -314,8 +315,12 @@ export class Main {
         
         $(`body`).on("click", '[id="downloadNetworkLogs"]', () => {
             Overlay.setLoadingOverlay('downloadNetworkLogs', true);
-
-            this.backgroundChannelPort?.postMessage("getNetworkLogs");
+            
+            this.backgroundChannelPort?.postMessage(<PortMessage>{ 
+                'messageSender': 'CONTENT', 
+                'action': PortAction.GET_NETWORK_LOGS, 
+                'payload': '' 
+            });
             
             if(!this.downloadNetworkLogsActiveNo){
                 this.downloadNetworkLogsActiveNo = setTimeout(()=>{
@@ -372,7 +377,11 @@ export class Main {
     private activateKeepAlive() {
         return setInterval(()=>{
             //console.log("sending keep alive");
-            this.backgroundChannelPort?.postMessage("keepAlive");
+            this.backgroundChannelPort?.postMessage(<PortMessage>{ 
+                'messageSender': 'CONTENT', 
+                'action': PortAction.KEEP_ALIVE, 
+                'payload': '' 
+            });
         },4000)
     }
 }
