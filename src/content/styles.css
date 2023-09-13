@@ -55,7 +55,7 @@
   top: 0px;
   right: 0px;
   left: auto;
-  z-index: 2;
+  z-index: 99;
   background-color: grey;
   height: 100%;
   width: 300px;
