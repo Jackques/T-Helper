@@ -28,7 +28,7 @@ export class tinderRequestInterceptorHelper {
     return details.url.startsWith('https://api.gotinder.com/') || details.initiator === 'https://tinder.com';
   }
 
-  public _getPersonIdFromUrl(url: string): string {
+  public getPersonIdFromUrlTinder(url: string): string {
 
     let longestStringInArray = "";
 

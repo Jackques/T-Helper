@@ -6,7 +6,7 @@ import { matchMockTwo } from "../mocks/matchesMock";
 import { DataTable } from '../data/dataTable';
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataRecord } from "../data/dataRecord";
-import { SubmitType } from "../../../SubmitType";
+import { SubmitType } from "../../../SubmitType.enum";
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DateHelper, DateHelperTimeStamp } from "../util/dateHelper";
 import { GhostStatus } from "../data/dataItems/dataItemGhost";
@@ -17,7 +17,7 @@ import { Person } from "../tinder/Person";
 import { DataStorage } from '../data/dataStorage';
 import { DataField, DataFieldDistances, DataFieldMessages, UIRequired } from "../data/dataField";
 import { PersonAction } from "../../../personAction.enum"; // todo: had to move this to top level AND make a relative path.. but since ALL components (content, background, popup) share the same interfaces/enums etc. why not move everything to top lvl for importing? ALSO; why did an error occur when i tried to relative import this?
-import { SubmitAction } from "src/background/SubmitAction.interface";
+import { SubmitAction } from "src/SubmitAction.interface";
 import { DOMHelper } from "../util/DOMHelper";
 import { Message, MessageAuthorEnum } from "./../../../message.interface";
 import { MatchDetailsAPI } from "src/content/interfaces/http-requests/MatchDetailsAPI.interface";

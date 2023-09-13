@@ -1,7 +1,7 @@
 import { PersonAction } from "../personAction.enum";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
-import { SubmitAction } from "./SubmitAction.interface";
-import { backgroundScriptErrorHelper } from "./backgroundScriptErrorHelper";
+import { SubmitAction } from "../SubmitAction.interface";
+import { backgroundScriptErrorHelper } from "./services/ErrorHelper";
 import { tinderRequestInterceptorHelper } from "./tinderRequestInterceptorHelper";
 
 export class requestInterceptor {
@@ -15,8 +15,6 @@ export class requestInterceptor {
     globalThis.sendMessageToContent = this._sendMessageToContent;
 
     globalThis.tinderRequestInterceptorHelper = new tinderRequestInterceptorHelper();
-    globalThis.backgroundScriptErrorHelper = new backgroundScriptErrorHelper();
-
   }
 
   private _onConnectListenerFn(port: chrome.runtime.Port): void {
@@ -25,12 +23,16 @@ export class requestInterceptor {
     globalThis.port = port;
     globalThis.beforeRequestInterceptor = chrome.webRequest.onBeforeRequest;
 
-    globalThis.beforeRequestInterceptor.addListener(globalThis.requestInterceptorFn, { urls: ["https://api.gotinder.com/*"] }, ['requestBody']);
+    globalThis.beforeRequestInterceptor.addListener(globalThis.requestInterceptorFn, { 
+      urls: ["https://api.gotinder.com/*", "https://api.happn.fr/*"]
+    }, ['requestBody']);
 
     if (!globalThis.beforeRequestInterceptor.hasListeners()) {
       console.error(`beforeRequestInterceptor listener is not set. Please check the code.`);
       return;
     }
+
+
     globalThis.port.onMessage.addListener((message, port)=>{
       // keep alive? since this service worker (previously; background script) terminates after ~5 min;
       // https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension
@@ -67,8 +69,8 @@ export class requestInterceptor {
         console.log("%cReceived swiped-person-action", "color: blue");
         backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-end");
       }
-
     });
+
 
     globalThis.port.onDisconnect.addListener(() => {
 
@@ -125,7 +127,7 @@ export class requestInterceptor {
         // superlike example: https://api.gotinder.com/like/57f2a33a6dda1f6b095088af/super?locale=nl
         action = {
           'submitType': PersonAction.SUPER_LIKED_PERSON,
-          'personId': globalThis.tinderRequestInterceptorHelper._getPersonIdFromUrl(details.url)
+          'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
         };
         break;
       case details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[0]):
@@ -133,14 +135,14 @@ export class requestInterceptor {
         // https://api.gotinder.com/like/5fccbf17a0848701001bb1f5?locale=nl
         action = {
           'submitType': PersonAction.LIKED_PERSON,
-          'personId': globalThis.tinderRequestInterceptorHelper._getPersonIdFromUrl(details.url)
+          'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
         };
         break;
       case details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[2]):
         // pass url example: https://api.gotinder.com/pass/61d9f860039cc801009182a1?locale=nl&s_number=8699887070750215
         action = {
           'submitType': PersonAction.PASSED_PERSON,
-          'personId': globalThis.tinderRequestInterceptorHelper._getPersonIdFromUrl(details.url)
+          'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
         };
         break;
       default:

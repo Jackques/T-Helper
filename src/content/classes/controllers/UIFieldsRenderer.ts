@@ -2,7 +2,7 @@ import { TemplateSetting } from "src/content/interfaces/controllers/templateSett
 import { DataFieldTypes } from "src/content/interfaces/data/dataFieldTypes.interface";
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataField, UIRequiredType } from "../data/dataField";
-import { SubmitType } from "../../../SubmitType";
+import { SubmitType } from "../../../SubmitType.enum";
 import { ScreenNavStateComboTinder } from "../util/Screen/screenStateComboTinder.enum";
 import { DOMHelper } from "../util/DOMHelper";
 import { DOMRefs } from "src/content/interfaces/data/domReferences.interface";

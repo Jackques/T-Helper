@@ -5,15 +5,14 @@ import { DataTable } from "../data/dataTable";
 import { ScreenNavStateComboTinder } from "../util/Screen/screenStateComboTinder.enum";
 import { DOMHelper } from "../util/DOMHelper";
 import { UIFieldsRenderer } from "./UIFieldsRenderer";
-import { SubmitType } from "src/SubmitType";
+import { SubmitType } from "src/SubmitType.enum";
 import { RequestHandlerHappn } from "../http-requests/requestHandlerHappn";
 import { MatchProfileDetailsHappn } from "src/content/interfaces/http-requests/MatchProfileDetailsHappn.interface";
 import { ConsoleColorLog } from "../util/ConsoleColorLog/ConsoleColorLog";
 import { LogColors } from "../util/ConsoleColorLog/LogColors";
 import { MatchDataParser } from "./MatchDataParserHappn";
 import { Overlay } from "../serrvices/Overlay";
-import { SubmitAction } from "src/background/SubmitAction.interface";
-// import { PersonAction } from "src/personAction.enum";
+import { SubmitAction } from "src/SubmitAction.interface";
 import { PersonAction } from "./../../../personAction.enum";
 import { DataStorage } from "../data/dataStorage";
 import { UrlHelper } from "../serrvices/UrlHelper";
@@ -27,14 +26,16 @@ export class UIHelpersHappn {
     private dataTable: DataTable;
     private requestHandler: RequestHandlerHappn;
     private dataStorage: DataStorage;
+    private dataPort: chrome.runtime.Port | null;
 
-    constructor(nameController: string, screenController: ScreenController, uiRenderer: UIFieldsRenderer, dataTable: DataTable, requestHandler: RequestHandlerHappn, dataStorage: DataStorage){
+    constructor(nameController: string, screenController: ScreenController, uiRenderer: UIFieldsRenderer, dataTable: DataTable, requestHandler: RequestHandlerHappn, dataStorage: DataStorage, dataPort: chrome.runtime.Port | null){
         this.uiRenderer = uiRenderer;
         this.screenController = screenController;
         this.nameController = nameController;
         this.dataTable = dataTable;
         this.requestHandler = requestHandler;
         this.dataStorage = dataStorage;
+        this.dataPort = dataPort;
     }
 
     public addUIHelpers(currentScreen: ScreenNavStateComboTinder, forceRefresh?: boolean): void {
@@ -265,11 +266,15 @@ export class UIHelpersHappn {
                 console.dir(newDataRecord);
 
             },(preSubmitType: SubmitType) => {
-                // TODO TODO TODO: Do i want a preSubmit event (i.e. to send a logmessage to background script that i swiped on a person)? Similaie to how I do this in the tindercontroller?
+                console.log('Callback received a (pre-)submit type! But it will only be used if no response from background can be retrieved');
+                this._postMessageBackgroundScript("swiped-person-action-start");
+
             }, (submitType: SubmitType) => {
                 console.log('Callback received a submit type! But it will only be used if no response from background can be retrieved');
                 Overlay.setLoadingOverlay('loadingSwipeAction', true);
                 console.log(submitType);
+
+                this._postMessageBackgroundScript("swiped-person-action-process");
 
                 console.log(this.dataStorage);
                 console.assert(this.dataStorage.popLastActionFromDataStore() === undefined);
@@ -444,5 +449,8 @@ export class UIHelpersHappn {
         return '';
     }
 
+    private _postMessageBackgroundScript(simpleMessage: string): void {
+        this.dataPort?.postMessage(simpleMessage);
+    }
 
 }

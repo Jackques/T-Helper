@@ -1,5 +1,5 @@
 import 'regenerator-runtime/runtime'
-import { SubmitAction } from "src/background/SubmitAction.interface";
+import { SubmitAction } from "src/SubmitAction.interface";
 import { FileHelper } from '../fileHelper';
 import { parse } from 'tldts';
 import { TinderController } from './classes/controllers/TinderController';

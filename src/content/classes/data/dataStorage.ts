@@ -1,4 +1,4 @@
-import { SubmitAction } from "src/background/SubmitAction.interface";
+import { SubmitAction } from "src/SubmitAction.interface";
 
 export class DataStorage {
     private dataStore:DataItem[] = [];
