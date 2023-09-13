@@ -24,6 +24,11 @@ export class ScreenElement {
         this._isConfigDataValid();
         this._isErrorNotFoundIncorrect();
         this._isPreManipulateValueSet();
+
+        if(typeof DOMPath === 'string'){
+            this.isJquerySelectorValid(name, DOMPath);
+        }
+        this.isJquerySelectorValid(name, DOMPathLastElement);
     }
 
     public collectData(): boolean {
@@ -194,6 +199,14 @@ export class ScreenElement {
     private isLastElementPathEmpty(lastElementPath: string): boolean {
         // if last element path is empty, then only the first element should be used to retrieve data from
         return lastElementPath.length === 0 ? true : false;
+    }
+
+    public isJquerySelectorValid(screenActionName: string, screenActionDOMRef: string): void {
+        try{
+            $(screenActionDOMRef);
+        }catch(err){
+            ConsoleColorLog.singleLog(`The Jquery selector set for ScreenAction: ${screenActionName} is not valid: `, screenActionDOMRef, LogColors.RED);
+        }
     }
 
     // data retrieval methods;

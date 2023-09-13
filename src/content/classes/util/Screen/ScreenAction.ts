@@ -1,3 +1,6 @@
+import { ConsoleColorLog } from "../ConsoleColorLog/ConsoleColorLog";
+import { LogColors } from "../ConsoleColorLog/LogColors";
+
 export class ScreenAction {
     private screenActionName = "";
     private screenActionDOMRef = "";
@@ -10,6 +13,8 @@ export class ScreenAction {
 
         this.screenActionName = screenActionName;
         this.screenActionDOMRef = screenActionDOMRef;
+
+        this.isJquerySelectorValid(screenActionName, screenActionDOMRef);
     }
 
     public getScreenActionName(): string {
@@ -18,5 +23,13 @@ export class ScreenAction {
     
     public getScreenActionDOMRef(): string {
         return this.screenActionDOMRef;
+    }
+    
+    public isJquerySelectorValid(screenActionName: string, screenActionDOMRef: string): void {
+        try{
+            $(screenActionDOMRef);
+        }catch(err){
+            ConsoleColorLog.singleLog(`The Jquery selector set for ScreenAction: ${screenActionName} is not valid: `, screenActionDOMRef, LogColors.RED);
+        }
     }
 }
