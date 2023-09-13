@@ -219,7 +219,7 @@ export class TinderController implements datingAppController {
                 const urlPartsList = window.location.href.split('/');
                 const newExploreCategory = urlPartsList[urlPartsList.length - 1] === 'explore' ? null : urlPartsList[urlPartsList.length - 1];
 
-                // TODO TODO TODO: REFACTOR LOGIC TO GETSCREENBYURL&DOM BECAUSE THIS IS GETTING RIDICULOUS;
+                // todo: REFACTOR LOGIC TO GETSCREENBYURL&DOM BECAUSE THIS IS GETTING RIDICULOUS;
                 // THAT METHOD GETS & SETS chat url extension AND category extension for screen in a different "special set properties to check" and MAYBE a different method on screenList like screenList.screenisDifferentBecauseWeOnDifferentcategoryOrChatSoNeedsUpdate()
                 // if we are on swipeexplore, 
                     // was the app on swipeexploredetail? 
