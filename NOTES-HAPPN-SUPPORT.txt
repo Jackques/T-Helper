@@ -12,3 +12,8 @@
 
 ! WAAROM wordt als ik een match open telkens Inez ons matchid gebruikt?
 	trouwens.. uberhaupt het ophalen van details voor een match is standaard gedrag bij tinder, maar bij happn niet echt nodig.
+
+
+TO-DO:
+1. Refactor & add support for happn background script (service worker)
+2. Add Happn support for collect data button on swipe uiHelpersScreen (copy from line 1191 in tinderController)
