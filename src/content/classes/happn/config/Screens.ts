@@ -16,11 +16,9 @@ export const screensHappn: Screen[] = [
         new ScreenElement('Age', 'p[data-testid="profile-name"]', '', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT, getHappnProfileAge),
         new ScreenElement('Job', 'div[data-testid="profile-job"]', 'p:first', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
         new ScreenElement('School', 'div[data-testid="profile-job"]', 'p:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
-        // new ScreenElement('City', getDOMPathForCity, 'div:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT, (value: string) => value.replace("Woont in", "")),
         new ScreenElement('Has-profiletext', 'p[data-testid="profile-description"]', '', false, ScreenRetrievalMethod.GET_ELEMENT_EXISTS),
         new ScreenElement('Is-verified', 'svg[data-testid="profile-badges-verified"]', '', false, ScreenRetrievalMethod.GET_ELEMENT_EXISTS),
         new ScreenElement('Amount-of-pictures', 'div[data-testid="profile-image-container"]', '', false, ScreenRetrievalMethod.GET_ELEMENTS_AMOUNT),
-        // new ScreenElement('Distance-in-km', getDOMPathForDistance, 'div:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT, (value: string) => value.replace(" km uit de buurt", "")), //TODO TODO TODO: do this
     ], 'swipe', true, true),
     new Screen(ScreenNavStateComboTinder.Chat, [
         new ScreenAction('sendMessage', 'textarea[data-testid="sender-input"]')

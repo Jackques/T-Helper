@@ -347,7 +347,7 @@ export class HappnController implements datingAppController {
 
     public setSwipeHelperOnScreen(): void {
         this.screenList.updateCurrentScreen(this.getCurrentScreenByDOM());
-        this.uIHelpersHappn?.addUIHelpers(this.currentScreen, true);
+        this.uIHelpersHappn?.addUIHelpers(this.screenList, true);
     }
 
     public getCurrentScreenByDOM(): ScreenNavStateComboTinder {

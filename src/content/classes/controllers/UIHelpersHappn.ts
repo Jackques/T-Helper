@@ -2,7 +2,6 @@ import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.i
 import { DataField, DataFieldDistances, UIRequired } from "../data/dataField";
 import { DataRecord } from "../data/dataRecord";
 import { DataTable } from "../data/dataTable";
-import { ScreenNavStateComboTinder } from "../util/Screen/screenStateComboTinder.enum";
 import { DOMHelper } from "../util/DOMHelper";
 import { UIFieldsRenderer } from "./UIFieldsRenderer";
 import { SubmitType } from "src/SubmitType.enum";
@@ -42,8 +41,9 @@ export class UIHelpersHappn {
         this.dataPort = dataPort;
     }
 
-    public addUIHelpers(currentScreen: ScreenNavStateComboTinder, forceRefresh?: boolean): void {
-        if (currentScreen === ScreenNavStateComboTinder.Chat) {
+    public addUIHelpers(screenController: ScreenController, forceRefresh?: boolean): void {
+        
+        if (screenController.getCurrentScreen().getScreenIsChatScreen()) {
 
             if (forceRefresh) {
                 this.uiRenderer.removeAllUIHelpers();
@@ -202,7 +202,7 @@ export class UIHelpersHappn {
             }
         }
 
-        if (currentScreen === ScreenNavStateComboTinder.Swipe) {
+        if (screenController.isSwipeScreen()) {
 
             if (forceRefresh) {
                 this.uiRenderer.removeAllUIHelpers();
@@ -256,14 +256,6 @@ export class UIHelpersHappn {
                                     });
                                 break;
                             }
-                            case "City": {
-                                dataRecordValuesFromCollectedData.push(
-                                    {
-                                        label: screenElement.getName(),
-                                        value: hasCollectedData ? screenElement.getValueAsString() : ""
-                                    });
-                                break;
-                            }
                             case "Has-profiletext": {
                                 dataRecordValuesFromCollectedData.push(
                                     {
@@ -298,9 +290,6 @@ export class UIHelpersHappn {
 
                 newDataRecord.addDataToDataFields(dataRecordValuesFromCollectedData);
                 this.uiRenderer.updateDataFieldValues();
-
-                // TODO TODO TODO: first get if user is on swipe or swipe profile screen? both delivers different DOM,.. but wait! i removed swipe-profile screen..
-                // todo: nice what i thought about making each dataField autogather or not, but this was not needed.. so maybe remove the autoGather & autoGatherOnce all together to reduce unnecessary complexity?
             });
 
             const uiRequiredDataFields: DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
@@ -481,7 +470,7 @@ export class UIHelpersHappn {
                             console.error(`Swiped person received tempId, but could not get details of swiped person! Saving inserted info of record regardless`);
                         }).finally(() => {
                             this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
-                            this.addUIHelpers(currentScreen, true);
+                            this.addUIHelpers(this.screenController, true);
                             Overlay.setLoadingOverlay('loadingSwipeAction', false);
                         });
                     } else {
@@ -504,7 +493,7 @@ export class UIHelpersHappn {
                             },
                         ]);
                         this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
-                        this.addUIHelpers(currentScreen, true);
+                        this.addUIHelpers(this.screenController, true);
                         Overlay.setLoadingOverlay('loadingSwipeAction', false);
 
                         console.error(`Swiped person received no tempId! Saving inserted info of record regardless.. Don't forget to check background local storage requests backup to get the corresponding personid and to overwrite the tempId later!`);
