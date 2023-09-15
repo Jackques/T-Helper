@@ -13,6 +13,9 @@
 ! WAAROM wordt als ik een match open telkens Inez ons matchid gebruikt?
 	trouwens.. uberhaupt het ophalen van details voor een match is standaard gedrag bij tinder, maar bij happn niet echt nodig.
 
+! Check alle TODO TODO TODO's in de code.
+	Volgens mij was er o.a. nog iets m.b.t. dat niet alle berichten werden opgehaald van een match als deze 100+ berichten deden bevatten?
+
 
 TO-DO:
 1. Refactor & add support for happn background script (service worker)
