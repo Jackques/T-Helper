@@ -19,4 +19,8 @@
 
 TO-DO:
 1. Refactor & add support for happn background script (service worker)
-2. Add Happn support for collect data button on swipe uiHelpersScreen (copy from line 1191 in tinderController)
+	> Add support for happn swipe (line 150+, requestInterceptor.ts) & test
+	> Refactor tinderRequestInterceptorHelper.ts to generic dating app name file
+
+3. City & Interests are not properly collected by Happn
+	> Happn has not City field, thus cannot be supported
