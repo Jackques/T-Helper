@@ -18,19 +18,20 @@ import { DataStorage } from "../data/dataStorage";
 import { UrlHelper } from "../serrvices/UrlHelper";
 import { ScreenController } from "../util/Screen/ScreenList";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
-import { PortAction } from "src/PortAction.enum";
+import { PortAction } from "../../../PortAction.enum";
+import { DatingAppType } from "../../../datingAppType.enum";
 
 export class UIHelpersHappn {
 
     private uiRenderer: UIFieldsRenderer;
     private screenController: ScreenController;
-    private nameController: string;
+    private nameController: DatingAppType;
     private dataTable: DataTable;
     private requestHandler: RequestHandlerHappn;
     private dataStorage: DataStorage;
     private dataPort: chrome.runtime.Port | null;
 
-    constructor(nameController: string, screenController: ScreenController, uiRenderer: UIFieldsRenderer, dataTable: DataTable, requestHandler: RequestHandlerHappn, dataStorage: DataStorage, dataPort: chrome.runtime.Port | null){
+    constructor(nameController: DatingAppType, screenController: ScreenController, uiRenderer: UIFieldsRenderer, dataTable: DataTable, requestHandler: RequestHandlerHappn, dataStorage: DataStorage, dataPort: chrome.runtime.Port | null){
         this.uiRenderer = uiRenderer;
         this.screenController = screenController;
         this.nameController = nameController;
@@ -458,7 +459,8 @@ export class UIHelpersHappn {
         const portMessage: PortMessage = {
             messageSender: 'CONTENT',
             action: actionName,
-            payload: ""
+            payload: "",
+            datingAppType: this.nameController
         };
         this.dataPort?.postMessage(portMessage);
     }

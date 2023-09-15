@@ -41,9 +41,11 @@ import { GenericPersonPropertiesList } from "../util/GenericPersonProperties/Gen
 import { MatchesWatcherHappn } from "./MatchesWatcher";
 import { ScreenController } from "../util/Screen/ScreenList";
 import { screensHappn } from "../happn/config/Screens";
+import { DatingAppType } from "../../../datingAppType.enum";
 
 export class HappnController implements datingAppController {
-    private nameController = 'happn';
+    // private nameController = 'happn';
+    private nameController: DatingAppType = DatingAppType.HAPPN;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
     private screenList: ScreenController = new ScreenController(screensHappn);
     private uiRenderer: UIFieldsRenderer = new UIFieldsRenderer(this.screenList);

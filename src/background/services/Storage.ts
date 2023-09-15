@@ -7,7 +7,7 @@ export class LocalStorageFacade {
           try{
             this.storage.get((items: {[key: string]: unknown;})=>{
               const storageKeys: string[] = Object.keys(items);
-              console.log("Does the provided key exist in storage? The answer is: " + storageKeys.includes(key) + "oh and the localstorage list is: "+ items);
+              // console.log("Does the provided key exist in storage? The answer is: " + storageKeys.includes(key) + "oh and the localstorage list is: "+ items);
 
               if(storageKeys.length === 0){
                 return resolve(null);
@@ -46,5 +46,4 @@ export class LocalStorageFacade {
         }
       });
     }
-
 }

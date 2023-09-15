@@ -2,7 +2,7 @@ import { datingAppController } from "src/content/interfaces/controllers/datingAp
 import { ParsedResultMatch } from "src/content/interfaces/controllers/ParsedResultMatch.interface";
 import { TinderMessage, ParsedResultMessages } from "src/content/interfaces/http-requests/MessagesListTinder.interface";
 import { Badges, Match, MatchApi, MatchListTinderAPI } from "src/content/interfaces/http-requests/MatchesListTinder.interface";
-import { matchMockTwo } from "../mocks/matchesMock";
+// import { matchMockTwo } from "../mocks/matchesMock";
 import { DataTable } from '../data/dataTable';
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataRecord } from "../data/dataRecord";
@@ -33,10 +33,12 @@ import { LogColors } from "../util/ConsoleColorLog/LogColors";
 import { Screen } from "../util/Screen/Screen";
 import { screensTinder } from "../tinder/config/Screens";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
-import { PortAction } from "src/PortAction.enum";
+import { PortAction } from "../../../PortAction.enum";
+import { DatingAppType } from "../../../datingAppType.enum";
 
 export class TinderController implements datingAppController {
-    private nameController = 'tinder';
+    // private nameController = 'tinder';
+    private nameController: DatingAppType = DatingAppType.TINDER;
     private hasCredentials = false;
     private dataRetrievalMethod: 'api' | 'dom' | null = null;
 
@@ -329,7 +331,8 @@ export class TinderController implements datingAppController {
             //Known flase positives (but does not matter, since all it does will be refetching the messages anyway);
             // 'bug 1'; profile Aniek last message was a ANIMATED GIF sent to her.. this shows up as a hyperlink in the messages.. thus the last message ('You sent a GIF..') does INDEED NOT EQUAL the last message known by the dataRecord (the hyperlink to the gif)
             if (matchId !== null) {
-                const dataRecord = this.dataTable.getRecordByRecordIndex(this.dataTable.getRecordIndexBySystemId(matchId, 'tinder'));
+                // const dataRecord = this.dataTable.getRecordByRecordIndex(this.dataTable.getRecordIndexBySystemId(matchId, 'tinder'));
+                const dataRecord = this.dataTable.getRecordByRecordIndex(this.dataTable.getRecordIndexBySystemId(matchId, this.nameController));
 
                 if (dataRecord === null) {
                     console.error(`Observed last message from unknown match. Please check match in mutations: ${mutationsOnMessageItem} and check the datatable manually`);
@@ -341,7 +344,7 @@ export class TinderController implements datingAppController {
                     // debugger;
                     dataRecord.setUpdateMessages(true);
                     this.setRefreshDataTable(true);
-                    console.log(`%c ${console.count()} (2)I just set profile: ${dataRecord.usedDataFields[5].getValue()} with id: ${matchId} with recordIndex: ${this.dataTable.getRecordIndexBySystemId(matchId, 'tinder')} to true.. for this person sent me a new message thus my messages list for her should be reviewed`, "color: orange");
+                    console.log(`%c ${console.count()} (2)I just set profile: ${dataRecord.usedDataFields[5].getValue()} with id: ${matchId} with recordIndex: ${this.dataTable.getRecordIndexBySystemId(matchId, this.nameController)} to true.. for this person sent me a new message thus my messages list for her should be reviewed`, "color: orange");
                     return;
                 }
             }
@@ -1014,7 +1017,7 @@ export class TinderController implements datingAppController {
 
             // 2. get record in table for this person
             if (currentMatchid.length > 0) {
-                const recordIndexId = this.dataTable.getRecordIndexBySystemId(currentMatchid, 'tinder');
+                const recordIndexId = this.dataTable.getRecordIndexBySystemId(currentMatchid, this.nameController);
                 if (recordIndexId !== -1) {
                     // todo: so i need to get the data first BEFORE i update the record? or just change this entirely?
                     // todo: why do i need to include undefined here while at no point in the assignment of this variabele does it ever get undefined assigned to it?
@@ -1738,7 +1741,8 @@ export class TinderController implements datingAppController {
 
             for (let i = 0; i <= (dataRecords.length - 1); i = i + 1) {
                 console.log(`GETTING MESSAGES now for: ${i} - ${dataRecords[i].usedDataFields[5].getValue()}`);
-                const systemIdMatch = dataRecords[i].getRecordPersonSystemId('tinder');
+                // const systemIdMatch = dataRecords[i].getRecordPersonSystemId('tinder');
+                const systemIdMatch = dataRecords[i].getRecordPersonSystemId(this.nameController);
 
                 if (!systemIdMatch) {
                     console.warn(`Could not get messages because systemidMatch was: ${systemIdMatch}`);
@@ -1817,7 +1821,7 @@ export class TinderController implements datingAppController {
 
     }
 
-    private getMatchRecordIndexBySystemIdOrPersonId(match: Match, nameController: string): number {
+    private getMatchRecordIndexBySystemIdOrPersonId(match: Match, nameController: DatingAppType): number {
         const recordIndex = this.dataTable.getRecordIndexBySystemId(match.id, nameController);
         if (recordIndex === -1) {
             return this.dataTable.getRecordIndexBySystemId(match.person._id, nameController);
@@ -1829,7 +1833,8 @@ export class TinderController implements datingAppController {
         return new Promise<void>((resolve) => {
             const unupdatedMatchesList: DataRecord[] = dataTable.getAllDataRecords().filter((dataRecord) => {
                 const doesDataRecordNotHaveMatchListed = matches.findIndex((match) => {
-                    return match.match.id === dataRecord.getRecordPersonSystemId('tinder') || match.match.person._id === dataRecord.getRecordPersonSystemId('tinder');
+                    // return match.match.id === dataRecord.getRecordPersonSystemId('tinder') || match.match.person._id === dataRecord.getRecordPersonSystemId('tinder');
+                    return match.match.id === dataRecord.getRecordPersonSystemId(this.nameController) || match.match.person._id === dataRecord.getRecordPersonSystemId(this.nameController);
                 });
 
                 return doesDataRecordNotHaveMatchListed === -1 ? true : false;
@@ -1868,7 +1873,8 @@ export class TinderController implements datingAppController {
                 }
 
                 presumedRequestsFired = presumedRequestsFired + 1;
-                const matchId = unupdatedMatch.getRecordPersonSystemId('tinder');
+                // const matchId = unupdatedMatch.getRecordPersonSystemId('tinder');
+                const matchId = unupdatedMatch.getRecordPersonSystemId(this.nameController);
                 const matchName = unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Name')].getValue();
 
                 if (!matchId) {
@@ -1989,7 +1995,8 @@ export class TinderController implements datingAppController {
         const portMessage: PortMessage = {
             messageSender: 'CONTENT',
             action: actionName,
-            payload: ""
+            payload: "",
+            datingAppType: this.nameController
         };
         this.dataPort?.postMessage(portMessage);
     }

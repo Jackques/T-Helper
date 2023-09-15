@@ -1,7 +1,31 @@
+import { DatingAppType } from "../datingAppType.enum";
 
-export class tinderRequestInterceptorHelper {
+export class DatingAppRequestInterceptorHelper {
 
   private requestsList: string[] = [];
+  private supportedDomainList: {datingAppType: DatingAppType, domain: string}[] = [
+    {
+      datingAppType: DatingAppType.TINDER,
+      domain: 'https://api.gotinder.com/'
+    },
+    {
+      datingAppType: DatingAppType.TINDER,
+      domain: 'https://tinder.com'
+    },
+    {
+      datingAppType: DatingAppType.HAPPN,
+      domain: 'https://happn.app'
+    },
+    {
+      datingAppType: DatingAppType.HAPPN,
+      domain: 'https://happn.app.fr'
+    },
+    {
+      datingAppType: DatingAppType.HAPPN,
+      domain: 'https://api.happn.fr'
+    }
+  ];
+
   public requestTinderSwipeUrlList = [
     'https://api.gotinder.com/like/',
     'https://api.gotinder.com/superlike/',
@@ -24,8 +48,18 @@ export class tinderRequestInterceptorHelper {
     return false;
   }
 
-  public isTinderOriginRequest(details: chrome.webRequest.WebRequestBodyDetails): boolean {
-    return details.url.startsWith('https://api.gotinder.com/') || details.initiator === 'https://tinder.com';
+  public isKnownDatingAppOriginRequest(details: chrome.webRequest.WebRequestBodyDetails): boolean {
+    return this.supportedDomainList.some((supportedDomain)=>{
+      return details.url.startsWith(supportedDomain.domain) || details.initiator === supportedDomain.domain ? true : false;
+    });
+  }
+
+  public getDatingAppTypeFromRequest(details: chrome.webRequest.WebRequestBodyDetails): DatingAppType {
+    const datingAppType: DatingAppType | undefined = this.supportedDomainList.find((supportedDomain)=>{
+      return details.url.startsWith(supportedDomain.domain) || details.initiator === supportedDomain.domain ? true : false;
+    })?.datingAppType;
+
+    return datingAppType !== undefined ? datingAppType : DatingAppType.UNKNOWN;
   }
 
   public getPersonIdFromUrlTinder(url: string): string {
@@ -47,5 +81,4 @@ export class tinderRequestInterceptorHelper {
     console.error(`Could not get personId from url. Please check the settings for retrieving personId from string`);
     return url;
   }
-
 }

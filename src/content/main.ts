@@ -15,11 +15,12 @@ import { HappnController } from './classes/controllers/HappnController';
 import { Overlay } from './classes/serrvices/Overlay';
 import { ConsoleColorLog } from './classes/util/ConsoleColorLog/ConsoleColorLog';
 import { LogColors } from './classes/util/ConsoleColorLog/LogColors';
-import { PortAction } from 'src/PortAction.enum';
+import { PortAction } from '../PortAction.enum';
+import { DatingAppType } from '../datingAppType.enum';
 
 export class Main {
     private datingAppController: TinderController | HappnController | undefined | null; //todo: should remove undefined/null properties in the future
-    private datingAppType = '';
+    private datingAppType: DatingAppType = DatingAppType.UNKNOWN;
 
     private dataTable: DataTable = new DataTable();
     private dataStorage: DataStorage = new DataStorage();
@@ -46,7 +47,7 @@ export class Main {
 
                     //todo: Move this checking logic to popup,.. IN THE FUTURE so I don't have to press a button and find out AFTERWARDS that I shouldnt have pressed it because i wasnt on a recognized dating app
                     this.datingAppType = this.checkDatingApp();
-                    if (this.datingAppType.length > 0) {
+                    if (this.datingAppType !== DatingAppType.UNKNOWN) {
                         // this.dataTable = new DataTable();
 
                         //for every entry i the list received in payload
@@ -75,6 +76,10 @@ export class Main {
                         this.setCloseButton();
                         this.setDownloadNetworkLogs();
                         this.keepAliveIntervalNumber = this.activateKeepAlive();
+                    }else{
+                        const errMsg = `Dating app type could not be recognized. Please check the logic for checking Dating App type & ensure you are on the correct app.`;
+                        alert(errMsg);
+                        throw new Error(errMsg);
                     }
                 }
                 if (portMessage.messageSender === 'POPUP' && portMessage.action === PortAction.FILENAME) {
@@ -118,7 +123,7 @@ export class Main {
                 
             });
             this.backgroundChannelPort.onDisconnect.addListener(()=>{
-                if(this.datingAppType.length > 0){
+                if(this.datingAppType !== null){
                     const errorMessage = `The channel with the background script has been disconnected! Stop swiping immediately to prevent potential loss of data. Please check the background script extension logs.`;
                     console.error(errorMessage);
                     alert(errorMessage);
@@ -156,17 +161,17 @@ export class Main {
         return result;
     }
 
-    private checkDatingApp(): string {
+    private checkDatingApp(): DatingAppType {
         switch (parse(window.location.hostname).domainWithoutSuffix) {
             case "tinder":
                 console.log('You are on tinder');
-                return 'tinder';
+                return DatingAppType.TINDER;
             case "happn":
                 console.log('You are on happn');
-                return 'happn';
+                return DatingAppType.HAPPN;
             default:
                 console.log('Did not recognize app');
-                return '';
+                return DatingAppType.UNKNOWN;
         }
     }
 
@@ -315,11 +320,12 @@ export class Main {
         
         $(`body`).on("click", '[id="downloadNetworkLogs"]', () => {
             Overlay.setLoadingOverlay('downloadNetworkLogs', true);
-            
+
             this.backgroundChannelPort?.postMessage(<PortMessage>{ 
-                'messageSender': 'CONTENT', 
-                'action': PortAction.GET_NETWORK_LOGS, 
-                'payload': '' 
+                messageSender: 'CONTENT', 
+                action: PortAction.GET_NETWORK_LOGS, 
+                payload: "",
+                datingAppType: this.datingAppType
             });
             
             if(!this.downloadNetworkLogsActiveNo){
@@ -346,7 +352,7 @@ export class Main {
         this.dataStorage = new DataStorage();
 
         this.dataTable.emptyDataTable();
-        this.datingAppType = '';
+        this.datingAppType = DatingAppType.UNKNOWN;
         try{
             // todo: added code below in a try catch because IF backgroundscript was invalidated for some reason thus losing connection with my app (which is mostly in the content script)
             // AND if i were to close my app, thus running the code below, thus disconnecting again.. i would get a Uncaught Error: Extension context invalidated. error.
@@ -378,9 +384,10 @@ export class Main {
         return setInterval(()=>{
             //console.log("sending keep alive");
             this.backgroundChannelPort?.postMessage(<PortMessage>{ 
-                'messageSender': 'CONTENT', 
-                'action': PortAction.KEEP_ALIVE, 
-                'payload': '' 
+                messageSender: 'CONTENT', 
+                action: PortAction.KEEP_ALIVE, 
+                payload: '',
+                datingAppType: this.datingAppType
             });
         },4000)
     }

@@ -1,6 +1,7 @@
 import { DataRecordValues } from "src/content/interfaces/data/dataRecordValues.interface";
 import { DataField } from "./dataField";
 import { DataRecord } from "./dataRecord";
+import { DatingAppType } from "src/datingAppType.enum";
 
 export class DataTable {
 
@@ -16,13 +17,13 @@ export class DataTable {
     }
 
     //todo: refactor to get record directly? 
-    public getRecordIndexBySystemId(systemId: string, appType: string): number {
+    public getRecordIndexBySystemId(systemId: string, appType: DatingAppType): number {
         return this.dataRecords.findIndex((dataRecord: DataRecord) => {
             return dataRecord.getRecordPersonSystemId(appType) === systemId;
         });
     }
 
-    public getRecordIndexBySystemOrTempId(systemOrTempId: string, appType: string): number {
+    public getRecordIndexBySystemOrTempId(systemOrTempId: string, appType: DatingAppType): number {
         return this.dataRecords.findIndex((dataRecord: DataRecord) => {
             return dataRecord.getRecordPersonSystemId(appType) === systemOrTempId || dataRecord.getRecordPersonSystemId(appType, true) === systemOrTempId;
         });
@@ -36,7 +37,7 @@ export class DataTable {
         return null;
     }
 
-    public addNewDataRecord(dataRecord: DataRecord, appType: string): boolean {
+    public addNewDataRecord(dataRecord: DataRecord, appType: DatingAppType): boolean {
         const systemId = dataRecord.getRecordPersonSystemId(appType);
         if(!systemId){
             console.warn(`Could not get systemId from dataRecord. Result of systemid is: ${systemId}, dataRecord: ${dataRecord}`);

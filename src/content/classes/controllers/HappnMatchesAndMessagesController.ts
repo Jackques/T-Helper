@@ -12,14 +12,16 @@ import { MatchProfileDetailsHappn } from "src/content/interfaces/http-requests/M
 import { Match } from "src/content/interfaces/http-requests/MatchesListTinder.interface";
 import { MatchDataParser } from "./MatchDataParserHappn";
 import { LogColors } from "../util/ConsoleColorLog/LogColors";
+import { DatingAppType } from "../../../datingAppType.enum";
 
 export class HappnMatchesAndMessagesController {
 
-    private nameController = 'happn';
+    // private nameController = 'happn';
+    private nameController: DatingAppType = DatingAppType.HAPPN;
     private requestHandler: RequestHandlerHappn;
     private dataTable: DataTable;
 
-    constructor(requestHandler: RequestHandlerHappn, dataTable: DataTable, nameController: string) {
+    constructor(requestHandler: RequestHandlerHappn, dataTable: DataTable, nameController: DatingAppType) {
         this.requestHandler = requestHandler;
         this.dataTable = dataTable;
         this.nameController = nameController;

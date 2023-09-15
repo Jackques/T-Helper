@@ -23,6 +23,7 @@ import { dataCheckMessage } from "./dataCheckLogic/dataCheckMessage";
 import { Message } from "src/message.interface";
 import { dataCheckDistances } from "./dataCheckLogic/dataCheckDistances";
 import { dataCheckListStrings } from "./dataCheckLogic/dataCheckListStrings";
+import { DatingAppType } from "src/datingAppType.enum";
 
 export class DataRecord {
         
@@ -291,9 +292,10 @@ export class DataRecord {
         }
     }
 
-    public getRecordPersonSystemId(appType: string, onlyTempId?: boolean): string | null {
+    // public getRecordPersonSystemId(appType: string, onlyTempId?: boolean): string | null {
+    public getRecordPersonSystemId(appType: DatingAppType, onlyTempId?: boolean): string | null {
         const labelPersonSystemid = 'System-no';
-        const valueDataField:unknown | null = this.getValueOfDataFieldByTitle(labelPersonSystemid, {'appType': appType});
+        const valueDataField:unknown | null = this.getValueOfDataFieldByTitle(labelPersonSystemid, {'appType': appType.toString()});
         if(valueDataField !== null && typeof valueDataField === 'object'){
             for(const [key, value] of Object.entries(valueDataField)){
                 if(key === 'id' && value && !onlyTempId){

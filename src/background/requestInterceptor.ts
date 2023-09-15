@@ -1,10 +1,10 @@
 import { PersonAction } from "../personAction.enum";
+import { DatingAppType } from "../datingAppType.enum";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { SubmitAction } from "../SubmitAction.interface";
 import { backgroundScriptErrorHelper } from "./services/ErrorHelper";
-import { tinderRequestInterceptorHelper } from "./tinderRequestInterceptorHelper";
-import { DatingAppType } from "src/datingAppType.enum";
-import { PortAction } from "src/PortAction.enum";
+import { DatingAppRequestInterceptorHelper } from "./tinderRequestInterceptorHelper";
+import { PortAction } from "../PortAction.enum";
 
 export class requestInterceptor {
 
@@ -16,7 +16,9 @@ export class requestInterceptor {
     globalThis.requestInterceptorFn = this._requestInterceptorFn;
     globalThis.sendMessageToContent = this._sendMessageToContent;
 
-    globalThis.tinderRequestInterceptorHelper = new tinderRequestInterceptorHelper();
+    globalThis.getDatingAppType = this._getDatingAppType;
+
+    globalThis.tinderRequestInterceptorHelper = new DatingAppRequestInterceptorHelper();
   }
 
   private _onConnectListenerFn(port: chrome.runtime.Port): void {
@@ -39,40 +41,50 @@ export class requestInterceptor {
       // keep alive? since this service worker (previously; background script) terminates after ~5 min;
       // https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension
       console.log(`Message is: ${message}, and port is: ${port.name}`);
+      
+      const datingAppType: DatingAppType = globalThis.getDatingAppType(message.datingAppType);
+      if(datingAppType === DatingAppType.UNKNOWN){
+        const options: chrome.notifications.NotificationOptions = {
+          title: 'Warning',
+          type: 'basic',
+          message: `Received datingapp type was unknown`,
+          iconUrl: 'assets/alert-warning.png'
+        }
+        chrome.notifications.create(`Unknown dating app type`, options);
+        console.error(`Received datingapp type was unknown`);
+      }
 
       if(message.action === PortAction.GET_NETWORK_LOGS){
-        console.log("%cGoing to return backupped requests,.. just wait for promise", "color: blue");
-        backgroundScriptErrorHelper.getBackupRequests().then((result)=>{
+        console.log("%c Going to return backupped requests,.. just wait for promise", "color: blue");
+        backgroundScriptErrorHelper.getBackupRequests(datingAppType).then((result)=>{
           if(result === undefined){
-            console.log("%cGot the backupped requests! BUT is undefined :(", "color: blue");
+            console.log("%c Got the backupped requests! BUT is undefined :(", "color: blue");
             return;
           }
-          console.log("%cGot the backupped requests! sending them to content now!", "color: blue");
+          console.log("%c Got the backupped requests! sending them to content now!", "color: blue");
           const message: PortMessage = {
             messageSender: 'BACKGROUND',
             action: PortAction.GET_NETWORK_LOGS,
-            payload: result
+            payload: result,
+            datingAppType: datingAppType
           };
           port.postMessage(message);
         });
       }
 
-      // if(message.action === "swiped-person-action-start"){
       if(message.action === PortAction.SWIPED_PERSON_ACTION_START){
-        console.log("%cReceived swiped-person-action", "color: blue");
-        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-start", DatingAppType.TINDER);
+        console.log("%c Received swiped-person-action", "color: blue");
+        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-start", datingAppType);
       }
 
-      // if(message === "swiped-person-action-process"){
       if(message.action === PortAction.SWIPED_PERSON_ACTION_PROCESS){
-        console.log("%cReceived swiped-person-action", "color: blue");
-        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-process", DatingAppType.TINDER);
+        console.log("%c Received swiped-person-action", "color: blue");
+        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-process", datingAppType);
       }
 
-      // if(message.action === "swiped-person-action-end"){
       if(message.action === PortAction.SWIPED_PERSON_ACTION_END){
-        console.log("%cReceived swiped-person-action", "color: blue");
-        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-end", DatingAppType.TINDER);
+        console.log("%c Received swiped-person-action", "color: blue");
+        backgroundScriptErrorHelper.storeMessageForRequestInBackgroundBackup("swiped-person-action-end", datingAppType);
       }
     });
 
@@ -98,27 +110,39 @@ export class requestInterceptor {
 
     // the line below logs all tinder requests because the app only responds to tinder requests according to the settings in the manifest.json
     // console.log(`%crequestInitiator: ${details.initiator}, Requesturl: ${details.url}`, 'color: red');
-    
-    // Ensure that only tinder webRequests will be processed
-    if(!globalThis.tinderRequestInterceptorHelper.isTinderOriginRequest(details)){
+
+    if(!globalThis.tinderRequestInterceptorHelper.isKnownDatingAppOriginRequest(details)){
       return;
     }
-
-    // Stores all requests made by tinder 
+    
+    const datingAppType: DatingAppType = globalThis.tinderRequestInterceptorHelper.getDatingAppTypeFromRequest(details);
+    const isTinderSwipeRequest = globalThis.tinderRequestInterceptorHelper.isTinderSwipeRequest(details);
+    
+    // Stores all requests made by the datingapp 
     // This action is preformed because of 2 reasons:
-    // 1. if for whatever reason the like/pass/superlike/whatever is not being sent to the contentscript, the swiped person datarecord will contain an tempId along the lines of; 'idNotRetrievedPleaseCheckBackgroundRequestsBackupsInLocalStorage'
+    // 1. if for whatever reason the like/pass/superlike/whatever is not being sent to the contentscript, the swiped person datarecord will contain an tempId along the lines of; 'idNotRetrievedPleaseCheckBackgroundRequestsBackupsInLocalStorage-(datetimestamp)'
       // thus I can get the id from the localStorage for future reference
     // 2. if the api for like/pass/superlike/whatever changes, i can look back at these logs and determine the new api without losing any data
 
-    const isTinderSwipeRequest = globalThis.tinderRequestInterceptorHelper.isTinderSwipeRequest(details);
+    console.log("%c Going to store this request in cache: "+details.url, "color: orange");
+    backgroundScriptErrorHelper.storeRequestInBackgroundBackup(details, isTinderSwipeRequest, datingAppType);
 
-    console.log("%cGoing to store this request in cache: "+details.url, "color: orange");
-    backgroundScriptErrorHelper.storeRequestInBackgroundBackup(details, isTinderSwipeRequest);
+    // Ensure that only tinder webRequests will be processed
+    if(datingAppType === DatingAppType.UNKNOWN){
+      console.warn(`Received request is from known datingapp but datingAppType was unknown: ${details}`);
+      return;
+    }
 
     if (!isTinderSwipeRequest) {
       return;
     }
 
+    // In order to avoid the 100+ requests per minute (for some apps), I store all requests in memory 
+    // & check if the request has already been made it it has the exact same url.
+    // if it has, then prevent the rest of the code from executing (checking swipe action)
+    // if it has not, then continue
+
+    // don't worry, every swipe action will always (i hope) have a unique id in the url for the person I swiped on
     if (!globalThis.tinderRequestInterceptorHelper._isDifferentRequest(details)) {
       return;
     }
@@ -126,6 +150,9 @@ export class requestInterceptor {
     // todo: refactor this to interface in own file?
     let action: SubmitAction | undefined = undefined;
 
+    //TODO TODO TODO: Add support for happn swipe
+    //TODO TODO TODO: Add support for happn swipe
+    //TODO TODO TODO: Add support for happn swipe
     switch (true) {
       case (details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[0]) || details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[1])) && details.url.includes('super'):
         // line above; either startwith /like or /superlike to be true AND must include words 'super'
@@ -154,29 +181,27 @@ export class requestInterceptor {
         break;
     }
 
-    // TODO TODO TODO: Determine if request is from tinder or happn by checking origin?
-    // add this info as param to sendMessageToContent
-
     if (action) {
-      globalThis.sendMessageToContent(action, globalThis.port);
+      globalThis.sendMessageToContent(action, globalThis.port, datingAppType);
     }
 
   }
 
-  private _sendMessageToContent(submitAction: SubmitAction, port: chrome.runtime.Port): void {
+  private _sendMessageToContent(submitAction: SubmitAction, port: chrome.runtime.Port, datingAppType: DatingAppType): void {
     // console.log('%cgoing to send message from background after getting tinder tab by promise', 'color: orange');
 
     const message: PortMessage = {
       messageSender: 'BACKGROUND',
       action: PortAction.SUBMIT_ACTION,
-      payload: [submitAction]
+      payload: [submitAction],
+      datingAppType: datingAppType
     };
 
     try {
       port.postMessage(message);
     } catch (err: unknown) {
       const customError = backgroundScriptErrorHelper.retrieveErrorFromUnknownError(err);
-      backgroundScriptErrorHelper.setErrorInLocalStorage(submitAction.personId, submitAction.submitType, customError).finally(()=>{
+      backgroundScriptErrorHelper.setErrorInLocalStorage(submitAction.personId, submitAction.submitType, customError, datingAppType).finally(()=>{
 
         const options: chrome.notifications.NotificationOptions = {
           title: 'Warning',
@@ -194,4 +219,15 @@ export class requestInterceptor {
 
   }
 
+  private _getDatingAppType(datingAppType: string): DatingAppType {
+    switch (true) {
+      case datingAppType === DatingAppType.TINDER:
+        return DatingAppType.TINDER;
+      case datingAppType === DatingAppType.HAPPN:
+        return DatingAppType.HAPPN;
+      case datingAppType === DatingAppType.UNKNOWN:
+        return DatingAppType.UNKNOWN;
+    }
+    return DatingAppType.UNKNOWN;
+  }
 }
