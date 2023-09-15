@@ -33,8 +33,7 @@ export class ScreenElement {
 
     public collectData(): boolean {
         let elementPrePath: JQuery<HTMLElement> | null = null;
-        // let result: string | null = null;
-        // const elementPrePath: JQuery<HTMLElement> | null = typeof this.DOMPath === 'string' ? DOMHelper.getJqueryElementsByJquerySelector(this.DOMPath) : $(this.DOMPath() ? this.DOMPath() : "");
+
         if(typeof this.DOMPath === 'string'){
             elementPrePath = DOMHelper.getJqueryElementsByJquerySelector(this.DOMPath);
         }else if (typeof this.DOMPath === 'function'){
@@ -156,21 +155,20 @@ export class ScreenElement {
 
     private _getTextFromElement($element: JQuery<HTMLElement>, lastElementPath: string): string {
         let resultText = '';
-        if(this.isLastElementPathEmpty(lastElementPath)){
+        if(!this.isLastElementPathEmpty(lastElementPath)){
+            if (!this._lastElementExists($element, lastElementPath)) {
+                ConsoleColorLog.singleLog(`Could not find element: ${lastElementPath}, tried to find it in DOMPath: ${this.DOMPath}`, false, LogColors.RED);
+            }
+            const result = DOMHelper.getJqueryElementsByFindingInJqueryElement($element, lastElementPath);
+            resultText = result && result.length > 0 ? result.last().text() : '';
+        }else{
             resultText = $element.last().text();
-            return resultText;
         }
-        if (!this._lastElementExists($element, lastElementPath)) {
-            ConsoleColorLog.singleLog(`Could not find element: ${lastElementPath}, tried to find it in DOMPath: ${this.DOMPath}`, false, LogColors.RED);
-        }
-        // resultText = $element.find(lastElementPath).last().text();
-        const result = DOMHelper.getJqueryElementsByFindingInJqueryElement($element, lastElementPath);
-        resultText = result && result.length > 0 ? result.last().text() : '';
-        // debugger;
 
         if(this.preManipulateValue){
             resultText = this.preManipulateValue(resultText);
         }
+
         return resultText;
     }
 
@@ -181,13 +179,12 @@ export class ScreenElement {
         if (!this._lastElementExists($element, lastElementPath)) {
             ConsoleColorLog.singleLog(`Could not find element: ${lastElementPath}, tried to find it in DOMPath: ${this.DOMPath}`, false, LogColors.RED);
         }
-        // return $element.find(lastElementPath).length;
+
         const result = DOMHelper.getJqueryElementsByFindingInJqueryElement($element, lastElementPath);
         return result ? result.length : NaN;
     }
 
     private _lastElementExists($element: JQuery<HTMLElement>, lastElementPath: string): boolean {
-        // const lastElement = $element.find(lastElementPath);
         const lastElement = DOMHelper.getJqueryElementsByFindingInJqueryElement($element, lastElementPath);
         if (!lastElement || lastElement.length === 0) {
             ConsoleColorLog.singleLog(`Could not find element: ${lastElementPath}, tried to find it in DOMPath: ${this.DOMPath}`, false, LogColors.RED);
@@ -208,18 +205,4 @@ export class ScreenElement {
             ConsoleColorLog.singleLog(`The Jquery selector set for ScreenAction: ${screenActionName} is not valid: `, screenActionDOMRef, LogColors.RED);
         }
     }
-
-    // data retrieval methods;
-    // 1. get text from element (tip; can also search on [aria-label="???"]
-    // name, age, distance
-    // get text from element (from element by text start with..)
-    // city (i.e. "Woont in ...")
-
-    // 2. get if element exists (by text)
-    // verified, op zoek naar 'iets serieus'/ 'iets casuals' / 'enkel avntuur' / 'etc.'
-    // interesses (with use of sibling selector)
-
-    // 3. get amount of elements
-    // amount of pictures
-    // tip: will need to reconfig DOMHelper.jquery get all results instead of first() method
 }

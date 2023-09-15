@@ -20,6 +20,7 @@ import { ScreenController } from "../util/Screen/ScreenList";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { PortAction } from "../../../PortAction.enum";
 import { DatingAppType } from "../../../datingAppType.enum";
+import { ScreenElement } from "../util/Screen/ScreenElement";
 
 export class UIHelpersHappn {
 
@@ -216,6 +217,90 @@ export class UIHelpersHappn {
                 $(".uiHelperFieldsContainer").css('right', '0px');
                 $(".uiHelperFieldsContainer").css('left', 'auto');
                 $(".uiHelperFieldsContainer").css('top', '80px');
+            },
+            () => {
+                const dataRecordValuesFromCollectedData: DataRecordValues[] = [];
+                this.screenController.getCurrentScreen().getScreenElements().forEach((screenElement: ScreenElement) => {
+                    const hasCollectedData = screenElement.collectData();
+
+                        switch (screenElement.getName()) {
+                            case "Name": {
+                                dataRecordValuesFromCollectedData.push(
+                                    {
+                                        label: screenElement.getName(),
+                                        value: screenElement.getValueAsString()
+                                    });
+                                break;
+                            }
+                            case "Age": {
+                                dataRecordValuesFromCollectedData.push(
+                                    {
+                                        label: screenElement.getName(),
+                                        value: screenElement.getValueAsNumber()
+                                    });
+                                break;
+                            }
+                            case "Job": {
+                                dataRecordValuesFromCollectedData.push(
+                                    {
+                                        label: screenElement.getName(),
+                                        value: hasCollectedData ? screenElement.getValueAsString() : "" 
+                                    });
+                                break;
+                            }
+                            case "School": {
+                                dataRecordValuesFromCollectedData.push(
+                                    {
+                                        label: screenElement.getName(),
+                                        value: hasCollectedData ? screenElement.getValueAsString() : ""
+                                    });
+                                break;
+                            }
+                            case "City": {
+                                dataRecordValuesFromCollectedData.push(
+                                    {
+                                        label: screenElement.getName(),
+                                        value: hasCollectedData ? screenElement.getValueAsString() : ""
+                                    });
+                                break;
+                            }
+                            case "Has-profiletext": {
+                                dataRecordValuesFromCollectedData.push(
+                                    {
+                                        label: screenElement.getName(),
+                                        value: hasCollectedData ? screenElement.getValueAsString() : false
+                                    });
+                                break;
+                            }
+                            case "Is-verified": {
+                                dataRecordValuesFromCollectedData.push(
+                                    {
+                                        label: screenElement.getName(),
+                                        value: hasCollectedData ? screenElement.getValueAsBoolean() : false
+                                    });
+                                break;
+                            }
+                            case "Amount-of-pictures": {
+                                dataRecordValuesFromCollectedData.push(
+                                    {
+                                        label: screenElement.getName(),
+                                        value: hasCollectedData ? screenElement.getValueAsString() : null
+                                    });
+                                break;
+                            }
+                            default:
+                                ConsoleColorLog.singleLog(`Screen element with name: ${screenElement.getName()} is not collected for adding to the dataRecord. Please check if this is correct.`, screenElement.getValueAsString(), LogColors.YELLOW);
+                        }
+                });
+                this.screenController.getCurrentScreen().clearValuesScreenElements();
+
+                ConsoleColorLog.multiLog(`Here is the collected data from DOM: `, dataRecordValuesFromCollectedData, LogColors.GREEN, true);
+
+                newDataRecord.addDataToDataFields(dataRecordValuesFromCollectedData);
+                this.uiRenderer.updateDataFieldValues();
+
+                // TODO TODO TODO: first get if user is on swipe or swipe profile screen? both delivers different DOM,.. but wait! i removed swipe-profile screen..
+                // todo: nice what i thought about making each dataField autogather or not, but this was not needed.. so maybe remove the autoGather & autoGatherOnce all together to reduce unnecessary complexity?
             });
 
             const uiRequiredDataFields: DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
