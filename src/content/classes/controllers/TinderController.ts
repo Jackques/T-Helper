@@ -1284,9 +1284,6 @@ export class TinderController implements datingAppController {
 
                     newDataRecord.addDataToDataFields(dataRecordValuesFromCollectedData);
                     this.uiRenderer.updateDataFieldValues();
-
-                    // TODO TODO TODO: first get if user is on swipe or swipe profile screen? both delivers different DOM,.. but wait! i removed swipe-profile screen..
-                    // todo: nice what i thought about making each dataField autogather or not, but this was not needed.. so maybe remove the autoGather & autoGatherOnce all together to reduce unnecessary complexity?
                 });
 
             const uiRequiredDataFields: DataField[] = newDataRecord.getDataFields(false, true, UIRequired.SELECT_ONLY);
