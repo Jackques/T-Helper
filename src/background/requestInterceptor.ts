@@ -106,7 +106,7 @@ export class requestInterceptor {
 
   }
 
-  private _requestInterceptorFn(details: chrome.webRequest.WebRequestBodyDetails): void {
+  public _requestInterceptorFn(details: chrome.webRequest.WebRequestBodyDetails): void {
 
     // the line below logs all tinder requests because the app only responds to tinder requests according to the settings in the manifest.json
     // console.log(`%crequestInitiator: ${details.initiator}, Requesturl: ${details.url}`, 'color: red');
@@ -116,7 +116,9 @@ export class requestInterceptor {
     }
     
     const datingAppType: DatingAppType = globalThis.tinderRequestInterceptorHelper.getDatingAppTypeFromRequest(details);
-    const isTinderSwipeRequest = globalThis.tinderRequestInterceptorHelper.isDatingAppSwipeRequest(details);
+    console.log(`what is the dating app type?: ${datingAppType}`);
+    const isDatingAppSwipeRequest = globalThis.tinderRequestInterceptorHelper.isDatingAppSwipeRequest(details);
+    console.log(`is this is a datingapp swipe request?: ${isDatingAppSwipeRequest}`);
     
     // Stores all requests made by the datingapp 
     // This action is preformed because of 2 reasons:
@@ -125,7 +127,7 @@ export class requestInterceptor {
     // 2. if the api for like/pass/superlike/whatever changes, i can look back at these logs and determine the new api without losing any data
 
     console.log("%c Going to store this request in cache: "+details.url, "color: orange");
-    backgroundScriptErrorHelper.storeRequestInBackgroundBackup(details, isTinderSwipeRequest, datingAppType);
+    backgroundScriptErrorHelper.storeRequestInBackgroundBackup(details, isDatingAppSwipeRequest, datingAppType);
 
     // Ensure that only tinder webRequests will be processed
     if(datingAppType === DatingAppType.UNKNOWN){
@@ -133,7 +135,7 @@ export class requestInterceptor {
       return;
     }
 
-    if (!isTinderSwipeRequest) {
+    if (!isDatingAppSwipeRequest) {
       return;
     }
 

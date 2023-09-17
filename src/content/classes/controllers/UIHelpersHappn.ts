@@ -494,9 +494,14 @@ export class UIHelpersHappn {
                         ]);
                         this.dataTable.addNewDataRecord(newDataRecord, this.nameController);
                         this.addUIHelpers(this.screenController, true);
+
+                        this._logLatestDataRecord(newDataRecord);
+
                         Overlay.setLoadingOverlay('loadingSwipeAction', false);
 
+                        debugger;
                         console.error(`Swiped person received no tempId! Saving inserted info of record regardless.. Don't forget to check background local storage requests backup to get the corresponding personid and to overwrite the tempId later!`);
+                        alert(`Swiped person received no tempId! Saving inserted info of record regardless.. Don't forget to check background local storage requests backup to get the corresponding personid and to overwrite the tempId later!`);
                         //todo: Should REALLY throw a important alert to notify myself what I need to pay extra attention!
                     }
                     
@@ -517,6 +522,14 @@ export class UIHelpersHappn {
         //todo: add other state (if,.. or seperate method) for adding chat ui helper VS swipe ui helper. Currently working on swipe ui helper
 
         //todo: seperate out logic for everything UI related; create a seperate class which recognizes app state (which screen we are on), removes existing helprs when on switch etc.
+    }
+
+    private _logLatestDataRecord(newDataRecord: DataRecord) {
+        const name = newDataRecord.getDataFields().find((dataField) => dataField.title === "Name")?.getValue();
+        const notes = newDataRecord.getDataFields().find((dataField) => dataField.title === "Notes")?.getValue();
+
+        console.log(`%c I just added the new dataRecord to dataTable: ${newDataRecord}`, "color: DarkOliveGreen");
+        console.log(`%c New dataRecord name: ${name}, && Notes: ${notes}`, "color: DarkOliveGreen");
     }
 
     private getCurrentMatchIdFromChatScreen(): string {

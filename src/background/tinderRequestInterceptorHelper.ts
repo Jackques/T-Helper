@@ -3,8 +3,8 @@ import { DatingAppType } from "../datingAppType.enum";
 import { SwipeUrl } from "./swipeUrl";
 
 export class DatingAppRequestInterceptorHelper {
-  private requestsList: string[] = [];
-  private supportedDomainList: { datingAppType: DatingAppType, domain: string }[] = [
+  public requestsList: string[] = [];
+  public supportedDomainList: { datingAppType: DatingAppType, domain: string }[] = [
     {
       datingAppType: DatingAppType.TINDER,
       domain: 'https://api.gotinder.com/'
@@ -33,13 +33,13 @@ export class DatingAppRequestInterceptorHelper {
   //   'https://api.gotinder.com/pass/'
   // ];
 
-  private requestSwipeUrlList: SwipeUrl[] = [
+  public requestSwipeUrlList: SwipeUrl[] = [
     new SwipeUrl(
       'https://api.gotinder.com/like/',
       DatingAppType.TINDER,
       [PersonAction.LIKED_PERSON],
       ((details: chrome.webRequest.WebRequestHeadersDetails) => this.getPersonIdFromUrlTinder(details.url)),
-      undefined
+      ((requestDetails: chrome.webRequest.WebRequestBodyDetails, submitTypeList: PersonAction[])=>{ return this.getSubmitTypeTinderNormalLike(requestDetails, submitTypeList)}),
     ),
     new SwipeUrl(
       'https://api.gotinder.com/superlike/',
@@ -56,7 +56,7 @@ export class DatingAppRequestInterceptorHelper {
       undefined
     ),
     new SwipeUrl(
-      'https://api.happn.fr/',
+      'https://api.happn.fr/api/v1/users/me/',
       DatingAppType.HAPPN,
       [PersonAction.LIKED_PERSON, PersonAction.SUPER_LIKED_PERSON, PersonAction.PASSED_PERSON],
       ((details: chrome.webRequest.WebRequestHeadersDetails) => this.getPersonIdFromUrlHappn(details.url)),
@@ -142,6 +142,12 @@ export class DatingAppRequestInterceptorHelper {
   }
 
   private getSubmitTypeHappnSwipeRequest(requestDetails: chrome.webRequest.WebRequestBodyDetails, submitTypeList: PersonAction[]): PersonAction | undefined {
+    // first check if the requestUrl is a swipe request for Happn, if not return undefined, if so proceed
+    if(requestDetails.url.startsWith(`https://api.happn.fr/api/v1/users/me/reacted/`)){
+      return undefined;
+    }
+
+    // if it is a swipe request for Happn, check if I can decode the requestBody
     if(requestDetails?.requestBody?.raw?.at(0)?.bytes){
       const requestBodyContent = JSON.parse(new TextDecoder().decode(requestDetails.requestBody.raw[0].bytes));
       debugger;
@@ -154,6 +160,17 @@ export class DatingAppRequestInterceptorHelper {
     if(requestDetails.url.startsWith('https://api.gotinder.com/superlike/') || requestDetails.url.startsWith('https://api.gotinder.com/like/') && requestDetails.url.includes('super')){
       if(submitTypeList.length === 0 || submitTypeList.length > 1){
         console.error(`submitTypeList provided for getSubmitTypeTinderSuperLike does not contain only 1 PersonAction`);
+        return undefined;
+      }
+      return submitTypeList[0];
+    }
+    return undefined;
+  }
+
+  private getSubmitTypeTinderNormalLike(requestDetails: chrome.webRequest.WebRequestBodyDetails, submitTypeList: PersonAction[]): PersonAction | undefined {
+    if(requestDetails.url.startsWith('https://api.gotinder.com/like/') && !requestDetails.url.includes('super')){
+      if(submitTypeList.length === 0 || submitTypeList.length > 1){
+        console.error(`submitTypeList provided for getSubmitTypeTinderNormalLike does not contain only 1 PersonAction`);
         return undefined;
       }
       return submitTypeList[0];
