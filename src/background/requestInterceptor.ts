@@ -116,7 +116,7 @@ export class requestInterceptor {
     }
     
     const datingAppType: DatingAppType = globalThis.tinderRequestInterceptorHelper.getDatingAppTypeFromRequest(details);
-    const isTinderSwipeRequest = globalThis.tinderRequestInterceptorHelper.isTinderSwipeRequest(details);
+    const isTinderSwipeRequest = globalThis.tinderRequestInterceptorHelper.isDatingAppSwipeRequest(details);
     
     // Stores all requests made by the datingapp 
     // This action is preformed because of 2 reasons:
@@ -148,43 +148,55 @@ export class requestInterceptor {
     }
 
     // todo: refactor this to interface in own file?
-    let action: SubmitAction | undefined = undefined;
+    // let action: SubmitAction | null = undefined;
 
     //TODO TODO TODO: Add support for happn swipe
     //TODO TODO TODO: Add support for happn swipe
     //TODO TODO TODO: Add support for happn swipe
-    switch (true) {
-      case (details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[0]) || details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[1])) && details.url.includes('super'):
-        // line above; either startwith /like or /superlike to be true AND must include words 'super'
-        // superlike example: https://api.gotinder.com/like/57f2a33a6dda1f6b095088af/super?locale=nl
-        action = {
-          'submitType': PersonAction.SUPER_LIKED_PERSON,
-          'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
-        };
-        break;
-      case details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[0]):
-        // like url example: https://api.gotinder.com/like/61ed3245cf08560100178715?locale=nl
-        // https://api.gotinder.com/like/5fccbf17a0848701001bb1f5?locale=nl
-        action = {
-          'submitType': PersonAction.LIKED_PERSON,
-          'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
-        };
-        break;
-      case details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[2]):
-        // pass url example: https://api.gotinder.com/pass/61d9f860039cc801009182a1?locale=nl&s_number=8699887070750215
-        action = {
-          'submitType': PersonAction.PASSED_PERSON,
-          'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
-        };
-        break;
-      default:
-        break;
-    }
+    // switch (true) {
+    //   case (details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[0]) || details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[1])) && details.url.includes('super'):
+    //     // line above; either startwith /like or /superlike to be true AND must include words 'super'
+    //     // superlike example: https://api.gotinder.com/like/57f2a33a6dda1f6b095088af/super?locale=nl
+    //     action = {
+    //       'submitType': PersonAction.SUPER_LIKED_PERSON,
+    //       'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
+    //     };
+    //     break;
+    //   case details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[0]):
+    //     // like url example: https://api.gotinder.com/like/61ed3245cf08560100178715?locale=nl
+    //     // https://api.gotinder.com/like/5fccbf17a0848701001bb1f5?locale=nl
+    //     action = {
+    //       'submitType': PersonAction.LIKED_PERSON,
+    //       'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
+    //     };
+    //     break;
+    //   case details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[2]):
+    //     // pass url example: https://api.gotinder.com/pass/61d9f860039cc801009182a1?locale=nl&s_number=8699887070750215
+    //     action = {
+    //       'submitType': PersonAction.PASSED_PERSON,
+    //       'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
+    //     };
+    //     break;
+    //   default:
+    //     break;
+    // }
+    const action: {
+      submitType: PersonAction;
+      personId: string;
+    } | null = tinderRequestInterceptorHelper.getSwipeUrl(details);
+
+    // try{
+    //   action = tinderRequestInterceptorHelper.getSwipeUrl(details);
+    // }catch(err: unknown){
+    //   if (err instanceof Error) {
+    //     console.error(err.message);
+    //  }
+    //   console.error(`An unknown error occured!`);
+    // }
 
     if (action) {
       globalThis.sendMessageToContent(action, globalThis.port, datingAppType);
     }
-
   }
 
   private _sendMessageToContent(submitAction: SubmitAction, port: chrome.runtime.Port, datingAppType: DatingAppType): void {
