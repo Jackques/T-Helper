@@ -479,7 +479,8 @@ export class UIHelpersHappn {
                             {
                                 label: 'System-no',
                                 value: {
-                                    appType: 'tinder',
+                                    // appType: 'happn',
+                                    appType: this.nameController.toString(),
                                     tempId: `idNotRetrievedPleaseCheckBackgroundRequestsBackupsInLocalStorage-${new Date().toISOString()}`
                                 }
                             },

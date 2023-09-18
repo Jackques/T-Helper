@@ -1484,7 +1484,8 @@ export class TinderController implements datingAppController {
                             {
                                 label: 'System-no',
                                 value: {
-                                    appType: 'tinder',
+                                    // appType: 'tinder',
+                                    appType: this.nameController.toString(),
                                     tempId: `idNotRetrievedPleaseCheckBackgroundRequestsBackupsInLocalStorage-${new Date().toISOString()}`
                                 }
                             },
