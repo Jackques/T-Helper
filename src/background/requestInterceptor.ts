@@ -245,3 +245,26 @@ export class requestInterceptor {
     return DatingAppType.UNKNOWN;
   }
 }
+
+
+// {
+//   "documentId": "F0BD424F65A4BA4C75C64BFADCF525BC",
+//   "documentLifecycle": "active",
+//   "frameId": 0,
+//   "frameType": "outermost_frame",
+//   "initiator": "https://happn.app",
+//   "method": "POST",
+//   "parentFrameId": -1,
+//   "requestBody": {
+//       "raw": [
+//           {
+//               "bytes": {}
+//           }
+//       ]
+//   },
+//   "requestId": "30716",
+//   "tabId": 641470729,
+//   "timeStamp": 1694984451621.378,
+//   "type": "xmlhttprequest",
+//   "url": "https://api.happn.fr/api/v1/users/me/reacted/9d83c9f2-80a7-4d1d-b21b-2a4cf3582cfb"
+// }
