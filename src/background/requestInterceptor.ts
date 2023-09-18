@@ -145,7 +145,7 @@ export class requestInterceptor {
     // if it has not, then continue
 
     // don't worry, every swipe action will always (i hope) have a unique id in the url for the person I swiped on
-    if (!globalThis.tinderRequestInterceptorHelper._isDifferentRequest(details)) {
+    if (!globalThis.tinderRequestInterceptorHelper._isDifferentRequest(details) && !isDatingAppSwipeRequest) {
       return;
     }
 
