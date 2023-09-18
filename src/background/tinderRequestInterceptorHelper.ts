@@ -56,12 +56,21 @@ export class DatingAppRequestInterceptorHelper {
       undefined
     ),
     new SwipeUrl(
-      'https://api.happn.fr/api/v1/users/me/',
+      'https://api.happn.fr/api/v1/users/me/reacted/',
       DatingAppType.HAPPN,
       [PersonAction.LIKED_PERSON, PersonAction.SUPER_LIKED_PERSON, PersonAction.PASSED_PERSON],
       ((details: chrome.webRequest.WebRequestHeadersDetails) => this.getPersonIdFromUrlHappn(details.url)),
       ((requestDetails: chrome.webRequest.WebRequestBodyDetails, submitTypeList: PersonAction[])=>{ return this.getSubmitTypeHappnSwipeRequest(requestDetails, submitTypeList)})
     ),
+    new SwipeUrl(
+      'https://api.happn.fr/api/users/me/rejected/',
+      DatingAppType.HAPPN,
+      [PersonAction.PASSED_PERSON],
+      ((details: chrome.webRequest.WebRequestHeadersDetails) => this.getPersonIdFromUrlHappn(details.url)),
+      undefined
+    ),
+
+    // 'https://api.happn.fr/api/users/me/rejected/237a0635-12c5-494f-99b6-2d279fbdb0b5'
   ];
 
   public isDatingAppSwipeRequest(details: chrome.webRequest.WebRequestHeadersDetails): boolean {
