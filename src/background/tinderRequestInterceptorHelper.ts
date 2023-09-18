@@ -141,9 +141,12 @@ export class DatingAppRequestInterceptorHelper {
     personId: string
   } | null {
     const matchedRequestSwipeUrl: SwipeUrl | undefined = this.requestSwipeUrlList.find((requestSwipeUrl: SwipeUrl)=>{
-      return requestSwipeUrl.isUrlRecognizedSwipeUrl(requestDetails);
+      if(requestSwipeUrl.isUrlRecognizedSwipeUrl(requestDetails)){
+        return requestSwipeUrl;
+      }
     });
     if(!matchedRequestSwipeUrl){
+      //TODO TODO TODO: for some reason the Happn like ends up here, dont know why
       console.error(`Received request details: ${requestDetails} does not match any set SwipeUrl in requestSwipeUrlList. Please check the setting of each set SwipeUrl in the list.`);
       return null;
     }
