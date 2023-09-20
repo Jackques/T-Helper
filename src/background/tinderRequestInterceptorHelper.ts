@@ -1,6 +1,7 @@
 import { PersonAction } from "../personAction.enum";
 import { DatingAppType } from "../datingAppType.enum";
 import { SwipeUrl } from "./swipeUrl";
+import {HappnSwipeRequest} from "./HappnSwipeRequest.interface";
 
 export class DatingAppRequestInterceptorHelper {
   public requestsList: string[] = [];
@@ -155,13 +156,20 @@ export class DatingAppRequestInterceptorHelper {
 
   private getSubmitTypeHappnSwipeRequest(requestDetails: chrome.webRequest.WebRequestBodyDetails, submitTypeList: PersonAction[]): PersonAction | undefined {
     // first check if the requestUrl is a swipe request for Happn, if not return undefined, if so proceed
-    if(requestDetails.url.startsWith(`https://api.happn.fr/api/v1/users/me/reacted/`)){
+    if(!requestDetails.url.startsWith(`https://api.happn.fr/api/v1/users/me/reacted/`)){
       return undefined;
     }
 
+    debugger;
+
     // if it is a swipe request for Happn, check if I can decode the requestBody
     if(requestDetails?.requestBody?.raw?.at(0)?.bytes){
-      const requestBodyContent = JSON.parse(new TextDecoder().decode(requestDetails.requestBody.raw[0].bytes));
+      const requestBodyContent: HappnSwipeRequest = JSON.parse(new TextDecoder().decode(requestDetails.requestBody.raw[0].bytes));
+      if(requestBodyContent.reaction.id.includes("heart")){
+        return submitTypeList.find((submitType)=>{
+          return submitType.includes("likedPerson");
+        });
+      }
       debugger;
     }
     console.error(`Could not retrieve raw bytes of requestBody from requestDetails for happn swipe request: ${requestDetails}. Please check the logic.`);
