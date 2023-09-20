@@ -1,6 +1,6 @@
 /* eslint-disable no-var */
 
-import { DatingAppRequestInterceptorHelper } from "src/background/tinderRequestInterceptorHelper";
+import { DatingAppRequestInterceptorHelper } from "src/background/services/tinderRequestInterceptorHelper";
 import { backgroundScriptErrorHelper } from "src/background/services/ErrorHelper";
 import { SubmitAction } from "src/SubmitAction.interface";
 import { DatingAppType } from "src/datingAppType.enum";

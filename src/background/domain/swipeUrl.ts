@@ -1,5 +1,5 @@
-import { DatingAppType } from "../datingAppType.enum";
-import { PersonAction } from "../personAction.enum";
+import { DatingAppType } from "../../datingAppType.enum";
+import { PersonAction } from "../../personAction.enum";
 
 export class SwipeUrl {
     private swipeUrl: string;

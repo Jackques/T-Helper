@@ -3,7 +3,7 @@ import { DatingAppType } from "../datingAppType.enum";
 import { PortMessage } from "src/content/interfaces/portMessage.interface";
 import { SubmitAction } from "../SubmitAction.interface";
 import { backgroundScriptErrorHelper } from "./services/ErrorHelper";
-import { DatingAppRequestInterceptorHelper } from "./tinderRequestInterceptorHelper";
+import { DatingAppRequestInterceptorHelper } from "./services/tinderRequestInterceptorHelper";
 import { PortAction } from "../PortAction.enum";
 
 export class requestInterceptor {
@@ -149,52 +149,10 @@ export class requestInterceptor {
       return;
     }
 
-    // todo: refactor this to interface in own file?
-    // let action: SubmitAction | null = undefined;
-
-    //TODO TODO TODO: Add support for happn swipe
-    //TODO TODO TODO: Add support for happn swipe
-    //TODO TODO TODO: Add support for happn swipe
-    // switch (true) {
-    //   case (details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[0]) || details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[1])) && details.url.includes('super'):
-    //     // line above; either startwith /like or /superlike to be true AND must include words 'super'
-    //     // superlike example: https://api.gotinder.com/like/57f2a33a6dda1f6b095088af/super?locale=nl
-    //     action = {
-    //       'submitType': PersonAction.SUPER_LIKED_PERSON,
-    //       'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
-    //     };
-    //     break;
-    //   case details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[0]):
-    //     // like url example: https://api.gotinder.com/like/61ed3245cf08560100178715?locale=nl
-    //     // https://api.gotinder.com/like/5fccbf17a0848701001bb1f5?locale=nl
-    //     action = {
-    //       'submitType': PersonAction.LIKED_PERSON,
-    //       'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
-    //     };
-    //     break;
-    //   case details.url.startsWith(globalThis.tinderRequestInterceptorHelper.requestTinderSwipeUrlList[2]):
-    //     // pass url example: https://api.gotinder.com/pass/61d9f860039cc801009182a1?locale=nl&s_number=8699887070750215
-    //     action = {
-    //       'submitType': PersonAction.PASSED_PERSON,
-    //       'personId': globalThis.tinderRequestInterceptorHelper.getPersonIdFromUrlTinder(details.url)
-    //     };
-    //     break;
-    //   default:
-    //     break;
-    // }
     const action: {
       submitType: PersonAction;
       personId: string;
     } | null = tinderRequestInterceptorHelper.getSwipeUrl(details);
-
-    // try{
-    //   action = tinderRequestInterceptorHelper.getSwipeUrl(details);
-    // }catch(err: unknown){
-    //   if (err instanceof Error) {
-    //     console.error(err.message);
-    //  }
-    //   console.error(`An unknown error occured!`);
-    // }
 
     if (action) {
       globalThis.sendMessageToContent(action, globalThis.port, datingAppType);
@@ -245,26 +203,3 @@ export class requestInterceptor {
     return DatingAppType.UNKNOWN;
   }
 }
-
-
-// {
-//   "documentId": "F0BD424F65A4BA4C75C64BFADCF525BC",
-//   "documentLifecycle": "active",
-//   "frameId": 0,
-//   "frameType": "outermost_frame",
-//   "initiator": "https://happn.app",
-//   "method": "POST",
-//   "parentFrameId": -1,
-//   "requestBody": {
-//       "raw": [
-//           {
-//               "bytes": {}
-//           }
-//       ]
-//   },
-//   "requestId": "30716",
-//   "tabId": 641470729,
-//   "timeStamp": 1694984451621.378,
-//   "type": "xmlhttprequest",
-//   "url": "https://api.happn.fr/api/v1/users/me/reacted/9d83c9f2-80a7-4d1d-b21b-2a4cf3582cfb"
-// }
