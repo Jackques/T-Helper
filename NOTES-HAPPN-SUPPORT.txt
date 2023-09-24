@@ -1,3 +1,5 @@
+Notes:
+
 ! response-speed, reminders-amount, ghosts etc. all absent. but this  may be because according to bug in app, it thinks matches never responded?
 	* Ornella; only response-speed remained empty.. why?
 
@@ -16,11 +18,37 @@
 ! Check alle TODO TODO TODO's in de code.
 	Volgens mij was er o.a. nog iets m.b.t. dat niet alle berichten werden opgehaald van een match als deze 100+ berichten deden bevatten?
 
+======
 
 TO-DO:
 1. Refactor & add support for happn background script (service worker)
 	> Add support for happn swipe (line 150+, requestInterceptor.ts) & test
 	> Refactor tinderRequestInterceptorHelper.ts to generic dating app name file
 
-3. City & Interests are not properly collected by Happn
+2. City & Interests are not properly collected by Happn
 	> Happn has not City field, thus cannot be supported
+
+3. Happn fix broken Collect Data paths due to Happn update UI
+
+4. My app says Happn match Sindy is? can no longer get datarecord or something?
+
+====
+
+Nice to haves:
+
+- Disable keepAlive when receive message from backgroundscript that backrgoundscript is no longer available
+	& implement Umur's solution to this;
+	https://stackoverflow.com/questions/29741922/prevent-service-worker-from-automatically-stopping#:~:text=What%20you're%20seeing%20is,then%20%22die%22%20shortly%20thereafter.
+	Or maybe keep the keepAlive to continuesly verify if the backgroundscript is available?
+
+- Remove 'autoGather' from dataFields, because it is not used for anything?
+
+- Add reset button to uiHelpers (
+	"The data in the ui helper fields are updated shortly after receiving the data (the clicking of the button), unless it's null/empty/undefined"
+			! Existing data SHOULD NOT be overwritten.), hence i can easily get -> reset -> get data again
+
+- OPTIONAL: Extend logic to also get Interests (multiple strings in array) (tinder)
+
+- Add support for new datafield; 'relation-intent' (i think both tinder & happn got this?)
+
+- Add deviceType (& ip adress) to logging?
