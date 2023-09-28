@@ -437,7 +437,8 @@ export class HappnMatchesAndMessagesController {
 
         let newBlockedOrRemovedPersons = 0;
         let updatedBlockedOrRemovedPersons = 0;
-        return new Promise<void>((resolve) => {
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise<void>(async (resolve) => {
 
             // if a match no longer appears in the retrieved (matches), then either the profile or our match has been deleted!
             const unupdatedMatchesList: DataRecord[] = dataTable.getAllDataRecords().filter((dataRecord) => {
@@ -474,7 +475,7 @@ export class HappnMatchesAndMessagesController {
 
                 if (isDataFieldBlocked || hasDataFieldSeeminglyDeletedProfile || !isDataFieldIsMatch) {
                     if (i === (unupdatedMatchesList.length - 1)) {
-                        console.log(`I guess during?`);
+                        console.log(`Done updating deleted match data records`);
                         resolve();
                     }
                     continue;
@@ -482,89 +483,129 @@ export class HappnMatchesAndMessagesController {
 
                 newBlockedOrRemovedPersons = newBlockedOrRemovedPersons + 1;
                 const matchId = unupdatedMatch.getRecordPersonSystemId(this.nameController);
+                const matchTempId = unupdatedMatch.getRecordPersonSystemId(this.nameController, true);
                 const matchName = unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Name')].getValue();
 
-                if (!matchId) {
-                    console.warn(`Could not get profileDetails for unupdated match due to matchId being: ${matchId}, skipping this match..`);
+                ConsoleColorLog.singleLog(`MatchId is: `, matchId, LogColors.GREEN);
+                ConsoleColorLog.singleLog(`MatchTempId is: `, matchTempId, LogColors.GREEN);
+                ConsoleColorLog.singleLog(`MatchName is: `, matchName, LogColors.GREEN);
+
+                if (!matchId || !matchTempId) {
+                    console.warn(`Could not get profileDetails for unupdated match due to matchId being: ${matchId} and matchTempId being: ${matchTempId}, skipping this match..`);
                     continue;
                 }
 
-                // todo: continue here
-                // this.requestHandler.getMatchProfileDetails(matchId).then((matchDetails: MatchProfileDetailsHappn) => {
-                this.requestHandler.getMatchConversation(matchId).then((matchMessagesDetails: MessagesHappn) => {
-                    updatedBlockedOrRemovedPersons = updatedBlockedOrRemovedPersons + 1;
-                    // debugger;
+                const indexUnmatchDatafield = unupdatedMatch.getIndexOfDataFieldByTitle('Did-i-unmatch');
+                if(unupdatedMatch.usedDataFields[indexUnmatchDatafield].getValue()){
+                    console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. I (ME) deleted our match!`);
+                    console.warn(unupdatedMatchesList[i]);
+                }else{
+                    console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. Match deleted our match OR match's profile got deleted!`);
+                    console.warn(unupdatedMatchesList[i]);
+                }
 
-                    // if(matchMessagesDetails === 404){
-                    //     console.warn(`Matchdetails: ${matchName} with id: ${matchId} gave a 404. Probably deleted profile?`);
-                    //     console.dir(unupdatedMatchesList[i]);
+                const dateOfUnmatchValue: string | null = unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() as string | null;
+                const matchDataDeletedMatch: { label: string, value: boolean | string}[] = await this.getMatchDataDeletedMatch(matchId, matchTempId, dateOfUnmatchValue);
 
-                    //     unupdatedMatch.addDataToDataFields([
-                    //         {
-                    //             label: 'Blocked-or-removed',
-                    //             value: false
-                    //         },
-                    //         {
-                    //             label: 'Date-of-unmatch',
-                    //             value: new Date().toISOString()
-                    //         },
-                    //         {
-                    //             label: 'Seemingly-deleted-profile',
-                    //             value: true
-                    //         }
-                    //     ]);
+                unupdatedMatch.addDataToDataFields(matchDataDeletedMatch);
+                unupdatedMatch.setUpdateMessages(false);
 
-                    //     unupdatedMatch.setUpdateMessages(false);
-                    // }
-
-                    if(!matchMessagesDetails){
-                        ConsoleColorLog.multiLog(`Matchdetails: ${matchName} with id: ${matchId} request retrieved a falsy value`, matchMessagesDetails, LogColors.RED, true);
-                        alert(`Match perhaps deleted profile hence why matchMessagesDetails is a falsy value? Check console log`)
-                    }
-
-                    if(matchMessagesDetails.data.conversation.isBlocked){
-                        const indexUnmatchDatafield = unupdatedMatch.getIndexOfDataFieldByTitle('Did-i-unmatch');
-                        if(unupdatedMatch.usedDataFields[indexUnmatchDatafield].getValue()){
-                            console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. I (ME) deleted our match!`);
-                            console.warn(unupdatedMatchesList[i]);
-                        }else{
-                            console.warn(`Matchdetails: ${matchName} with id: ${matchId} request returned a 200 while our match is gone. Match deleted our match!`);
-                            console.warn(unupdatedMatchesList[i]);
-                        }
-
-                        unupdatedMatch.addDataToDataFields([
-                            {
-                                label: 'Blocked-or-removed',
-                                value: true
-                            },
-                            {
-                                label: 'Date-of-unmatch',
-                                value: unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() ? 
-                                unupdatedMatch.usedDataFields[unupdatedMatch.getIndexOfDataFieldByTitle('Date-of-unmatch')].getValue() : 
-                                (matchMessagesDetails.data.conversation.modificationDate ? matchMessagesDetails.data.conversation.modificationDate : new Date().toISOString())
-                            },
-                            {
-                                label: 'Seemingly-deleted-profile',
-                                value: false
-                            }
-                        ]);
-
-                        unupdatedMatch.setUpdateMessages(false);
-                    }else{
-                        ConsoleColorLog.multiLog(`This blocked/deleted/disappeared match does no longer appear in my retrieved match list, but did she block me? (which should follow the code above) or did she delete her profile? (which is a new scenario I have not yet accounted for)`, matchMessagesDetails, LogColors.RED, true);
-                        alert(`Unrecognized blocked match, please check console log`);
-                    }
-                }).catch(() => {
-                    const indexDataFieldName: number = unupdatedMatch.getIndexOfDataFieldByTitle('Name');
-                    console.log(`Failed to get matchDetails for profile with name: ${unupdatedMatch.usedDataFields[indexDataFieldName].getValue()}. Please check if request adress is still correct.`);
-                }).finally(()=>{
-                    if(newBlockedOrRemovedPersons === updatedBlockedOrRemovedPersons){
-                        resolve();
-                    }
-                });
-
+                updatedBlockedOrRemovedPersons = updatedBlockedOrRemovedPersons + 1;
             }
             console.log(`setUnupdatedMatchesToBlocked - END`);
+        });
+    }
+
+    private getMatchConversation(matchId: string): Promise<{
+        receivedResponse: boolean,
+        response: MessagesHappn | null
+    }> {
+        return new Promise<{
+            receivedResponse: boolean,
+            response: MessagesHappn | null
+        }>((resolve) => {
+            this.requestHandler.getMatchConversation(matchId).then((matchMessagesDetails: MessagesHappn) => {
+                if(matchMessagesDetails.status === 200){
+                    return resolve({
+                        receivedResponse: true,
+                        response: matchMessagesDetails
+                    });
+                }else{
+                    return resolve({
+                        receivedResponse: false,
+                        response: null
+                    });
+                }
+            })
+        });
+    }
+
+    private getMatchDetails(personProfileId: string): Promise<{
+        receivedResponse: boolean,
+        response: MatchProfileDetailsHappn | null
+    }> {
+        return new Promise<{
+            receivedResponse: boolean,
+            response: MatchProfileDetailsHappn | null
+        }>((resolve) => {
+            this.requestHandler.getMatchProfileDetails(personProfileId).then((matchDetails: MatchProfileDetailsHappn) => {
+                if(matchDetails.status === 200){
+                    return resolve({
+                        receivedResponse: true,
+                        response: matchDetails
+                    });
+                }else{
+                    return resolve({
+                        receivedResponse: false,
+                        response: null
+                    });
+                }
+            })
+        });
+    }
+
+    private async getMatchDataDeletedMatch(matchId: string, matchTempId: string, dateOfUnmatchValue: string | boolean | null): Promise<{ label: string, value: boolean | string}[]> {
+        const matchConversationResult = this.getMatchConversation(matchId);
+        const matchDetailsResult = this.getMatchDetails(matchTempId);
+
+        return new Promise<{ label: string, value: boolean | string}[]>((resolve) => {
+            Promise.all([matchConversationResult, matchDetailsResult]).then((values) => {
+
+                const isAnyRequestSuccesful = values.some((responseObject)=>{
+                    return responseObject.receivedResponse === true;
+                });
+
+                if(isAnyRequestSuccesful){
+                    alert(`We got our first deleted match in the getMatchConversation request result! 
+                    Does this mean she deleted me or her account still exists? 
+                    The previous deleted match (Sindy - 17846212729_d37eaec1-27d0-4818-9367-e6d325f290b3) simply gave a 500 error. 
+                    Does that mean if a 500 error is returned the account has been deleted, 
+                    and if results are returned (but she is no longer in the matches result from the getMatches request) she deleted our match?`);
+                    
+                    // eslint-disable-next-line no-debugger
+                    debugger;
+                }
+
+                let matchMessagesDetailsModificationdate = values[0]?.response?.data?.conversation.modificationDate;
+                matchMessagesDetailsModificationdate = matchMessagesDetailsModificationdate ? matchMessagesDetailsModificationdate : new Date().toISOString();
+
+                resolve(
+                    [
+                        {
+                            label: 'Blocked-or-removed',
+                            value: true
+                        },
+                        {
+                            label: 'Date-of-unmatch',
+                            value: dateOfUnmatchValue !== null ? dateOfUnmatchValue : matchMessagesDetailsModificationdate
+                        },
+                        {
+                            label: 'Seemingly-deleted-profile',
+                            value: isAnyRequestSuccesful ? false : true
+                        }
+                    ]
+                )
+            });
         });
     }
 }

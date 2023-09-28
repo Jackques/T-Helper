@@ -1,4 +1,5 @@
 export interface MessagesHappn {
+    status: number,
     data: {
         conversation: {
             creationDate: string,
