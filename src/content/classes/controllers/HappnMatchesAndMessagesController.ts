@@ -423,7 +423,7 @@ export class HappnMatchesAndMessagesController {
         console.dir(this.dataTable);
     }
 
-    private getMatchRecordIndexBySystemIdOrPersonId(match: Match | HappnConversation, nameController: string): number {
+    private getMatchRecordIndexBySystemIdOrPersonId(match: Match | HappnConversation, nameController: DatingAppType): number {
         match = match as HappnConversation;
         const recordIndex = this.dataTable.getRecordIndexBySystemId(match.id, nameController);
         if (recordIndex === -1) {
