@@ -29,5 +29,8 @@ export class RequestHandlerV2 {
     // implements retries
     // implements callback on success (useless i think because this is automatically solved by using a on return promise?)
     // return promise with .next(// my provided interface) & .catch(// my provided error interface)
+    // add in option to send multiple DIFFERENT http request at once, at different times (that list idea) and only async return once all requests have been fulfilled
+        // (i.e. I use this in my get deleted matches request for example in Happn)
+
 
 }
