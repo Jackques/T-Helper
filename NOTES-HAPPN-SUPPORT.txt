@@ -23,6 +23,8 @@ Notes:
 TO-DO:
 1. Refactor & add support for happn background script (service worker)
 	> Add support for happn swipe (line 150+, requestInterceptor.ts) & test
+		> [DONE, works] LIKE 
+		> [?] PASS 
 	> Refactor tinderRequestInterceptorHelper.ts to generic dating app name file
 
 2. City & Interests are not properly collected by Happn
@@ -30,7 +32,8 @@ TO-DO:
 
 3. Happn fix broken Collect Data paths due to Happn update UI
 
-4. My app says Happn match Sindy is? can no longer get datarecord or something?
+4. [DONE] My app says Happn match Sindy is? can no longer get datarecord or something?
+	-> [DONE] Check match Sindy for on what the deleted match fields look like now
 
 ====
 
