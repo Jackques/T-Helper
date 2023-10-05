@@ -12,13 +12,14 @@ export const screensHappn: Screen[] = [
         new ScreenAction('pass', 'div[data-testid="action-list-container"] button[data-testid="profile-btn-reject"]'),
         new ScreenAction('superlike', 'div[data-testid="action-list-container"] button[data-testid="profile-btn-flashnote"]')
     ], [
-        new ScreenElement('Name', 'p[data-testid="profile-name"]', '', true, ScreenRetrievalMethod.GET_TEXT_ELEMENT, getHappnProfileName),//TODO TODO TODO: Get the position of the first comma i.e. "Lonneke, 25 jaar, 3 uur geleden.."
-        new ScreenElement('Age', 'p[data-testid="profile-name"]', '', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT, getHappnProfileAge),
-        new ScreenElement('Job', 'div[data-testid="profile-job"]', 'p:first', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
-        new ScreenElement('School', 'div[data-testid="profile-job"]', 'p:last', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
-        new ScreenElement('Has-profiletext', 'p[data-testid="profile-description"]', '', false, ScreenRetrievalMethod.GET_ELEMENT_EXISTS),
+        new ScreenElement('Name', '*[data-testid="profile-name"]', '', true, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
+        new ScreenElement('Age', '*[data-testid="profile-age"]', '', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT, (value: string) => value.replace(", ", "").trim()),
+
+        new ScreenElement('Job', getJobHappn, '', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
+        new ScreenElement('School', getSchoolHappn, '', false, ScreenRetrievalMethod.GET_TEXT_ELEMENT),
+        new ScreenElement('Has-profiletext', getProfileTextHappn, '', false, ScreenRetrievalMethod.GET_ELEMENT_EXISTS),
         new ScreenElement('Is-verified', 'svg[data-testid="profile-badges-verified"]', '', false, ScreenRetrievalMethod.GET_ELEMENT_EXISTS),
-        new ScreenElement('Amount-of-pictures', 'div[data-testid="profile-image-container"]', '', false, ScreenRetrievalMethod.GET_ELEMENTS_AMOUNT),
+        new ScreenElement('Amount-of-pictures', 'img[radius="large"]', '', false, ScreenRetrievalMethod.GET_ELEMENTS_AMOUNT),
     ], 'swipe', true, true),
     new Screen(ScreenNavStateComboTinder.Chat, [
         new ScreenAction('sendMessage', 'textarea[data-testid="sender-input"]')
@@ -28,33 +29,68 @@ export const screensHappn: Screen[] = [
     ], [], 'other', false, false)
 ]
 
-function getHappnProfileName(profileString: string): string {
-    const seperatedProfileString = profileString.split(',');
-    if(seperatedProfileString.length > 3){
-        // if got more than three comma's in string, throw error (because something is wrong with name or not set correctly.. because MAYBE technically.. a name could contain a comma?)
-        throw new Error(`Profile name string detected more than 3 comma's. Cannot accurately get name from this string without risking corrupted data. Please check the logic for getHappnProfileName.`);
+function getJobHappn(): HTMLElement | null {
+    
+    const workIconElement = $('[data-testid="BriefcaseIcon"]');
+    if(!workIconElement || workIconElement.length === 0){
+        console.warn(`Could not find work icon for job Screen Element`);
+        return null;
     }
 
-    if(seperatedProfileString[0].length === 0){
-        // is string empty string? throw error.. something is wrong with the logic
-        throw new Error(`Profile name string, name part appears to be empty string. Cannot accurately get name from this string without risking corrupted data. Please check the logic for getHappnProfileName.`);
+    const parentWorkIconElement = $(workIconElement).parent().parent();
+    if(!parentWorkIconElement || parentWorkIconElement.length === 0){
+        console.warn(`Could not find parent elements from work icon for job Screen Element`);
+        return null;
     }
 
-    return seperatedProfileString[0];
+    const textElement = $(parentWorkIconElement).find("p:first");
+    if(!textElement || textElement.length === 0){
+        console.warn(`Could not find text containing job for job Screen Element`);
+        return null;
+    }
+
+    return textElement[0];
 }
 
-function getHappnProfileAge(profileString: string): string {
-    const seperatedProfileString = profileString.split(',');
-
-    if(seperatedProfileString.length > 3){
-        throw new Error(`Profile name string detected more than 3 comma's. Cannot accurately get age from this string without risking corrupted data. Please check the logic for getHappnProfileAge.`);
+function getSchoolHappn(): HTMLElement | null {
+    
+    const schoolIconElement = $('[data-testid="SchoolIcon"]');
+    if(!schoolIconElement || schoolIconElement.length === 0){
+        console.warn(`Could not find work icon for job Screen Element`);
+        return null;
     }
 
-    if(seperatedProfileString[1].length === 0){
-        // is string empty string? throw error.. something is wrong with the logic
-        throw new Error(`Profile name string, age part appears to be emptry string. Cannot accurately get age from this string without risking corrupted data. Please check the logic for getHappnProfileAge.`);
+    const parentSchoolIconElement = $(schoolIconElement).parent().parent();
+    if(!parentSchoolIconElement || parentSchoolIconElement.length === 0){
+        console.warn(`Could not find parent elements from work icon for job Screen Element`);
+        return null;
     }
 
-    const ageString: string = seperatedProfileString[1].replaceAll(/[^0-9]/g, '');
-    return ageString;
+    const textElement = $(parentSchoolIconElement).find("p:first");
+    if(!textElement || textElement.length === 0){
+        console.warn(`Could not find text containing job for job Screen Element`);
+        return null;
+    }
+
+    return textElement[0];
+}
+
+function getProfileTextHappn(): HTMLElement | null {
+    const infoElement = $('[data-testid="infos-section"]');
+    if(!infoElement || infoElement.length === 0){
+        console.warn(`Could not find info element for profileText Screen Element`);
+        return null;
+    }
+
+    const nextElement = infoElement.next();
+    if(!nextElement || nextElement.length === 0){
+        console.warn(`Could not find next element for infoElement for getting profileText Screen Element`);
+        return null;
+    }
+
+    if(nextElement.is('div') && nextElement.children().length > 0){
+        return nextElement[0];
+    }
+
+    return null;
 }
