@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "Chrome Extension Starter",
+  "version": "1.0.0",
+  "description": "",
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "action": {
+    "default_icon": "assets/icons/icon16.png",
+    "default_popup": "popup/index.html",
+    "default_title": "Starter Popup"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "vendor/jquery-3.5.1/jquery-3.5.1.min.js",
+        "vendor/bootstrap-5.2.0/bootstrap.bundle.min.js",
+        "vendor/bootstrap-5.2.0/bootstrap.min.js",
+        "vendor/select2-4.1.0/select2.min.js",
+        "content/index.js"
+      ],
+      "css": [
+        "vendor/bootstrap-5.2.0/bootstrap.min.css",
+        "vendor/select2-4.1.0/select2.min.css",
+        "content/styles.css"
+      ],
+      "matches": ["*://tinder.com/*", "*://happn.app/*"]
+    }
+  ],
+  "background": {
+    "service_worker": "background/index.js"
+  },
+  "devtools_page": "devtools/index.html",
+  "options_page": "options/index.html",
+  "permissions": [
+    "tabs", 
+    "activeTab",
+    "webRequest",
+    "notifications",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.gotinder.com/*",
+    "http://api.gotinder.com/*",
+    "*://developer.mozilla.org/",
+    "<all_urls>"
+  ]
+}
