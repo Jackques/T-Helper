@@ -14,7 +14,7 @@ export class AutoReminder {
         "${name}? 🥺",
         "${name}! koffie zwart of liever een latte?",
         "Jij neemt The Sound of Silence wel heel letterlijk he ${name}? Het is maar een liedje!",
-        "Ja ik vind chatten op tinder ook niks. Zullen wij dan maar eens wat gaan borrelen op in real life ${name}?",
+        "Ja ik vind chatten op datingapps ook niks. Zullen wij dan maar eens wat gaan borrelen op in real life ${name}?",
     ];
 
     private reminderMessageTextListEnglish = [
@@ -27,7 +27,7 @@ export class AutoReminder {
         "${name}? 🥺",
         "${name}! coffee black or do you prefer a latte?",
         "You take The Sound of Silence very literally don't you ${name}? It's just a song!",
-        "Yeah I don't like chatting on tinder either. How about we just go for a drink in real life ${name}?",
+        "Yeah I don't like chatting on datingapps either. How about we just go for a drink in real life ${name}?",
     ];
 
     public getReminderHttpMap(tempId: string, completeId: string, name: string, usedReminderTextMessageList: string[], english: boolean): ReminderHttp {
